@@ -69,7 +69,7 @@ function playerOptions(){
 }
 function cardMarkup(c,owner,selected,local){
  const price=local?null:askFor(owner,c),wanted=ownerNeeds(owner,c),categoryName=KIND_NAMES[category(c)]||"Карта";
- return '<button type="button" class="mk-card'+(selected?" mk-selected":"")+'" data-kind="'+html(category(c))+'" onclick="'+(local?"marketSelectMine("+JSON.stringify(c.id)+")":"marketSelectRemote("+owner+","+JSON.stringify(c.id)+")")+'" aria-pressed="'+(selected?"true":"false")+'">'+
+ return '<button type="button" class="mk-card'+(selected?" mk-selected":"")+'" data-kind="'+html(category(c))+'" onclick="'+(local?"marketSelectMine("+html(JSON.stringify(c.id))+")":"marketSelectRemote("+owner+","+html(JSON.stringify(c.id))+")")+'" aria-pressed="'+(selected?"true":"false")+'">'+
  '<span class="mk-card-type">'+icon(c)+' '+html(categoryName)+' <span>#'+html(c.id)+'</span></span>'+
  '<strong>'+html(title(c))+'</strong><small>'+html(detail(c))+'</small>'+
  '<span class="mk-card-foot">'+(local?'<b>Моя карта</b>':'<b>'+html(format(price))+'</b>')+
