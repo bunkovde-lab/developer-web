@@ -33,7 +33,8 @@ vm.runInContext(fs.readFileSync('pace.js','utf8'),sandbox,{filename:'pace.js',ti
 run('newGame()');
 assert.equal(run('state.paceVersion'),1);
 assert.equal(run('state.players.length'),6);
-assert.equal(run('state.plots.filter(l=>l.owner>=0).length'),6);
+assert.equal(run('state.plots.filter(l=>l.owner>=0).length'),12);
+assert.equal(run('state.speedStartKit.length'),12);
 assert.equal(run('state.players.every(p=>p.cards.length===3)'),true);
 assert.equal(run('state.stock.stage.utilities.length'),6);
 assert.equal(run('state.stock.stage.permits.length'),6);
