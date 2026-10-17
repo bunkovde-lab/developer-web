@@ -229,6 +229,19 @@ function startSelectedLandAuction(){
  if(!Number.isInteger(chosenLand))return false;
  const index=chosenLand;closeLandSelection();return beginAuction(index);
 }
+function startBotAuction(index,botIndex){
+ if(!state||!state.rolled||!state.players[botIndex]?.bot||state.turn!==botIndex||state.auction||state.pendingCard||![1,9,18,24].includes(state.players[botIndex].pos))return false;
+ const lot=state.plots[index];if(!lot||lot.owner>=0)return false;
+ ensureLandDeck();
+ const at=state.landDeck.indexOf(index);if(at>=0)state.landDeck.splice(at,1);
+ const step=Math.max(20,Math.ceil(lot.price*.1/10)*10);
+ state.auction={lot:index,price:0,minBid:lot.price,step,leader:-1,active:state.players.map(()=>true),history:[],round:0,botInitiated:true,humanBidder:state.players.findIndex(p=>!p.bot)};
+ const a=state.auction,bot=state.players[botIndex];
+ if(bot.money>=lot.price){a.price=lot.price;a.leader=botIndex;a.history.push(bot.name+': '+lot.price);}
+ if(a.humanBidder<0){resolveAuction();return true;}
+ note('🔨 '+bot.name+' выставил на аукцион '+lot.name+'. Ваше участие обязательно доступно.');
+ showAuction();render();return true;
+}
 function beginAuction(index){
  if(!state.rolled||current().bot||![1,9,18,24].includes(current().pos)||state.auction||state.pendingCard)return false;
  if(index<0){openLandSelection();return false;}
