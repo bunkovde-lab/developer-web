@@ -253,12 +253,42 @@ function beginConstructionDeckChoice(){
  state.constructionDeckChoice={playerIndex:state.turn};
  selectConstructionDeck(desired||STAGE_IDS[Math.floor(Math.random()*STAGE_IDS.length)]);
 }
+function botGovernmentContracts(p,lots){
+ const valid=(p.governmentCards||[]).filter(x=>x&&x.terms);
+ for(const c of valid){
+  if(c.accepted&&state.round>c.deadline)continue;
+  if(!c.accepted){
+   if(c.type==='investment'&&p.money>=350){p.money-=c.terms.invest;c.accepted=true;c.ready=state.round+6;note('🤖 '+p.name+' инвестировал '+c.terms.invest+' тыс. в госконтракт');return;}
+   const acceptable=c.type==='construction'?lots.some(x=>x.lot.project?.stage===4&&x.lot.project.size===0):
+    c.type==='land'?lots.some(x=>!x.lot.project&&x.lot.price<=170):false;
+   if(acceptable){c.accepted=true;note('🤖 '+p.name+' принял госконтракт №'+c.id);return;}
+   continue;
+  }
+  if(c.type==='investment'&&state.round>=c.ready){
+   p.money+=c.terms.reward;p.governmentCards=p.governmentCards.filter(x=>x!==c);
+   note('🤖 '+p.name+' завершил государственную инвестицию: +'+c.terms.reward);return;
+  }
+  if(c.type==='construction'){
+   const x=lots.find(x=>x.lot.project?.stage===4&&x.lot.project.size===0);
+   if(!x)continue;const price=c.terms.reward;
+   x.lot.owner=-1;x.lot.level=0;x.lot.project=null;x.lot.tenant=null;p.money+=price;
+   p.governmentCards=p.governmentCards.filter(y=>y!==c);note('🤖 '+p.name+' передал здание по госзаказу за '+price);return;
+  }
+  if(c.type==='land'){
+   const x=lots.find(x=>!x.lot.project&&x.lot.price<=170);
+   if(!x)continue;const price=Math.min(c.terms.reward,Math.round(x.lot.price*1.15));
+   x.lot.owner=-1;p.money+=price;p.governmentCards=p.governmentCards.filter(y=>y!==c);
+   note('🤖 '+p.name+' передал участок по госзаказу за '+price);return;
+  }
+ }
+}
 function botBusiness(){
  const p=current(),playerIndex=state.turn;if(!p.bot)return;
  const lots=state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===playerIndex);
  for(const {lot,i} of lots){
   if(lot.project?.stage===4&&!lot.tenant){const ti=p.marketCards.findIndex(c=>c.type==='tenant');if(ti>=0){const c=p.marketCards.splice(ti,1)[0];lot.tenant={percent:c.card.percent,cardId:c.id};lot.tenant.income=tenantIncomeForLot(lot);note('🤖 '+p.name+' заселил арендатора на '+lot.name+'.');}}
  }
+ botGovernmentContracts(p,lots);
  if(p.money<250&&lots.some(x=>x.lot.project?.stage!==4)){
   const ii=p.marketCards.findIndex(c=>c.type==='investor');if(ii>=0){const c=p.marketCards.splice(ii,1)[0];p.money+=c.card.investment;if(!p.investments)p.investments=[];p.investments.push({principal:c.card.investment,unpaid:Math.round(c.card.investment*1.25),share:c.card.share});note('🤖 '+p.name+' привлёк инвестора: '+c.card.investment+' тыс.');}
  }
