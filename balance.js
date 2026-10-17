@@ -259,6 +259,8 @@ function beginConstructionDeckChoice(){
 function botGovernmentContracts(p,lots){
  const valid=(p.governmentCards||[]).filter(x=>x&&x.terms);
  for(const c of valid){
+  // AI must preserve the four-building cluster; speculative land/building deliveries are human-only.
+  if(c.type!=='investment')continue;
   if(c.accepted&&state.round>c.deadline)continue;
   if(!c.accepted){
    if(c.type==='investment'&&p.money>=350){p.money-=c.terms.invest;c.accepted=true;c.ready=state.round+6;note('🤖 '+p.name+' инвестировал '+c.terms.invest+' тыс. в госконтракт');return;}
