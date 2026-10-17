@@ -17,7 +17,7 @@ async function wait(){
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto(url,{waitUntil:'networkidle'});
    const before=await page.evaluate(()=>{
-    window.newGame();state.turn=0;state.rolled=true;state.players[0].money=4500;
+    window.newGame();closeSessionMenu();state.turn=0;state.rolled=true;state.players[0].money=4500;
     state.plots[1].owner=0;state.plots[1].level=1;state.plots[1].project={size:0,stage:4};
     render();
     return {money:state.players[0].money,plots:document.querySelectorAll('.map-plot').length,
