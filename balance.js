@@ -140,7 +140,7 @@ function finalizeInvestorSale(lotIndex){
  const investorPayout=Math.min(salePrice,Math.round(investor.capital+profit*investor.share/100));
  const sellerPayout=Math.max(0,salePrice-investorPayout);
  p.money+=sellerPayout;
- if(p.bot)p.saleRevenue=(Number(p.saleRevenue)||0)+sellerPayout;
+ p.saleRevenue=(Number(p.saleRevenue)||0)+sellerPayout; // realised seller receipt: once, regardless of human/AI
  note('🏢 '+p.name+': инвестиционный проект «'+lot.name+'» введён и автоматически продан за '+salePrice+' тыс. Инвестору перечислено '+investorPayout+', девелоперу '+sellerPayout+' тыс. Аренда недоступна.');
  transferLargeSection(lotIndex,-1);lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;
  if(!p.bot){const overlay=$('plotCardOverlay');if(overlay)overlay.hidden=true;showResolvedCard('🏢 Инвестиционный объект продан','Здание продано автоматически в момент ввода в эксплуатацию. Сдать его в аренду нельзя.','Цена продажи: '+salePrice+' тыс. · инвестору: '+investorPayout+' тыс. · вам: '+sellerPayout+' тыс.');}
@@ -154,9 +154,16 @@ function playStageCard(lotIndex,size,cardId){
  if(owner.cards.find(c=>c.id===cardId))return; // legacy rejected
  returnStage(card.deck,card.index);
  if((lot.project?.stage||0)===before+1){
-  lot.developmentSpent=(Number(lot.developmentSpent)||0)+Math.max(0,money-owner.money);
-  if(lot.project.stage===4&&owner.bot)owner.completedProjects=(Number(owner.completedProjects)||0)+1;
-  if(owner.bot){const professionDiscount=(owner.profession==='foreman'&&card.deck==='construction')?.14:(owner.profession==='designer'&&card.deck==='utilities')?.18:(owner.profession==='permits'&&card.deck==='permits')?.18:(owner.profession==='lawyer'&&card.deck==='commissioning')?.09:0;if(professionDiscount){const fee=Number(BALANCED_DECKS[card.deck]?.[card.index]?.costs?.[size])||0;owner.money+=Math.round(fee*professionDiscount);}}
+  // One settlement path for human and AI-owned projects.
+  const grossCost=Math.max(0,money-owner.money);
+  const rate=owner.profession==='foreman'&&card.deck==='construction'?.14:
+   owner.profession==='designer'&&card.deck==='utilities'?.18:
+   owner.profession==='permits'&&card.deck==='permits'?.18:
+   owner.profession==='lawyer'&&card.deck==='commissioning'?.09:0;
+  const discount=rate?Math.min(grossCost,Math.round(grossCost*rate)):0;
+  if(discount){owner.money+=discount;note('🎓 '+professionName(owner.profession)+': экономия '+discount+' тыс.');}
+  lot.developmentSpent=(Number(lot.developmentSpent)||0)+grossCost-discount;
+  if(lot.project.stage===4)owner.completedProjects=(Number(owner.completedProjects)||0)+1;
   if(lot.project.stage===4&&lot.investor)finalizeInvestorSale(lotIndex);
   state.econMetrics.stagesCompleted++;consumeAction();note('Израсходованная строительная карта №'+cardId+' сразу вернулась в общую колоду.');render();}
 }
@@ -442,8 +449,12 @@ function settleInvestment(){
  const player=current();if(!player||!player.investments?.length)return;
  const rentGross=rentalIncomeFor(state.turn),withheld=[];
  player.investments=player.investments.filter(inv=>{
-  const slice=Math.min(inv.unpaid,Math.max(20,Math.round(inv.principal*.08),Math.round(rentGross*inv.share/100)));
-  if(slice>0){player.money-=slice;inv.unpaid-=slice;withheld.push(slice);}
+  const remaining=Math.max(0,Number(inv.unpaid)||0);
+  const principal=Math.max(0,Number(inv.principal)||0);
+  const share=Math.max(0,Number(inv.share)||0);
+  const amount=Math.min(remaining,Math.max(20,Math.round(principal*.08),Math.round(rentGross*share/100)));
+  if(amount>0){player.money-=amount;withheld.push(amount);}
+  inv.unpaid=remaining-amount;
   return inv.unpaid>0;
  });
  if(withheld.length)note(player.name+' выплатил инвесторам '+withheld.reduce((a,b)=>a+b,0)+' тыс. из арендных поступлений.');
@@ -457,10 +468,11 @@ function bindInvestorToProject(player,playerIndex,card,lotIndex){
  if(!lot||lot.owner!==playerIndex||lot.project?.stage===4||lot.investor)return false;
  const amount=Number(card.card?.investment),share=Number(card.card?.share);
  if(!Number.isFinite(amount)||amount<=0||!Number.isFinite(share)||share<0||share>100)return false;
- lot.investor={capital:amount,share:player.bot&&player.profession==='financier'?Math.max(5,share-10):share,cardId:card.id};
+ const negotiatedShare=player.profession==='financier'?Math.max(5,share-10):share;
+ lot.investor={capital:amount,share:negotiatedShare,cardId:card.id};
  player.money+=amount;
  player.marketCards=player.marketCards.filter(c=>c.id!==card.id);returnMarketCard(card);
- note('💼 '+player.name+' привлёк '+amount+' тыс. к '+lot.name+'. Договор инвестора: продажа сразу после ввода; инвестор получит капитал и '+share+'% положительной прибыли.');
+ note('💼 '+player.name+' привлёк '+amount+' тыс. к '+lot.name+'. Договор инвестора: продажа сразу после ввода; инвестор получит капитал и '+negotiatedShare+'% положительной прибыли.');
  return true;
 }
 function applyInvestorCard(cardId,plotIndex){
