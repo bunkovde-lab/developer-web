@@ -43,6 +43,23 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.equal(await page.locator('#plotCardOverlay').isVisible(),true);
    assert.match(await page.locator('#plotCardProjects').innerText(),/своих соседей|Позиция/);
    await page.locator('#plotCardOverlay .pc-top button').click();
+   // A bot landing on Auction must NOT buy a plot instantly.
+   // Human remains an active bidder even though it is the bot's turn.
+   await page.evaluate(()=>{
+      newGame();closeSessionMenu();state.turn=1;state.rolled=true;state.players[1].pos=1;
+      state.players[0].money=3000;state.players[1].money=1200;
+      render();startBotAuction(0,1);
+   });
+   assert.equal(await page.evaluate(()=>state.plots[0].owner),-1,'Bot must not take title without bids');
+   assert.equal(await page.evaluate(()=>state.auction?.initiator),1);
+   assert.equal(await page.evaluate(()=>state.auction?.humanBidder),0);
+   assert.equal(await page.locator('#auctionOverlay').isVisible(),true);
+   await page.locator('#auctionBid').fill('550');
+   await page.getByRole('button',{name:'Повысить цену'}).last().click();
+   assert.equal(await page.evaluate(()=>state.plots[0].owner),0,'Human must be able to win a bot-hosted land auction');
+   assert.equal(await page.evaluate(()=>state.players[0].money),2450,'Human bidder pays her bid, not current bot');
+   assert.equal(await page.evaluate(()=>state.auctionHistory.at(-1).winner),0,'Auction result must record a real contest');
+
    assert.equal(errors.length,0,'Client runtime errors: '+errors.join(';'));
    console.log('TERRITORY BROWSER PASSED '+size.width+'×'+size.height+', zoning, land choice and chain threats');
    await page.close();
