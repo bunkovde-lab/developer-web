@@ -42,8 +42,8 @@ assert.equal(run('state.stock.stage.construction.length'),6);
 assert.equal(run('state.stock.stage.commissioning.length'),12);
 assert.equal(run('state.players.every(p=>p.money>900)'),true);
 run('state.rolled=true;state.constructionDeckChoice={playerIndex:0};selectConstructionDeck("commissioning");');
-assert.equal(run('state.players[0].cards.length'),6,'Landing on Construction supplies 3 physical cards, not virtual copies');
-assert.equal(run('state.players.reduce((sum,p)=>sum+p.cards.length,0)'),21);
+assert.equal(run('state.players[0].cards.length'),7,'Five or six players receive four physical cards on the Construction square');
+assert.equal(run('state.players.reduce((sum,p)=>sum+p.cards.length,0)'),22);
 assert.equal(run('state.stock.stage.commissioning.length'),11);
 console.log('PACE START PASSED: real physical cards, fair initial plot payment, 3-card construction bundle');
 
