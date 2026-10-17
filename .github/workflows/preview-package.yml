@@ -19,57 +19,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Assemble playable HTML package and verify entrypoint dependencies
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Assemble playable static game and verify entrypoint references
+        run: node scripts/build-site.cjs --out preview
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number || 'manual' }}
+
+      - name: Explain how to test the package
         shell: bash
         run: |
-          set -euo pipefail
-          mkdir -p preview
-          cp index.html preview/
-          # Include every root-level game module, including future animation
-          # modules (scene-motion.js/css in v0.18), without freezing a file list.
-          find . -maxdepth 1 -type f \( -name '*.js' -o -name '*.css' \) -exec cp -t preview/ {} +
-          test -f preview/balance.js
-          test -f preview/visual.js
-          test -f preview/visual.css
-          if [[ -d assets ]]; then
-            cp -R assets preview/
-          fi
-
-          node <<'NODE'
-          const fs = require('node:fs');
-          const path = require('node:path');
-          const html = fs.readFileSync('preview/index.html', 'utf8');
-          const refs = [...html.matchAll(/<(?:script|link)\b[^>]*?\b(?:src|href)\s*=\s*["']([^"']+)["']/gi)].map(match => match[1]);
-          const missing = [];
-          for (const ref of refs) {
-            const clean = ref.split('?')[0].split('#')[0];
-            if (!clean || /^(?:https?:|data:|\/\/)/i.test(clean)) continue;
-            const local = decodeURIComponent(clean);
-            if (local.startsWith('/') || local.split('/').includes('..')) {
-              missing.push(`${ref} (invalid local path)`);
-              continue;
-            }
-            if (!fs.existsSync(path.join('preview', local))) missing.push(ref);
-          }
-          if (missing.length) {
-            console.error('Missing referenced files:\n' + missing.join('\n'));
-            process.exit(1);
-          }
-          console.log(`Validated ${refs.length} script/link references`);
-          NODE
-
-          {
-            printf "Build SHA: %s\n" "$GITHUB_SHA"
-            printf "PR number: %s\n" "${{ github.event.pull_request.number || 'manual' }}"
-            printf "Source head SHA: %s\n" "${{ github.event.pull_request.head.sha || github.sha }}"
-          } > preview/BUILD_INFO.txt
-
           cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
           ### Developer Web preview package
-          Download the developer-preview artifact from this workflow run, unpack it,
-          and serve index.html with a local HTTP server. See docs/PREVIEW_BUILDS.md.
-          This is not a hosted PR URL; successful packaging does not replace gameplay
-          simulation or browser UI tests.
+          Download developer-preview in the Artifacts section. It contains
+          a game build from the current pull request and BUILD_INFO.txt.
+          Unpack it and use a local HTTP server to test, or configure
+          Cloudflare Pages to get separate shareable preview URLs automatically.
+          See docs/PREVIEW_BUILDS.md.
+
+          Passing packaging does not replace gameplay and browser tests.
           SUMMARY
 
       - name: Upload playable preview artifact
