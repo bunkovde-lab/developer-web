@@ -208,7 +208,7 @@ function landAuctionOption(index){
  const taken=lot.owner>=0,affordable=current().money>=lot.price,selected=chosenLand===index;
  const owner=taken?state.players[lot.owner]:null;
  const stage=Number.isInteger(lot.reservedFor)?'Секция комплекса':lot.project?.stage===4?'🏢 Готов':lot.project?'🏗 '+lot.project.stage+'/4':'';
- return '<button type="button" class="land-option'+(selected?' selected':'')+(taken?' occupied':'')+'" data-lot="'+index+'" data-zone="'+lot.zone+'" style="--land-zone:'+zone.color+';--land-owner:'+(owner?colors[lot.owner]:'#c1cecb')+'" onclick="chooseAuctionLand('+index+')"'+(taken||!affordable?' disabled':'')+' aria-label="Участок '+(index+1)+', '+zone.title+', '+(taken?'владелец '+owner.name:lot.price+' тысяч')+'">'+
+ return '<button type="button" class="land-option'+(selected?' selected':'')+(taken?' occupied':'')+'" data-lot="'+index+'" data-zone="'+lot.zone+'" style="--land-zone:'+zone.color+';--land-owner:'+(owner?colors[lot.owner]:'#c1cecb')+'" onclick="chooseAuctionLand('+index+')"'+(taken||!affordable?' disabled':'')+' title="'+lot.name+'" aria-label="'+lot.name+', участок '+(index+1)+', '+zone.title+', '+(taken?'владелец '+owner.name:lot.price+' тысяч')+'">'+
  '<span class="land-option-top"><b>№'+(index+1)+' '+zone.short+'</b><strong>'+(taken?'● '+owner.name:lot.price+' тыс.')+'</strong></span>'+
  '<span class="land-zone">'+(stage||zone.title)+'</span><span class="land-tactics">🔗'+a.own+' · ⛨'+a.blocking+' · ☐'+a.free+'</span></button>';
 }
