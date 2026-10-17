@@ -27,6 +27,7 @@ const sandbox={window:null,document,Math:rMath,console,alert:()=>{},confirm:()=>
 sandbox.window=sandbox;vm.createContext(sandbox);
 vm.runInContext(legacy.replace(/resumeSavedGame\(\);\s*$/,''),sandbox,{filename:'index.html',timeout:5000});
 vm.runInContext(extension,sandbox,{filename:'balance.js',timeout:5000});
+vm.runInContext(fs.readFileSync('auction-competition.js','utf8'),sandbox,{filename:'auction-competition.js',timeout:5000});
 const run=(src)=>vm.runInContext(src,sandbox,{timeout:4000});
 
 const zoneCounts=run('ZONE_GRID.reduce((acc,z)=>(acc[z]=(acc[z]||0)+1,acc),{})');
