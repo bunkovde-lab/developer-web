@@ -222,6 +222,45 @@ window.submitAuctionBid=function(pass=false){
  if(!Number.isSafeInteger(bid)||bid<a.minBid||bid>p.money){E('auctionError').textContent='Введите целую ставку от '+format(a.minBid)+' до '+format(p.money);return false;}
  return sealedResult(bid);
 };
+// Fixed-length standard campaign: an adjudicated outcome if rivals block every four-lot chain.
+const oldEndTurn=window.endTurn;
+function finalValue(i){
+ const p=state.players[i];const holdings=state.plots.map((lot,j)=>({lot,j})).filter(x=>x.lot.owner===i&&!Number.isInteger(x.lot.reservedFor));
+ const assets=holdings.reduce((sum,{lot})=>{
+  if(lot.project?.stage===4)return sum+marketBase(lot,'buyer');
+  return sum+Math.round(lot.price*.90+(Number(lot.developmentSpent)||0)*.55);
+ },0);
+ const rental=holdings.reduce((sum,{lot})=>sum+tenantIncomeForLot(lot),0);
+ const finished=new Set(holdings.filter(x=>x.lot.project?.stage===4).map(x=>x.j));
+ let maxConnected=0;const seen=new Set();
+ for(const origin of finished){
+  if(seen.has(origin))continue;
+  let count=0,queue=[origin];seen.add(origin);
+  while(queue.length){const j=queue.shift();count++;for(const n of neighborsBySide(j))if(finished.has(n)&&!seen.has(n)){seen.add(n);queue.push(n);}}
+  maxConnected=Math.max(maxConnected,count);
+ }
+ return Math.round(p.money+assets+rental*5+(Number(p.completedProjects)||0)*80+
+    (Number(p.saleRevenue)||0)*.07+maxConnected*125);
+}
+function finalizeCampaign(){
+ if(!live()||Number.isInteger(state.winnerIndex))return;
+ const standings=state.players.map((p,i)=>({i,score:finalValue(i)})).sort((a,b)=>b.score-a.score||a.i-b.i);
+ if(!standings.length)return;
+ const winner=standings[0];
+ state.winnerIndex=winner.i;state.winType='tender';state.winningLots=[];
+ state.finalScores=standings;
+ note('🏆 Муниципальный итог: '+state.players[winner.i].name+
+    ' победил по стоимости компании и результатам девелопмента ('+format(winner.score)+').');
+}
+window.endTurn=function(){
+ if(live()&&Number.isInteger(state.turnLimit)&&state.rolled&&!state.pendingCard&&!state.auction&&
+  !state.constructionDeckChoice&&!Number.isInteger(state.winnerIndex)){
+  state.completedTurns=(state.completedTurns||0)+1;
+  if(state.completedTurns>=state.turnLimit){finalizeCampaign();render();return;}
+ }
+ return oldEndTurn();
+};
+
 // Compact game-state feedback in company cabinet.
 const oldRender=window.render;
 window.render=function(){
@@ -235,16 +274,17 @@ window.render=function(){
   el.innerHTML='<div class="eco-kicker">СТРАТЕГИЯ КОМПАНИИ</div><div class="eco-metrics">'+
    '<span>🏢 Объекты <b>'+ready.length+'</b></span><span>🏘 Арендаторы <b>'+ready.filter(l=>l.tenant).length+'</b></span>'+
    '<span>🏗 Всего построено <b>'+p.completedProjects+'</b></span><span>💰 Продажи <b>'+format(p.saleRevenue)+'</b></span></div>'+
-   '<p class="eco-rule">Победа: цепь 4 зданий или 5 введённых проектов, '+format(2350)+
+   '<p class="eco-rule">Стандарт: '+(Number.isInteger(state.turnLimit)?(state.completedTurns||0)+' / '+state.turnLimit+' ходов. ':'Без ограничения ходов. ')+
+   'Досрочная победа: цепь 4 зданий или 5 введённых проектов, '+format(2350)+
    ' продаж, '+format(650)+' капитала и 2 здания в разных районах, включая среднее/крупное.</p>';
  }
 };
 const oldNewGame=window.newGame;
-window.newGame=function(){E('auditDecision')?.remove();quickClose();oldNewGame();records();render();};
-const host=document.querySelector('.company-panel .cabinet-main')||document.querySelector('.company-panel');
+window.newGame=function(){E('auditDecision')?.remove();quickClose();oldNewGame();state.turnLimit=240;state.completedTurns=0;records();render();};
+const host=document.querySelector('.company-panel');
 if(host&&!E('developerStrategy')){const panel=document.createElement('section');panel.id='developerStrategy';panel.className='eco-summary';host.appendChild(panel);}
 const css=document.createElement('style');
 css.textContent='.eco-summary{padding:13px;margin-top:10px;border:1px solid #4a847d;border-radius:13px;background:linear-gradient(145deg,#123744,#17283e)}.eco-kicker{font-size:10px;font-weight:800;letter-spacing:.14em;color:#95e7d6;margin-bottom:9px}.eco-metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px}.eco-metrics span{padding:8px;border:1px solid #315869;border-radius:8px;background:#10293c;font-size:11px;color:#bed5de}.eco-metrics b{display:block;color:#ffe0a5;font-size:15px;margin-top:3px}.eco-rule{font-size:11px;color:#b6ccd7;line-height:1.5;margin-bottom:0}.eco-choice{padding:12px;border:1px solid #476a86;border-radius:9px;margin:12px 0;background:#173247}.eco-choice button{display:block;width:100%}.eco-choice small{display:block;color:#c9dbe7;margin-top:8px}.eco-bonus{color:#95e7d6}#quickSaleOverlay label,#quickSaleOverlay select{display:block;width:100%;margin:10px 0}#quickSaleQuote{padding:10px;background:#143e47;border:1px solid #488f87;border-radius:8px;color:#c9f5dc}';
 document.head.appendChild(css);
-if(live()){records();render();}
+if(live()){if(state.auction&&!state.auction.sealed){state.auction=null;state.pendingBotTurnCompletion=false;E('auctionOverlay').hidden=true;ensureLandDeck();note('Старые незавершённые торги отменены: начните новый закрытый аукцион.');}if(state.auditPending){E('cardOverlay').hidden=true;}records();render();}
 })();
