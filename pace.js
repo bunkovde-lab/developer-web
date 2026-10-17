@@ -4,7 +4,7 @@
  */
 (function(){
 "use strict";
-const PACE={version:1,startCapital:1250,largeTableCapital:1650,starterPlots:[0,5,12,17,24,29],clusterPairs:[[0,1],[4,5],[12,13],[16,17],[24,25],[28,29]],starterStages:['utilities','permits','construction'],constructionDraws:3,largeTableConstructionDraws:4,workMultiplier:1};
+const PACE={version:1,startCapital:1250,largeTableCapital:1650,sixPlayerCapital:1850,starterPlots:[0,5,12,17,24,29],clusterPairs:[[0,1],[4,5],[12,13],[16,17],[24,25],[28,29]],starterStages:['utilities','permits','construction'],constructionDraws:3,largeTableConstructionDraws:4,workMultiplier:1};
 const stageIds=['utilities','permits','construction','commissioning'];
 const baseNewGame=window.newGame,baseChoice=window.selectConstructionDeck;
 function takeFromStock(deck){
@@ -33,7 +33,7 @@ function seedNewGame(){
  state.paceVersion=PACE.version;state.speedTurnCount=0;state.speedStartKit=[];
  const largerTable=state.players.length>=5;
  for(let i=0;i<state.players.length;i++){
-  const p=state.players[i];p.money=largerTable?PACE.largeTableCapital:PACE.startCapital;
+  const p=state.players[i];p.money=state.players.length===6?PACE.sixPlayerCapital:largerTable?PACE.largeTableCapital:PACE.startCapital;
   const parcels=largerTable?PACE.clusterPairs[i]:[PACE.starterPlots[i]];
   const acquired=[];
   for(const plotIndex of parcels){
@@ -49,7 +49,7 @@ function seedNewGame(){
   let items=0;for(const deck of PACE.starterStages)if(grantCard(i,deck))items++;
   note('⚡ '+p.name+': стартовые участки '+acquired.join(', ')+', карты '+items+'. Оплачено по кадастровой оценке, участки не бесплатны.');
  }
- note('⚡ Ускоренная партия v0.10: стартовый капитал '+(largerTable?PACE.largeTableCapital:PACE.startCapital)+' тыс., '+(largerTable?2:1)+' участка по цене; 3 карты за попадание на «Строительство». Торговля и лимиты колод сохранены.');
+ note('⚡ Ускоренная партия v0.10: стартовый капитал '+(state.players.length===6?PACE.sixPlayerCapital:largerTable?PACE.largeTableCapital:PACE.startCapital)+' тыс., '+(largerTable?2:1)+' участка по цене; 3 карты за попадание на «Строительство». Торговля и лимиты колод сохранены.');
  render();
 }
 function newGame(){baseNewGame();seedNewGame();}
@@ -60,7 +60,7 @@ function selectConstructionDeck(deck){
  // The base game already prepares its finite-card economy.
 const player=state.players[before],priority=stageDemand(before);
  let extra=0;
- for(let i=1;i<(state.players.length>=5?PACE.largeTableConstructionDraws:PACE.constructionDraws);i++){
+ for(let i=1;i<(state.players.length===6?PACE.largeTableConstructionDraws:PACE.constructionDraws);i++){
   if(player.cards.length>=8)break;
   const available=priority.find(d=>state.stock.stage[d]?.length&&player.cards.filter(c=>c.deck===d).length<3);
   if(!available)break;
