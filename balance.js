@@ -437,14 +437,7 @@ function sell(){
 }
 function ensureMarketActions(){
  if(!state)return;
- // Offer investor cards directly from the player's inventory, without requiring a cell landing.
- const market=(current().marketCards||[]).filter(c=>c.type==='investor');
- for(const c of market){
-  const options=state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===state.turn&&x.lot.project?.stage!==4);
-  const html='<div class="hand-card"><strong>💼 Финансирование №'+c.id+'</strong><small>'+handCardDetails(c,'investor')+'</small>'+
-   (options.length?'<label class="market-apply-label">Проект<select id="investor-plot-'+c.id+'">'+options.map(o=>'<option value="'+o.i+'">'+o.lot.name+'</option>').join('')+'</select></label><button onclick="applyInvestorCard('+c.id+',Number($(\'investor-plot-'+c.id+'\').value))">Привлечь инвестора</button>':'<small>Нужен свой незавершённый проект</small>')+'</div>';
-  const container=document.querySelector('.hand-category[data-deck="investor"] .hand-stack');if(container)container.insertAdjacentHTML('beforeend',html);
- }
+ // Investor controls are rendered directly by the main inventory view.
  const b=$('marketTradeBtn');if(b)b.disabled=!dealAllowed()||state.tradeMarker===state.turn+'-'+state.round;
  const actions=$('actionsLeft');if(actions)actions.textContent=(state.actionKey===turnActionKey()?Math.max(0,TWO_ACTIONS-(state.actionsUsed||0)):TWO_ACTIONS);
 }
