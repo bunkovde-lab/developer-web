@@ -11,6 +11,7 @@ on:
       - 'visual.js'
       - 'visual.css'
       - 'pace.js'
+      - 'game-rework-v016.js'
       - 'tests/browser_visual.cjs'
       - 'tests/browser_territory.cjs'
       - 'tests/browser_marketplace.cjs'
