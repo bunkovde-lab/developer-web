@@ -24,5 +24,8 @@ jobs:
         run: node tests/rework.cjs
       - name: V0.16 sixteen complete deterministic campaigns
         run: node tests/tournament-v016.cjs
+      - name: QA 1000 deterministic full economic campaigns (3–6 players)
+        timeout-minutes: 20
+        run: QA_GAMES=1000 node tests/qa-mass-campaigns.cjs
       - name: SVG manifest and safe vector asset validation
         run: node tests/svg-assets.cjs
