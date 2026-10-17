@@ -13,6 +13,9 @@ const STAGE_ICONS=['▫','📐','📑','🏗','🏢'];
 const STAGE_TITLES=['Под проект','Проект','Разрешения','Строится','Введён'];
 let previousRender={pos:null,dice:null,round:null,money:null,winner:null,logCount:0};
 let muted=localStorage.getItem('developer-v10-sound')==='off',audio=null,lastBoardMessage='',zoomOpen=false;
+let userGesture=false,volume=Math.max(0,Math.min(1,Number(localStorage.getItem('developer-v18-volume')??'0.5')||0));
+document.addEventListener('pointerdown',()=>{userGesture=true;},{capture:true,once:true});
+document.addEventListener('keydown',()=>{userGesture=true;},{capture:true,once:true});
 const $v=id=>document.getElementById(id);
 function createControls(){
  const zoom=$v('v10Zoom'),sound=$v('v10Sound');
@@ -28,7 +31,7 @@ function createControls(){
 }
 function updateSoundButton(){const btn=$v('v10Sound');if(btn){btn.textContent=muted?'🔇 Включить звук':'🔊 Звук включён';btn.dataset.muted=String(muted);btn.setAttribute('aria-pressed',String(!muted));}}
 function audioContext(){
- if(muted)return null;
+ if(muted||!userGesture||volume<=0)return null;
  try{
   const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
   if(!audio)audio=new C();if(audio.state==='suspended')audio.resume().catch(()=>{});
@@ -40,14 +43,16 @@ function soundNote(ctx,{freq=500,dur=.1,delay=0,type='sine',vol=.045,slide=0}){
  osc.type=type;osc.frequency.setValueAtTime(freq,start);
  if(slide)osc.frequency.exponentialRampToValueAtTime(Math.max(30,freq+slide),start+dur);
  gain.gain.setValueAtTime(.0001,start);
- gain.gain.exponentialRampToValueAtTime(vol,start+.012);
+ gain.gain.exponentialRampToValueAtTime(Math.max(.00011,vol*volume*2),start+.012);
  gain.gain.exponentialRampToValueAtTime(.0001,start+dur);
  osc.connect(gain);gain.connect(ctx.destination);osc.start(start);osc.stop(start+dur+.02);
 }
 function play(kind){
  const ctx=audioContext();if(!ctx)return;
  try{
-  if(kind==='dice'){for(let i=0;i<5;i++)soundNote(ctx,{freq:140+i*67,dur:.065,delay:i*.072,vol:.025,type:'triangle',slide:-65});}
+  if(kind==='auction'){[310,440,590].forEach((f,i)=>soundNote(ctx,{freq:f,dur:.11,delay:i*.07,type:'triangle',vol:.021}));}
+  else if(kind==='investment'){[315,480,630].forEach((f,i)=>soundNote(ctx,{freq:f,dur:.17,delay:i*.08,type:'sine',vol:.024}));}
+  else if(kind==='dice'){for(let i=0;i<5;i++)soundNote(ctx,{freq:140+i*67,dur:.065,delay:i*.072,vol:.025,type:'triangle',slide:-65});}
   else if(kind==='card'){soundNote(ctx,{freq:590,dur:.12,type:'triangle',vol:.027});soundNote(ctx,{freq:810,dur:.12,delay:.085,type:'triangle',vol:.025});}
   else if(kind==='build'){[420,560,760].forEach((f,i)=>soundNote(ctx,{freq:f,dur:.17,delay:i*.095,type:'triangle',vol:.029}));}
   else if(kind==='trade'){[380,600,820].forEach((f,i)=>soundNote(ctx,{freq:f,dur:.10,delay:i*.077,vol:.031}));}
@@ -57,6 +62,10 @@ function play(kind){
   else soundNote(ctx,{freq:420,dur:.08,type:'sine',vol:.022,slide:70});
  }catch{/* Sound is a nonessential enhancement: failures must not block gameplay. */}
 }
+window.developerSound=Object.freeze({
+ play, getVolume:()=>volume, isMuted:()=>muted,
+ setVolume:v=>{if(!Number.isFinite(v))return;volume=Math.max(0,Math.min(1,v));try{localStorage.setItem('developer-v18-volume',String(volume))}catch{}}
+});
 function toggleZoom(next){zoomOpen=typeof next==='boolean'?next:!zoomOpen;const board=$v('board');if(board)board.classList.toggle('zoom-map',zoomOpen);if(zoomOpen){const city=board?.querySelector('.city-map');if(city&&!$v('v10ZoomClose')){const x=document.createElement('button');x.type='button';x.id='v10ZoomClose';x.textContent='✕ Закрыть город';x.onclick=()=>toggleZoom(false);city.prepend(x);}}const control=$v('v10Zoom');if(control){control.textContent=zoomOpen?'✕ Свернуть город':'🔎 Увеличить город';control.setAttribute('aria-expanded',String(zoomOpen));}}
 function prettyTrack(){
  const cells=document.querySelectorAll('#board>.cell');
