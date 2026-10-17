@@ -156,6 +156,7 @@ function playStageCard(lotIndex,size,cardId){
  if((lot.project?.stage||0)===before+1){
   lot.developmentSpent=(Number(lot.developmentSpent)||0)+Math.max(0,money-owner.money);
   if(lot.project.stage===4&&owner.bot)owner.completedProjects=(Number(owner.completedProjects)||0)+1;
+  if(owner.bot){const professionDiscount=(owner.profession==='foreman'&&card.deck==='construction')?.14:(owner.profession==='designer'&&card.deck==='utilities')?.18:(owner.profession==='permits'&&card.deck==='permits')?.18:(owner.profession==='lawyer'&&card.deck==='commissioning')?.09:0;if(professionDiscount){const fee=Number(BALANCED_DECKS[card.deck]?.[card.index]?.costs?.[size])||0;owner.money+=Math.round(fee*professionDiscount);}}
   if(lot.project.stage===4&&lot.investor)finalizeInvestorSale(lotIndex);
   state.econMetrics.stagesCompleted++;consumeAction();note('Израсходованная строительная карта №'+cardId+' сразу вернулась в общую колоду.');render();}
 }
@@ -456,7 +457,7 @@ function bindInvestorToProject(player,playerIndex,card,lotIndex){
  if(!lot||lot.owner!==playerIndex||lot.project?.stage===4||lot.investor)return false;
  const amount=Number(card.card?.investment),share=Number(card.card?.share);
  if(!Number.isFinite(amount)||amount<=0||!Number.isFinite(share)||share<0||share>100)return false;
- lot.investor={capital:amount,share,cardId:card.id};
+ lot.investor={capital:amount,share:player.bot&&player.profession==='financier'?Math.max(5,share-10):share,cardId:card.id};
  player.money+=amount;
  player.marketCards=player.marketCards.filter(c=>c.id!==card.id);returnMarketCard(card);
  note('💼 '+player.name+' привлёк '+amount+' тыс. к '+lot.name+'. Договор инвестора: продажа сразу после ввода; инвестор получит капитал и '+share+'% положительной прибыли.');
