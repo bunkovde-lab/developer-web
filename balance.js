@@ -415,7 +415,7 @@ function addTradeUi(){
  '<p class="auction-hint">Торговля между двумя живыми игроками на разных устройствах пока не работает — необходим сетевой сервер. Цены ботов тестовые.</p></div>';
  document.body.appendChild(overlay);
  const toolbar=document.querySelector('.company-panel .actions');
- if(toolbar){const indicator=document.createElement('div');indicator.className='pill';indicator.innerHTML='Действий осталось: <b id="actionsLeft">2</b>';toolbar.insertBefore(indicator,toolbar.querySelector('#end'));const button=document.createElement('button');button.id='marketTradeBtn';button.textContent='🤝 Обмен карт';button.onclick=openTradeMarket;toolbar.insertBefore(button,toolbar.querySelector('#end'));}
+ if(toolbar){const indicator=document.createElement('div');indicator.className='pill';indicator.innerHTML='Действий осталось: <b id="actionsLeft">2</b>';toolbar.insertBefore(indicator,toolbar.querySelector('#end'));const button=document.createElement('button');button.id='marketTradeBtn';button.textContent='🤝 Торговая площадка';button.onclick=openTradeMarket;toolbar.insertBefore(button,toolbar.querySelector('#end'));}
 }
 function applyMarketCard(cardId,lotIndex){
  if(!actionAllowed()){denyActions();return false;}
@@ -438,7 +438,7 @@ function sell(){
 function ensureMarketActions(){
  if(!state)return;
  // Investor controls are rendered directly by the main inventory view.
- const b=$('marketTradeBtn');if(b)b.disabled=!dealAllowed()||state.tradeMarker===state.turn+'-'+state.round;
+ const b=$('marketTradeBtn');if(b)b.disabled=!state; // Browsing is always allowed; transactions are checked at confirmation.
  const actions=$('actionsLeft');if(actions)actions.textContent=(state.actionKey===turnActionKey()?Math.max(0,TWO_ACTIONS-(state.actionsUsed||0)):TWO_ACTIONS);
 }
 const OLD_RENDER=window.render;
