@@ -143,7 +143,7 @@ function moveToken(player,from,to,total){
 function report(before,now){
  if(!before||before.session!==now.session)return;
  if(before.auction?.sealed!==now.auction?.sealed){
-  if(now.auction?.sealed){emit('auction:start',{lot:now.auction.lot});triggerToast('Закрытый аукцион · ставки скрыты','trade','icon.auction');}
+  if(now.auction?.sealed){emit('auction:start',{lot:now.auction.lot});triggerToast('Закрытый аукцион · ставки скрыты','trade','icon.auction');window.developerSound?.play?.('auction');}
   else if(before.auction?.sealed){emit('auction:result',{lot:before.auction.lot});triggerToast('Аукцион завершён','trade','icon.auction');}
  }
  now.players.forEach((p,i)=>{
@@ -186,6 +186,11 @@ function report(before,now){
   if(lot.tenant&&!old.tenant)emit('lease',{index:i});
  });
  if(now.winner>=0&&before.winner<0){emit('win',{player:now.winner});triggerToast('Победа компании '+(now.winner+1),'win','icon.contract');}
+ if(now.log!==before.log&&/привлёк|инвестиционн/.test(now.log)){
+  emit('deal',{kind:'investment'});
+  triggerToast('Инвестиционная сделка','trade','icon.investor');
+  window.developerSound?.play?.('investment');
+ }
  if(now.log!==before.log&&/обмен|торговая площадка|сделк|продал/.test(now.log)){emit('deal',{});}
 }
 function validImg(key,css){
