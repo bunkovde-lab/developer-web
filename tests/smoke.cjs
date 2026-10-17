@@ -20,7 +20,7 @@ class El {
 }
 let seed=15023;const rMath=Object.create(Math);rMath.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
 const elements=new Map();const node=(id)=>{if(!elements.has(id))elements.set(id,new El());return elements.get(id);};
-const document={getElementById:node,querySelector:()=>new El(),querySelectorAll:()=>[],createElement:()=>new El(),body:new El()};
+const document={getElementById:node,querySelector:()=>new El(),querySelectorAll:()=>[],createElement:()=>new El(),body:new El(),head:new El(),addEventListener:()=>{}};
 node('count').value='6';node('lobbyBots').value='5';
 const storage=new Map();
 const sandbox={window:null,document,Math:rMath,console,alert:()=>{},confirm:()=>true,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},setTimeout:()=>0};
@@ -150,3 +150,66 @@ run("governmentAction(901,'finish')");
 assert.equal(run('state.players[0].money'),525);
 assert.equal(run('state.players[0].governmentCards.length'),0);
 console.log('EXTENDED CONTRACT TESTS PASSED: sale, swap, two actions, investor repayment, government completion');
+
+
+vm.runInContext(fs.readFileSync('marketplace.js','utf8'),sandbox,{filename:'marketplace.js',timeout:4000});
+run('newGame();state.rolled=true;state.turn=0;state.players[0].cards.push({id:1501,deck:"permits",index:1});state.players[1].cards.push({id:1502,deck:"utilities",index:3});state.players[1].networkCards.push({id:1503,type:"gas"});state.players[2].marketCards.push({id:1504,type:"buyer",card:{percent:115}});');
+run('openTradeMarket()');
+assert(run('document.getElementById("marketListings").innerHTML.includes("Газ")'),'Marketplace must list rival network cards');
+assert(run('document.getElementById("marketListings").innerHTML.includes("Проектирование")'),'Marketplace must list rival construction cards');
+assert(run('document.getElementById("marketListings").innerHTML.includes("Покупатель")'),'Marketplace must list rival property-market cards');
+assert(run('marketplaceGetOffers().length')>=3,'Marketplace includes all bots cards, not only first two offers');
+run('marketSelectRemote(1,1502)');
+const quote=Number(node('marketPrice').value),moneyBuyer=run('state.players[0].money'),moneySeller=run('state.players[1].money');
+assert(quote>0);
+assert.equal(run('marketCommit()'),true,'Marketplace buy should settle immediately');
+assert(run('state.players[0].cards.some(c=>c.id===1502)'),'Marketplace buy credits the buyer');
+assert(!run('state.players[1].cards.some(c=>c.id===1502)'),'Marketplace buy debits the previous owner');
+assert.equal(run('state.players[0].money'),moneyBuyer-quote);
+assert.equal(run('state.players[1].money'),moneySeller+quote);
+assert.equal(run('state.actionsUsed'),1,'Trade consumes one action');
+const moneyNow=run('state.players[0].money');
+run('marketSelectRemote(1,1503)');
+assert.equal(run('marketCommit()'),false,'Second bargain same turn must be rejected');
+assert.equal(run('state.players[0].money'),moneyNow);
+
+run('newGame();state.rolled=true;state.turn=0;state.players[0].cards.push({id:1511,deck:"permits",index:1});');
+run('openTradeMarket();marketSetMode("sell");marketSelectMine(1511);marketSetBuyer(1)');
+const sellQuote=Number(node('marketPrice').value);
+assert(sellQuote>0);
+assert.equal(run('marketCommit()'),true,'Selling own card to bot should work');
+assert(run('state.players[1].cards.some(c=>c.id===1511)'),'Sold card moves to bot');
+assert.equal(run('state.players[0].cards.length'),0);
+assert(run('state.marketTransactions.length')===1);
+
+run('newGame();state.rolled=true;state.turn=0;state.players[0].cards.push({id:1521,deck:"permits",index:1});state.players[1].networkCards.push({id:1522,type:"gas"});');
+run('openTradeMarket();marketSetMode("swap");marketSelectMine(1521);marketSelectRemote(1,1522)');
+assert.equal(run('marketCommit()'),true,'Cross-deck swap should work');
+assert(run('state.players[0].networkCards.some(c=>c.id===1522)'));
+assert(run('state.players[1].cards.some(c=>c.id===1521)'));
+assert.equal(run('state.players[0].cards.some(c=>c.id===1521)'),false);
+
+run('newGame();state.rolled=true;state.turn=0;state.players[1].networkCards.push({id:1531,type:"gas"});');
+run('openTradeMarket();marketSelectRemote(1,1531)');
+const firstOffer=Number(node('marketPrice').value);
+node('marketPrice').value='1';
+run('marketSetPrice()');
+assert.equal(run('marketCommit()'),false,'Bot refuses underpriced offer');
+assert(!run('state.players[0].networkCards.some(c=>c.id===1531)'));
+assert.equal(run('state.players[0].money'),600,'No money transferred on failed offer');
+node('marketPrice').value=String(firstOffer);
+run('marketSetPrice()');
+assert.equal(run('marketCommit()'),true,'Bot accepts a matching quote');
+
+run('newGame();state.rolled=false;state.turn=0;state.players[1].networkCards.push({id:1541,type:"gas"});openTradeMarket();marketSelectRemote(1,1541);');
+assert.equal(run('marketCommit()'),false,'Browsing listings allowed before rolling; trading blocked');
+run('state.rolled=true;state.players[0].networkCards=[{id:1550,type:"water"},{id:1551,type:"sewerage"},{id:1552,type:"gas"},{id:1553,type:"electricity"}];');
+assert.equal(run('marketCommit()'),false,'Hand limits enforced when buying one more network');
+assert.equal(run('state.players[1].networkCards.some(c=>c.id===1541)'),true);
+
+run('newGame();state.rolled=true;state.players[1].networkCards.push({id:1561,type:"gas"});state.players[2].cards.push({id:1562,deck:"construction",index:2});openTradeMarket()');
+node('marketSearch').value='Газ';run('marketSetFilter()');
+assert(node('marketListings').innerHTML.includes('Газ'));
+assert(!node('marketListings').innerHTML.includes('1562'),'Search hides unrelated cards');
+assert.equal(run('state.players[0].money'),600,'Filtering must not alter the economy');
+console.log('MARKETPLACE UI TESTS PASSED: full catalogue, purchase, sale, cross-category swaps, refusal, turn and capacity limits, and filters');
