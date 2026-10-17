@@ -641,7 +641,7 @@ let city='<div class="city city-map"><div class="city-title">🏙 ДЕВЕЛОП
  }).join('')+'</div><div class="map-key">■ Ж1 &nbsp; ■ Торговля &nbsp; ■ ПК &nbsp; ■ ОД &nbsp; ■ ЖК-4 &nbsp; ■ Город</div></div>';
 $('board').innerHTML=ring+city;
 let info=selectedLot>=0&&selectedLot<state.plots.length?state.plots[selectedLot]:null;
-$('players').innerHTML=state.players.map((u,i)=>'<div><span style="color:'+colors[i]+'">●</span> <b>'+u.name+'</b> · '+professionName(u.profession)+': '+u.money+' 💰 · долг '+u.debt+' · активы '+value(i)+'</div>').join('')+(info?'<hr><b>'+info.name+'</b> · '+info.price+' 💰 · '+(info.owner<0?'свободен':'владелец: '+state.players[info.owner].name)+' · стройка '+info.level+'/3':'');
+$('players').innerHTML=state.players.map((u,i)=>'<div><span style="color:'+colors[i]+'">●</span> <b>'+u.name+'</b> · '+professionName(u.profession)+': '+u.money+' 💰 · активы '+value(i)+'</div>').join('')+(info?'<hr><b>'+info.name+'</b> · '+info.price+' 💰 · '+(info.owner<0?'свободен':'владелец: '+state.players[info.owner].name)+' · стройка '+info.level+'/3':'');
 $('log').innerHTML=state.logs.map(t=>'<div>• '+t+'</div>').join('');
 $('roll').disabled=state.rolled||p.bot;$('end').disabled=!state.rolled||p.bot;
 renderHand(p);
