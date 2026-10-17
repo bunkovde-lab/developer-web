@@ -21,7 +21,7 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.equal(await page.locator('body>header #sessionOpen').count(),0,'No menu button in header');
    assert.equal(await page.locator('.cabinet-main #sessionOpen').isVisible(),true,'The menu is inside the game cabinet');
    assert.equal(await page.locator('.hand-dock').isVisible(),true,'Card icon bar must be above game field');
-   assert.equal(await page.locator('.hand-quick-item').count(),9,'All nine card categories visible as compact icons');
+   assert.equal(await page.locator('.hand-quick-item').count(),8,'All eight card categories visible as compact icons');
    const cardCounts=(await page.locator('.hand-quick-count').allTextContents()).map(Number);
    assert(cardCounts.some(n=>n>0),'Starting game must show its card counts in the compact toolbar');
    const top=await page.locator('.hand-dock').boundingBox();
@@ -83,7 +83,7 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.match(await page.locator('#board .cell').first().innerText(),/СТАРТ/);
    assert.doesNotMatch(await page.locator('#board .cell').first().innerText(),/\+60/);
    assert.equal(await page.locator('#board .map-plot .plot-progress').count(),30);
-   assert.equal(await page.locator('.hand-quick-item').count(),9,'Compact hand remains visible after rolling');
+   assert.equal(await page.locator('.hand-quick-item').count(),8,'Compact hand remains visible after rolling');
    assert.equal(await page.locator('.hand-quick-item[data-hand-type="utilities"]').count(),1);
    assert.equal(await page.locator('#handOverlay').isHidden(),true);
    await page.evaluate(()=>{for(const el of document.querySelectorAll('.auction-overlay,.card-overlay,.plot-card-overlay'))el.hidden=true;});
