@@ -6,6 +6,7 @@ on:
       - 'index.html'
       - 'balance.js'
       - 'marketplace.js'
+      - 'city-requests.js'
       - 'pace.js'
       - 'visual.js'
       - 'visual.css'
