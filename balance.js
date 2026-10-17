@@ -4,7 +4,7 @@
  */
 (function () {
 "use strict";
-const GAME_V2 = {version:2,stageHandCap:8,networkHandCap:4,networkCopies:3,stageCooldown:4,networkCooldown:4};
+const GAME_V2 = {version:2,stageHandCap:Infinity,networkHandCap:Infinity,networkCopies:3,stageCooldown:0,networkCooldown:0};
 const OLD_NEW_GAME=window.newGame, OLD_ROLL=window.roll, OLD_END_TURN=window.endTurn, OLD_MARKET_BASE=window.marketBase, OLD_RESOLVE_SPECIAL=window.resolveSpecialCell, OLD_BEGIN_CONSTRUCTION=window.beginConstructionDeckChoice, OLD_APPLY_MARKET=window.applyMarketCard, OLD_PROPERTY_SALE=window.runPropertySale, OLD_SELL=window.sell;
 const STAGE_IDS=['utilities','permits','construction','commissioning'];
 function mixDeck(arr){for(let i=arr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
@@ -52,22 +52,20 @@ function ensureEconomy(){
  if(!Number.isInteger(state.nextCardId))state.nextCardId=Math.max(0,...state.players.flatMap(p=>[...p.cards,...p.networkCards,...p.marketCards,...p.governmentCards].map(c=>Number(c.id)||0)));
 }
 function refreshStock(){
- ensureEconomy();const s=state.stock;let pending=[];
- for(const c of s.returnStage){if(c.ready<=state.round)s.stage[c.deck].unshift(c.index);else pending.push(c);}s.returnStage=pending;
- pending=[];for(const c of s.returnNetwork){if(c.ready<=state.round)s.network.unshift(c.index);else pending.push(c);}s.returnNetwork=pending;
+ ensureEconomy();const stock=state.stock;
+ for(const c of stock.returnStage){if(stock.stage[c.deck])stock.stage[c.deck].push(c.index);}stock.returnStage=[];
+ for(const c of stock.returnNetwork){stock.network.push(c.index);}stock.returnNetwork=[];
 }
 function allocateStage(deck){
  refreshStock();const pile=state.stock.stage[deck];return pile?.length?pile.pop():null;
 }
-function returnStage(deck,index){ensureEconomy();state.stock.returnStage.push({deck,index,ready:state.round+GAME_V2.stageCooldown});}
-function returnNetwork(type){ensureEconomy();const i=NETWORK_CARDS.findIndex(c=>c.type===type);if(i>=0)state.stock.returnNetwork.push({index:i,ready:state.round+GAME_V2.networkCooldown});}
+function returnStage(deck,index){ensureEconomy();if(state.stock.stage[deck]&&Number.isInteger(index))state.stock.stage[deck].unshift(index);}
+function returnNetwork(type){ensureEconomy();const i=NETWORK_CARDS.findIndex(c=>c.type===type);if(i>=0)state.stock.network.unshift(i);}
 function allStageCards(player){return (player.cards||[]).length;}
 function drawCard(deck){
  if(!STAGE_IDS.includes(deck))return window._developerLegacyDrawCard(deck);
  ensureEconomy();const p=current();
- if(allStageCards(p)>=GAME_V2.stageHandCap){
-  note(p.name+': лимит '+GAME_V2.stageHandCap+' строительных карт на руках. Обменяйте или используйте карту.');showResolvedCard('Лимит карт','Строительный склад переполнен.','Используйте карту или заключите сделку для освобождения места.');render();return;
- }
+
  const idx=allocateStage(deck);
  if(idx===null){
   state.econMetrics.stageStockouts++;
@@ -82,9 +80,7 @@ function drawCard(deck){
 }
 function drawNetworkCard(){
  refreshStock();const p=current();
- if(p.networkCards.length>=GAME_V2.networkHandCap){
-  note(p.name+': лимит '+GAME_V2.networkHandCap+' инженерных карт.');showResolvedCard('Лимит инженерных карт','Склад инженерных карт заполнен.','Подключите сеть либо обменяйте карту у другого участника.');render();return;
- }
+
  if(!state.stock.network.length){
   state.econMetrics.networkStockouts++;
   note('Инженерные сети: все экземпляры разобраны или ожидают возврата в колоду.');
@@ -123,7 +119,7 @@ function playStageCard(lotIndex,size,cardId){
  if((lot.project?.stage||0)===before+1){
   lot.developmentSpent=(Number(lot.developmentSpent)||0)+Math.max(0,money-owner.money);
   if(lot.project.stage===4&&lot.investor)finalizeInvestorSale(lotIndex);
-  state.econMetrics.stagesCompleted++;consumeAction();note('Израсходованная строительная карта №'+cardId+' будет вновь доступна через '+GAME_V2.stageCooldown+' раунда.');render();}
+  state.econMetrics.stagesCompleted++;consumeAction();note('Израсходованная строительная карта №'+cardId+' сразу вернулась в общую колоду.');render();}
 }
 function applyNetworkCard(lotIndex,cardId){
  if(!actionAllowed()){denyActions();return false;}
@@ -217,7 +213,7 @@ function executeTradeMarket(){
  let message='',change=false;
  function removeFrom(player,c){const array=c.kind==='network'?player.networkCards:player.cards;const n=array.findIndex(x=>x.id===c.id);if(n<0)return false;array.splice(n,1);return true;}
  function giveTo(player,c){(c.kind==='network'?player.networkCards:player.cards).push(c.kind==='network'?{id:c.id,type:c.type}:{id:c.id,deck:c.deck,index:c.index});}
- function hasRoom(player,c){return c.kind==='network'?player.networkCards.length<GAME_V2.networkHandCap:player.cards.length<GAME_V2.stageHandCap;}
+ function hasRoom(player,c){return true;}
  if(mode==='buy'&&offer){
   const other=state.players[offer.owner];if(p.money>=offer.ask&&hasRoom(p,offer.card)&&removeFrom(other,offer.card)){
    p.money-=offer.ask;other.money+=offer.ask;giveTo(p,offer.card);message=p.name+' купил '+cardName(offer.card)+' у '+other.name+' за '+offer.ask;change=true;
@@ -311,8 +307,7 @@ function botTradeFromPeers(){
   if(!candidate)continue;
   const price=kind==='market'?Math.max(50,Math.round((candidate.card?.investment||candidate.card?.percent||100)*.45)):
    Math.ceil(cardPrice({...candidate,kind})*1.22/5)*5;
-  const maximum=kind==='stage'?GAME_V2.stageHandCap:kind==='network'?GAME_V2.networkHandCap:12;
-  if(p.money<price+45||p[bucket].length>=maximum)continue;
+  if(p.money<price+45)continue;
   seller[bucket]=seller[bucket].filter(x=>x.id!==candidate.id);p[bucket].push(candidate);
   p.money-=price;seller.money+=price;state.econMetrics.botTrades++;
   note('🤖 '+p.name+' приобрёл '+kindLabel+' у '+seller.name+' на клетке «'+cell+'» за '+price+' тыс.');return true;
