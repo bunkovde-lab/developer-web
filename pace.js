@@ -4,7 +4,7 @@
  */
 (function(){
 "use strict";
-const PACE={version:1,startCapital:1250,starterPlots:[0,5,12,17,24,29],starterStages:['utilities','permits','construction'],constructionDraws:3,workMultiplier:1};
+const PACE={version:1,startCapital:1250,largeTableCapital:1650,starterPlots:[0,5,12,17,24,29],clusterPairs:[[0,1],[4,5],[12,13],[16,17],[24,25],[28,29]],starterStages:['utilities','permits','construction'],constructionDraws:3,workMultiplier:1};
 const stageIds=['utilities','permits','construction','commissioning'];
 const baseNewGame=window.newGame,baseChoice=window.selectConstructionDeck;
 function takeFromStock(deck){
@@ -31,19 +31,25 @@ function seedNewGame(){
  // The base game already prepares its finite-card economy.
 
  state.paceVersion=PACE.version;state.speedTurnCount=0;state.speedStartKit=[];
+ const largerTable=state.players.length>=5;
  for(let i=0;i<state.players.length;i++){
-  const p=state.players[i];p.money=PACE.startCapital;
-  const plotIndex=PACE.starterPlots[i],plot=state.plots[plotIndex];
-  if(plot&&plot.owner<0){
-   const landCost=Math.round(plot.price*.92);
-   p.money-=landCost;plot.owner=i;
-   state.speedStartKit.push({owner:i,lot:plotIndex,price:landCost});
-   if(Array.isArray(state.landDeck))state.landDeck=state.landDeck.filter(n=>n!==plotIndex);
+  const p=state.players[i];p.money=largerTable?PACE.largeTableCapital:PACE.startCapital;
+  const parcels=largerTable?PACE.clusterPairs[i]:[PACE.starterPlots[i]];
+  const acquired=[];
+  for(const plotIndex of parcels){
+   const plot=state.plots[plotIndex];
+   if(plot&&plot.owner<0){
+    const landCost=Math.round(plot.price*.92);
+    p.money-=landCost;plot.owner=i;
+    state.speedStartKit.push({owner:i,lot:plotIndex,price:landCost});
+    acquired.push(plotIndex+1);
+    if(Array.isArray(state.landDeck))state.landDeck=state.landDeck.filter(n=>n!==plotIndex);
+   }
   }
   let items=0;for(const deck of PACE.starterStages)if(grantCard(i,deck))items++;
-  note('⚡ '+p.name+' стартует с выбранным участком и '+items+' строительными картами из реальных колод.');
+  note('⚡ '+p.name+': стартовые участки '+acquired.join(', ')+', карты '+items+'. Оплачено по кадастровой оценке, участки не бесплатны.');
  }
- note('⚡ Ускоренная партия v0.10: '+PACE.startCapital+' тыс. капитала до оплаты стартового участка; 3 карты за попадание на «Строительство». Торговля и лимиты колод сохранены.');
+ note('⚡ Ускоренная партия v0.10: стартовый капитал '+(largerTable?PACE.largeTableCapital:PACE.startCapital)+' тыс., '+(largerTable?2:1)+' участка по цене; 3 карты за попадание на «Строительство». Торговля и лимиты колод сохранены.');
  render();
 }
 function newGame(){baseNewGame();seedNewGame();}
