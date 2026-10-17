@@ -44,8 +44,8 @@ assert.equal(run('state.players.every(p=>p.money>900)'),true);
 run('state.rolled=true;state.constructionDeckChoice={playerIndex:0};selectConstructionDeck("commissioning");');
 assert.equal(run('state.players[0].cards.length'),8,'Six-player construction picks up to hand cap eight including the starter cards');
 assert.equal(run('state.players.reduce((sum,p)=>sum+p.cards.length,0)'),28);
-assert.equal(run('state.stock.stage.commissioning.length'),11);
-console.log('PACE START PASSED: real physical cards, fair initial plot payment, 3-card construction bundle');
+assert.equal(run('state.stock.stage.commissioning.length'),5);
+console.log('PACE START PASSED: finite stage stock, paid starter plots, bounded construction draft');
 
 const results=[];
 for(const players of [3,4,5,6]){
