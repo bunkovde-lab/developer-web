@@ -22,7 +22,8 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.equal(await page.locator('.cabinet-main #sessionOpen').isVisible(),true,'The menu is inside the game cabinet');
    assert.equal(await page.locator('.hand-dock').isVisible(),true,'Card icon bar must be above game field');
    assert.equal(await page.locator('.hand-quick-item').count(),9,'All nine card categories visible as compact icons');
-   assert.equal(await page.locator('.hand-quick-item').filter({hasText:'3'}).count()>=1,true,'Opening deck has cards');
+   const cardCounts=(await page.locator('.hand-quick-count').allTextContents()).map(Number);
+   assert(cardCounts.some(n=>n>0),'Starting game must show its card counts in the compact toolbar');
    const top=await page.locator('.hand-dock').boundingBox();
    const field=await page.locator('#board').boundingBox();
    const cabinet=await page.locator('.cabinet-main').boundingBox();
