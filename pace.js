@@ -4,7 +4,7 @@
  */
 (function(){
 "use strict";
-const PACE={version:1,startCapital:1250,largeTableCapital:1650,sixPlayerCapital:1850,starterPlots:[0,5,12,17,24,29],clusterPairs:[[0,1],[4,5],[12,13],[16,17],[24,25],[28,29]],starterStages:['utilities','permits','construction'],constructionDraws:3,largeTableConstructionDraws:4,workMultiplier:1};
+const PACE={version:1,startCapital:1250,largeTableCapital:1650,sixPlayerCapital:1650,starterPlots:[0,5,12,17,24,29],clusterPairs:[[0,1],[4,5],[12,13],[16,17],[24,25],[28,29]],starterStages:['utilities','permits','construction'],constructionDraws:3,largeTableConstructionDraws:5,workMultiplier:1};
 const stageIds=['utilities','permits','construction','commissioning'];
 const baseNewGame=window.newGame,baseChoice=window.selectConstructionDeck;
 function takeFromStock(deck){
