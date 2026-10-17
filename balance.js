@@ -506,7 +506,7 @@ function roll(){
 function endTurn(){
  if(!state)return;const oldRound=state.round,oldTurn=state.turn;
  OLD_END_TURN();
- if(!state||!state.rolled&&state.round!==oldRound){checkGovernmentDeadlines();for(let i=0;i<state.players.length;i++)bankruptcyPlayer(i);refreshStock();render();}
+ if(!state||!state.rolled&&state.round!==oldRound){for(let i=0;i<state.players.length;i++)bankruptcyPlayer(i);refreshStock();render();}
 }
 function addTradeUi(){
  if($('tradeOverlay'))return;
