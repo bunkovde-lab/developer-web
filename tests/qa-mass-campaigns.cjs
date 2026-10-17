@@ -60,6 +60,8 @@ console.log('START RULE PASSED: zero owned land, no reserved lots, finite initia
  * Only real bots are used: there is no synthetic rental/flipper bot profile.
  * Browser/audio rendering and real human negotiations are out of scope.
  */
+/* Headless economic run: render only the win-state evaluator, not expensive DOM. */
+run('window.render=function(){window.checkVictory()};');
 const gameCount=Number(process.env.QA_GAMES||1000);
 assert(Number.isInteger(gameCount)&&gameCount>=4&&gameCount%4===0,'QA_GAMES must be a multiple of four');
 const perSize=gameCount/4;
