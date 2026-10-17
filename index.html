@@ -100,13 +100,17 @@ function beginAuction(index){
  if(index<0||!state.plots[index]||state.plots[index].owner>=0){note('Нет свободного участка для аукциона');return false;}
  let x=state.plots[index];
  state.auction={lot:index,initiator:state.turn,bids:{},minBid:x.price};
- // Bots commit confidential bids before the human submits; only aggregate result is revealed.
+ // Each solvent bot makes a genuinely competitive sealed bid.
+ // Keep a reserve; never bid more than available cash.
  state.players.forEach((p,i)=>{
   if(!p.bot)return;
+  const reserve=Math.min(180,Math.floor(p.money*.12));
+  const budget=Math.max(0,p.money-reserve);
   let bid=0;
-  if(p.money>=x.price){
-   let max=Math.min(Math.floor(p.money*.63),Math.floor(x.price*(1.05+Math.random()*.65)));
-   if(max>=x.price&&Math.random()<.85)bid=max;
+  if(budget>=x.price){
+   const appetite=1.15+Math.random()*.65;
+   const offer=Math.round(x.price*appetite);
+   bid=Math.max(x.price,Math.min(budget,offer));
   }
   state.auction.bids[i]=bid;
  });
@@ -140,11 +144,11 @@ function resolveAuction(){
   .sort((a,b)=>b.bid-a.bid||a.i-b.i);
  if(candidates.length&&lot.owner<0){
   const w=candidates[0];lot.owner=w.i;state.players[w.i].money-=w.bid;
-  note('Аукцион '+lot.name+': победил '+state.players[w.i].name+' · '+w.bid+' (ставки раскрыты после окончания)');
+  note('Аукцион '+lot.name+': победил '+state.players[w.i].name+' · '+w.bid+'; предложения: '+Object.entries(a.bids).map(([i,b])=>state.players[i].name+' '+(b||'пас')).join(', '));
  }else note('Аукцион '+lot.name+': ставок нет, участок остался свободным');
  // Show result without exposing sealed values during bidding.
  if(!state.auctionHistory)state.auctionHistory=[];
- state.auctionHistory.push({lot:a.lot,bids:a.bids,winner:candidates.length?candidates[0].i:null});
+ state.auctionHistory.push({lot:a.lot,bids:{...a.bids},winner:candidates.length?candidates[0].i:null});
  state.auction=null;render();
 }
 function build(){let p=current(),x=state.plots[p.pos],cost=250+x.level*180;if(state.rolled&&x.owner===state.turn&&x.level<3&&p.money>=cost){p.money-=cost;x.level++;note(p.name+' построил уровень '+x.level+' за '+cost)}render()}function loan(){let p=current();if(p.debt<900){p.money+=300;p.debt+=300;note(p.name+' получил кредит 300')}render()}function sell(){let p=current(),x=state.plots[p.pos];if(state.rolled&&x.owner===state.turn){let val=x.price+250*x.level;p.money+=val;x.owner=-1;x.level=0;note(p.name+' продал объект за '+val)}render()}function endTurn(){if(state.pendingCard||state.auction)return;if(!state.rolled)return;state.turn++;if(state.turn>=state.players.length){state.turn=0;state.round++;state.players.forEach((p,i)=>{let income=state.plots.filter(x=>x.owner===i).reduce((s,x)=>s+35*x.level,0);p.money+=income-Math.floor(p.debt*.05);if(income)note(p.name+' получил доход '+income)})}state.rolled=false;state.dice='—';render();if(current().bot)setTimeout(bot,450)}function bot(){if(!current().bot)return;roll();let p=current(),x=state.plots[p.pos];if(!state.auction&&p.pos>0&&p.pos<31&&x.owner<0&&p.money>x.price+200)beginAuction(p.pos-1);else if(x.owner===state.turn&&p.money>500)build();if(p.money<200&&p.debt<900)loan();setTimeout(endTurn,350)}function value(i){let p=state.players[i];return p.money-p.debt+state.plots.filter(x=>x.owner===i).reduce((s,x)=>s+x.price+250*x.level,0)}const eventNames=['СТАРТ','Аукцион','Инвестор','Событие','Банк','Проект','Подряд','Рынок','Налог','Аукцион','Шанс','Экспертиза','Кризис','Сети','Сделка','Премия','ПОДРЯД','Тендер','Инвестор','Событие','Банк','Рынок','Стройка','Шанс','Аукцион','Кредит','Проект','Тендер','Налог','Рынок','Сделка','СОБЫТИЕ'];
