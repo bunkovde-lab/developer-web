@@ -1,0 +1,51 @@
+name: Package Developer Web PR preview
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: developer-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Assemble playable static game and verify entrypoint references
+        run: node scripts/build-site.cjs --out preview
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number || 'manual' }}
+
+      - name: Explain how to test the package
+        shell: bash
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          ### Developer Web preview package
+          Download developer-preview in the Artifacts section. It contains
+          a game build from the current pull request and BUILD_INFO.txt.
+          Unpack it and use a local HTTP server to test, or configure
+          Cloudflare Pages to get separate shareable preview URLs automatically.
+          See docs/PREVIEW_BUILDS.md.
+
+          Passing packaging does not replace gameplay and browser tests.
+          SUMMARY
+
+      - name: Upload playable preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: developer-preview-${{ github.event.pull_request.number || github.run_number }}
+          path: preview/
+          if-no-files-found: error
+          retention-days: 14
