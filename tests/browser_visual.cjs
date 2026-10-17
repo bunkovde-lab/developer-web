@@ -58,6 +58,11 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.match(await page.locator('#board .map-plot').first().getAttribute('aria-label'),/Этап 2/);
    assert.equal(await page.locator('#board .map-plot').first().locator('.plot-progress').count(),1);
    assert(Number(await page.locator('#roll').evaluate(e=>getComputedStyle(e).minHeight.replace('px','')))>=48);
+   if(viewport.width<=760){
+     const actions=await page.evaluate(()=>Object.fromEntries(['roll','end','buy'].map(id=>[id,document.getElementById(id).getBoundingClientRect().top])));
+     assert(Math.abs(actions.roll-actions.end)<8,'Roll and End Turn must share the top action row on a phone');
+     assert(actions.buy>actions.roll,'Less frequent action must be placed below turn-critical controls');
+   }
    await page.locator('#sessionOpen').click();
    assert.equal(await page.locator('#sessionOverlay').isVisible(),true);
    assert.equal(await page.locator('#sessionOverlay').getByRole('button',{name:/Новая партия/}).count(),1);
