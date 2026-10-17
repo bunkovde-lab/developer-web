@@ -309,6 +309,7 @@ function closeAuctionResult(){
  document.querySelector('.auction-buttons button').disabled=false;
  $('auctionError').textContent='';
 }
+function buy(){if(!state||!state.rolled||current().bot||![1,9,18,24].includes(current().pos)||state.pendingCard||state.auction)return false;return openLandSelection();}
 function build(){alert('Строительство теперь выполняется розыгрышем четырёх карт на своём участке. Откройте карточку участка и используйте карты из инвентаря.');render()}function closePropertySale(){$('propertySaleOverlay').hidden=true}
 function ownedPropertyForSale(){return state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===state.turn&&x.lot.level>0&&x.lot.project?.stage===4)}
 function openPropertySale(){
@@ -927,7 +928,7 @@ $('log').innerHTML=state.logs.map(t=>'<div>• '+t+'</div>').join('');
 $('propertySale').disabled=!state.rolled||p.bot||!ownedPropertyForSale().length;$('roll').disabled=state.rolled||p.bot||winner>=0;$('end').disabled=!state.rolled||p.bot||winner>=0;
 renderHand(p);
 if(eventNames[p.pos]==='Биржа недвижимости'&&state.rolled&&!p.bot)$('handGroups').insertAdjacentHTML('beforeend','<button type="button" onclick="openExchange()">📈 Выставить карту на биржу</button>');
-let x=state.plots[(Math.max(1,p.pos)-1)%30];
+let x=state.plots[(Math.max(1,p.pos)-1)%state.plots.length];
 $('buy').disabled=!state.rolled||p.bot||![1,9,18,24].includes(p.pos)||!!state.auction||!!state.pendingCard||!!state.constructionDeckChoice||auctionLotIndex()<0;
 $('build').disabled=!state.rolled||p.bot||p.pos===0||p.pos===31||x.owner!==state.turn||x.level>=3;
 $('sell').disabled=!state.rolled||p.bot||p.pos===0||p.pos===31||x.owner!==state.turn;
