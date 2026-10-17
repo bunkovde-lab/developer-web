@@ -20,3 +20,5 @@ jobs:
         run: node tests/city-requests.cjs
       - name: Accelerated game pacing benchmark
         run: node tests/pace.cjs
+      - name: V0.16 gameplay, sealed auctions and alternate ending
+        run: node tests/rework.cjs
