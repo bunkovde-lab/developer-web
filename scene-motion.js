@@ -25,7 +25,16 @@ function assetCard(card){
  if(card.type&&['investor','tenant','buyer'].includes(card.type))return 'card.'+card.type+'.'+String((card.index||0)+1).padStart(2,'0');
  return null;
 }
-function moneyCard(c){return c&&{id:c.id,deck:c.deck||c.type,index:c.index||0,type:c.type||null};}
+function moneyCard(c){
+ if(!c)return null;
+ const category=c.deck||c.type;
+ let idx=Number.isInteger(c.index)?c.index:0;
+ if(['investor','tenant','buyer'].includes(category)&&c.card&&typeof SPECIAL_CARDS!=='undefined'){
+  const found=(SPECIAL_CARDS[category]||[]).findIndex(model=>Object.keys(c.card).every(k=>model?.[k]===c.card[k]));
+  if(found>=0)idx=found;
+ }
+ return {id:c.id,deck:category,index:idx,type:c.type||null,networkType:c.networkType||c.type};
+}
 function read(){
  if(typeof state==='undefined'||!state?.players||!state.plots)return null;
  return {
@@ -77,7 +86,9 @@ function triggerToast(label,kind='info',key){
  const art=urlFor(key);
  if(art){const img=document.createElement('img');img.src=art;img.alt='';img.setAttribute('aria-hidden','true');n.appendChild(img);}
  const text=document.createElement('span');text.textContent=label;n.appendChild(text);host.appendChild(n);
- watchAnimation(n,[{transform:'translateY(22px) scale(.93)',opacity:0},{transform:'none',opacity:1}],420);
+ watchAnimation(n,kind==='card'
+  ?[{transform:'translateY(38px) rotateY(90deg) scale(.75)',opacity:0},{transform:'translateY(-7px) rotateY(-8deg) scale(1.08)',opacity:1},{transform:'none',opacity:1}]
+  :[{transform:'translateY(22px) scale(.93)',opacity:0},{transform:'none',opacity:1}],420);
  window.setTimeout(()=>{watchAnimation(n,[{opacity:1},{opacity:0}],240);window.setTimeout(()=>n.remove(),Math.max(250,duration(270)))},duration(1600));
 }
 function cashEffect(delta){
@@ -123,7 +134,7 @@ function moveToken(player,from,to,total){
  ghost.style.left=points[0].x+'px';ghost.style.top=points[0].y+'px';
  board.appendChild(ghost);ghosts.add(ghost);
  if(ghost.animate){
-  const first=points[0];const kf=points.map((p,i)=>({offset:i/steps,transform:'translate('+Math.round(p.x-first.x)+'px,'+Math.round(p.y-first.y)+'px) scale('+(i===steps?1.3:1)+')'}));
+  const first=points[0];const kf=points.map((p,i)=>({offset:i/steps,transform:'translate(calc(-50% + '+Math.round(p.x-first.x)+'px),calc(-50% + '+Math.round(p.y-first.y)+'px)) scale('+(i===steps?1.3:1)+')'}));
   const time=duration(steps*84);
   const a=ghost.animate(kf,{duration:time,easing:'linear',fill:'forwards'});animations.add(a);counters.animations++;
   a.finished.catch(()=>{}).finally(()=>{animations.delete(a);ghost.remove();ghosts.delete(ghost)});
@@ -202,6 +213,8 @@ function paint(){
      }
     }
     el.dataset.sceneOwner=lot.owner;
+    const parcel=urlFor('lot.'+String(i+1).padStart(2,'0'));
+    if(parcel)el.style.setProperty('--scene-parcel-art','url("'+parcel+'")');
     el.classList.toggle('scene-lease',!!lot.tenant);
     const connections=lot.project?.connections?.length||0;
     if(connections>0&&!el.querySelector('.scene-network-pin')){
