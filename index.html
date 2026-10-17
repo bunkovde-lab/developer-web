@@ -121,7 +121,7 @@ function drawCard(deck){
  note(player.name+' · '+deckNames[deck]+': '+card.title+' ('+(card.delta>=0?'+':'')+card.delta+')');
  state.pendingCard={deck,index,playerIndex};
  pendingCard=state.pendingCard;
- if(!player.bot)showCard(); 
+ if(!player.bot)showCard();else {state.pendingCard=null;pendingCard=null;} 
 }
 function showCard(){
  const pending=state?.pendingCard;
