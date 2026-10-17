@@ -484,23 +484,7 @@ function resolveSpecialCell(){
   const effect=type==='investor'?'Инвестиция '+card.investment+' тыс. за '+card.share+'% прибыли проекта': 'Предлагаемая цена: '+card.percent+'% базовой '+(type==='tenant'?'аренды':'стоимости продажи');
   showResolvedCard('📈 '+label,'Коммерческое предложение сохранено в вашем инвентаре. Выбор колоды вручную пока не реализован.',effect);
  }
- if(cell==='Госзаказ'){
-  if(!Array.isArray(p.governmentCards))p.governmentCards=[];
-  if(p.governmentCards.length>=3){
-   note('🏛 '+p.name+': три открытых муниципальных предложения. Выполните или отклоните одно из них.');
-   showResolvedCard('🏛 Муниципальный заказ','У вас уже три предложения.','Освободите место выполнением или отказом.');
-  }else{
-   const kind=randomPick(['land','construction','network']),id=state.nextCardId=(state.nextCardId||0)+1;
-   const model=kind==='network'?randomPick(NETWORK_CARDS):null;
-   const terms=kind==='land'?{premium:1.15}:kind==='construction'?{size:0,premium:1.10}:{networkType:model.type,reward:Math.round(model.cost*1.3+20)};
-   p.governmentCards.push({id,type:kind,terms,accepted:true});
-   const description=kind==='land'?'Выкуп свободного участка по 115% кадастровой стоимости.':
-    kind==='construction'?'Выкуп готового малого здания без арендатора по 110% базовой цены.':
-    'Поставка сети «'+model.title+'» за '+terms.reward+' тыс.';
-   note('🏛 '+p.name+' получил госзаказ №'+id+': '+description);
-   showResolvedCard('🏛 Муниципальный заказ',description,'Без срока, штрафа и предварительных платежей. Исполните или отклоните через инвентарь.');
-  }
- }
+
 }
 
 const eventDecks={
@@ -744,7 +728,7 @@ function offerCardTrade(){if(!state||!state.rolled||eventNames[current().pos]!==
 
 const HAND_CATEGORIES=[
  ['utilities','📐 Проектирование'],['permits','📑 Разрешения'],['network','💧 Инженерные сети · карты'],['construction','🏗️ Строительство'],['commissioning','🏢 Ввод в эксплуатацию'],
- ['investor','💼 Инвесторы'],['tenant','🏬 Арендаторы'],['buyer','🏷️ Покупатели'],['government','🏛️ Госзаказы']
+ ['investor','💼 Инвесторы'],['tenant','🏬 Арендаторы'],['buyer','🏷️ Покупатели']
 ];
 function handCardDetails(c,type){
  if(type==='network'){const model=NETWORK_CARDS.find(x=>x.type===c.type);return (model?.description||'Инженерная карта')+' · Подключение: '+(model?.cost??'—')+' тыс. · +10% к базовой аренде и продаже подходящего объекта.';}
