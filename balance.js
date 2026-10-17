@@ -21,6 +21,7 @@ function ensureEconomy(){
  if(!Array.isArray(state.stock.returnNetwork))state.stock.returnNetwork=[];
  for(const d of STAGE_IDS)if(!Array.isArray(state.stock.stage[d]))state.stock.stage[d]=[];
  if(!Array.isArray(state.stock.network))state.stock.network=[];
+ if(!state.econMetrics)state.econMetrics={stageDraws:0,networkDraws:0,stageStockouts:0,networkStockouts:0,botTrades:0,humanTrades:0,stagesCompleted:0,govCompleted:0};
  for(const p of state.players){
   if(!Array.isArray(p.cards))p.cards=[];
   if(!Array.isArray(p.networkCards))p.networkCards=[];
@@ -48,10 +49,11 @@ function drawCard(deck){
  }
  const idx=allocateStage(deck);
  if(idx===null){
+  state.econMetrics.stageStockouts++;
   note(p.name+': колода «'+deckNames[deck]+'» временно исчерпана — карты у игроков либо ожидают возврата.');
   showResolvedCard('Дефицит: '+deckNames[deck],'Все физические карты этой колоды выданы.','Предложите покупку или обмен другому участнику либо дождитесь возврата использованных карт.');render();return;
  }
- let id=++state.nextCardId;p.cards.push({id,deck,index:idx});
+ let id=++state.nextCardId;p.cards.push({id,deck,index:idx});state.econMetrics.stageDraws++;
  state.pendingCard={deck,index:idx,playerIndex:state.turn};pendingCard=state.pendingCard;
  note(p.name+' получил «'+deckNames[deck]+'»: '+BALANCED_DECKS[deck][idx].title+' №'+id+'; осталось '+state.stock.stage[deck].length);
  if(p.bot){state.pendingCard=null;pendingCard=null;}else showCard();
@@ -63,11 +65,12 @@ function drawNetworkCard(){
   note(p.name+': лимит '+GAME_V2.networkHandCap+' инженерных карт.');showResolvedCard('Лимит инженерных карт','Склад инженерных карт заполнен.','Подключите сеть либо обменяйте карту у другого участника.');render();return;
  }
  if(!state.stock.network.length){
+  state.econMetrics.networkStockouts++;
   note('Инженерные сети: все экземпляры разобраны или ожидают возврата в колоду.');
   showResolvedCard('Дефицит инженерных сетей','В колоде нет доступных карт.','Купите или обменяйте карту у другого участника либо дождитесь возврата.');render();return;
  }
  const model=NETWORK_CARDS[state.stock.network.pop()];const id=++state.nextCardId;
- p.networkCards.push({id,type:model.type});
+ p.networkCards.push({id,type:model.type});state.econMetrics.networkDraws++;
  note(p.name+' получил сеть «'+model.title+'» №'+id+'; в колоде '+state.stock.network.length);
  showResolvedCard('⚡ '+model.title,'Инженерная карта №'+id+' помещена в инвентарь.','Подключение '+model.cost+' тыс.; подходящее улучшение даёт +10% к базовой аренде и продаже.');
  render();
@@ -79,7 +82,7 @@ function playStageCard(lotIndex,size,cardId){
  const money=owner.money;window._developerLegacyPlayStageCard(lotIndex,size,cardId);
  if(owner.cards.find(c=>c.id===cardId))return; // legacy rejected
  returnStage(card.deck,card.index);
- if((lot.project?.stage||0)===before+1){consumeAction();note('Израсходованная строительная карта №'+cardId+' будет вновь доступна через '+GAME_V2.stageCooldown+' раунда.');render();}
+ if((lot.project?.stage||0)===before+1){state.econMetrics.stagesCompleted++;consumeAction();note('Израсходованная строительная карта №'+cardId+' будет вновь доступна через '+GAME_V2.stageCooldown+' раунда.');render();}
 }
 function applyNetworkCard(lotIndex,cardId){
  if(!actionAllowed()){denyActions();return false;}
@@ -191,7 +194,7 @@ function executeTradeMarket(){
   }
   if(!change)message='Обмен отклонён: не хватает средств или карта уже недоступна.';
  }
- if(change){consumeAction();state.tradeMarker=state.turn+'-'+state.round;note('🤝 '+message);closeTradeMarket();render();}
+ if(change){state.econMetrics.humanTrades++;consumeAction();state.tradeMarker=state.turn+'-'+state.round;note('🤝 '+message);closeTradeMarket();render();}
  else $('tradePreview').textContent=message||'Выберите доступную сделку.';
 }
 function botBuyLand(){
@@ -239,7 +242,7 @@ function botTradeFromPeers(){
   const seller=state.players[j],c=seller.cards.find(c=>c.deck===need&&!botNeedCard(j,{...c,kind:'stage'}));
   if(!c)continue;const cost=Math.ceil(cardPrice({...c,kind:'stage'})*1.22/5)*5;
   if(p.money<cost+50||p.cards.length>=GAME_V2.stageHandCap)continue;
-  seller.cards=seller.cards.filter(x=>x.id!==c.id);p.cards.push(c);p.money-=cost;seller.money+=cost;
+  seller.cards=seller.cards.filter(x=>x.id!==c.id);p.cards.push(c);p.money-=cost;seller.money+=cost;state.econMetrics.botTrades++;
   note('🤖 '+p.name+' купил '+deckNames[need]+' у '+seller.name+' за '+cost);return true;
  }
  return false;
@@ -265,7 +268,7 @@ function botGovernmentContracts(p,lots){
    continue;
   }
   if(c.type==='investment'&&state.round>=c.ready){
-   p.money+=c.terms.reward;p.governmentCards=p.governmentCards.filter(x=>x!==c);
+   p.money+=c.terms.reward;p.governmentCards=p.governmentCards.filter(x=>x!==c);state.econMetrics.govCompleted++;
    note('🤖 '+p.name+' завершил государственную инвестицию: +'+c.terms.reward);return;
   }
   if(c.type==='construction'){
