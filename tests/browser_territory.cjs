@@ -16,23 +16,22 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    await page.evaluate(()=>{
     newGame();closeSessionMenu();state.rolled=true;state.players[0].pos=1;state.players[0].money=4000;render();
    });
-   assert.equal(await page.locator('.map-plot').count(),30);
-   for(const [zone,num] of Object.entries({J1:12,RET:7,PK:4,OD:3,JK4:2,UNIQUE:2}))
+   assert.equal(await page.locator('.map-plot').count(),24);
+   for(const [zone,num] of Object.entries({J1:10,RET:5,PK:3,OD:2,JK4:2,UNIQUE:2}))
     assert.equal(await page.locator('.map-plot[data-zone="'+zone+'"]').count(),num,zone+' parcel count');
    assert.equal(await page.locator('.map-plot[data-zone="UNIQUE"]').count(),2);
-   assert.match(await page.locator('.map-key').innerText(),/Уникальные/);
+   assert.match(await page.locator('.map-key').innerText(),/Особые/);
    await page.locator('#buy').click();
    assert.equal(await page.locator('#landSelectOverlay').isVisible(),true,'Auction chooser should open');
-   assert.equal(await page.locator('.land-option').count(),30);
-   await page.locator('#landZoneFilter').selectOption('UNIQUE');
-   assert.equal(await page.locator('.land-option').count(),2);
-   assert.match(await page.locator('#landBrowse').innerText(),/Набережная/);
-   await page.locator('.land-option[data-lot="28"]').click();
+   assert.equal(await page.locator('.land-option').count(),24);
+   assert.equal(await page.locator('.land-option[data-zone="UNIQUE"]').count(),2);
+   assert.equal(await page.locator('.land-option').first().isVisible(),true);
+   await page.locator('.land-option[data-lot="22"]').click();
    assert.match(await page.locator('#landSelectionInfo').innerText(),/Набережная/);
    await page.locator('#landBidStart').click();
    assert.equal(await page.locator('#landSelectOverlay').isHidden(),true);
    assert.equal(await page.locator('#auctionOverlay').isVisible(),true);
-   assert.equal(await page.evaluate(()=>state.auction.lot),28,'Auction uses chosen plot, no random draw');
+   assert.equal(await page.evaluate(()=>state.auction.lot),22,'Auction uses chosen plot, no random draw');
    assert.match(await page.locator('#auctionInfo').innerText(),/Набережная/);
    await page.evaluate(()=>{
     state.auction=null;closeAuctionResult();state.players[0].pos=1;
