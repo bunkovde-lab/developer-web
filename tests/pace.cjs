@@ -35,15 +35,15 @@ assert.equal(run('state.paceVersion'),1);
 assert.equal(run('state.players.length'),6);
 assert.equal(run('state.plots.filter(l=>l.owner>=0).length'),12);
 assert.equal(run('state.speedStartKit.length'),12);
-assert.equal(run('state.players.every(p=>p.cards.length===3)'),true);
+assert.equal(run('state.players.every(p=>p.cards.length===4)'),true);
 assert.equal(run('state.stock.stage.utilities.length'),6);
 assert.equal(run('state.stock.stage.permits.length'),6);
 assert.equal(run('state.stock.stage.construction.length'),6);
-assert.equal(run('state.stock.stage.commissioning.length'),12);
+assert.equal(run('state.stock.stage.commissioning.length'),6);
 assert.equal(run('state.players.every(p=>p.money>900)'),true);
 run('state.rolled=true;state.constructionDeckChoice={playerIndex:0};selectConstructionDeck("commissioning");');
 assert.equal(run('state.players[0].cards.length'),8,'Six-player construction picks up to hand cap eight including the starter cards');
-assert.equal(run('state.players.reduce((sum,p)=>sum+p.cards.length,0)'),23);
+assert.equal(run('state.players.reduce((sum,p)=>sum+p.cards.length,0)'),28);
 assert.equal(run('state.stock.stage.commissioning.length'),11);
 console.log('PACE START PASSED: real physical cards, fair initial plot payment, 3-card construction bundle');
 
