@@ -213,13 +213,13 @@ function botBuyLand(){
  note('🤖 '+p.name+' выиграл автоматический аукцион: '+choice.lot.name+' за '+price+' тыс.');return true;
 }
 function botBuildAndConnect(){
- const p=current(),i=state.turn;if(!p.bot||!state.rolled)return;
+ const p=current(),i=state.turn;if(!p.bot||!state.rolled)return false;
  const owned=state.plots.map((lot,j)=>({lot,j})).filter(x=>x.lot.owner===i);
  const inProgress=owned.filter(x=>x.lot.project?.stage!==4).sort((a,b)=>(b.lot.project?.stage||0)-(a.lot.project?.stage||0));
  for(const {lot,j} of inProgress){
   const deck=nextStageDeck(lot.project),card=p.cards.find(c=>c.deck===deck);if(!card)continue;
   const size=lot.project?.size??0;const cost=BALANCED_DECKS[deck][card.index].costs[size];
-  if(p.money>=cost+25){playStageCard(j,size,card.id);break;}
+  if(p.money>=cost+25){const before=lot.project?.stage||0;playStageCard(j,size,card.id);if((lot.project?.stage||0)>before)return true;}
  }
  for(const {lot,j} of owned){
   if(lot.project?.stage!==4)continue;
@@ -228,9 +228,10 @@ function botBuildAndConnect(){
   if(c&&p.money>=cost+40){
    p.money-=cost;p.networkCards=p.networkCards.filter(x=>x.id!==c.id);
    lot.project.connections=[...connectedNetworksFor(lot),c.type];returnNetwork(c.type);
-   note('🤖 '+p.name+' подключил '+NETWORK_CARDS.find(n=>n.type===c.type).title+' к '+lot.name);break;
+   note('🤖 '+p.name+' подключил '+NETWORK_CARDS.find(n=>n.type===c.type).title+' к '+lot.name);return true;
   }
  }
+ return false;
 }
 function botTradeFromPeers(){
  const p=current(),i=state.turn;if(!p.bot||!state.rolled)return false;
@@ -263,46 +264,48 @@ function botGovernmentContracts(p,lots){
   if(c.type!=='investment')continue;
   if(c.accepted&&state.round>c.deadline)continue;
   if(!c.accepted){
-   if(c.type==='investment'&&p.money>=350){p.money-=c.terms.invest;c.accepted=true;c.ready=state.round+6;note('🤖 '+p.name+' инвестировал '+c.terms.invest+' тыс. в госконтракт');return;}
+   if(c.type==='investment'&&p.money>=350){p.money-=c.terms.invest;c.accepted=true;c.ready=state.round+6;note('🤖 '+p.name+' инвестировал '+c.terms.invest+' тыс. в госконтракт');return true;}
    const acceptable=c.type==='construction'?lots.some(x=>x.lot.project?.stage===4&&x.lot.project.size===0):
     c.type==='land'?lots.some(x=>!x.lot.project&&x.lot.price<=170):false;
-   if(acceptable){c.accepted=true;note('🤖 '+p.name+' принял госконтракт №'+c.id);return;}
+   if(acceptable){c.accepted=true;note('🤖 '+p.name+' принял госконтракт №'+c.id);return true;}
    continue;
   }
   if(c.type==='investment'&&state.round>=c.ready){
    p.money+=c.terms.reward;p.governmentCards=p.governmentCards.filter(x=>x!==c);state.econMetrics.govCompleted++;
-   note('🤖 '+p.name+' завершил государственную инвестицию: +'+c.terms.reward);return;
+   note('🤖 '+p.name+' завершил государственную инвестицию: +'+c.terms.reward);return true;
   }
   if(c.type==='construction'){
    const x=lots.find(x=>x.lot.project?.stage===4&&x.lot.project.size===0);
    if(!x)continue;const price=c.terms.reward;
    x.lot.owner=-1;x.lot.level=0;x.lot.project=null;x.lot.tenant=null;p.money+=price;
-   p.governmentCards=p.governmentCards.filter(y=>y!==c);note('🤖 '+p.name+' передал здание по госзаказу за '+price);return;
+   p.governmentCards=p.governmentCards.filter(y=>y!==c);note('🤖 '+p.name+' передал здание по госзаказу за '+price);return true;
   }
   if(c.type==='land'){
    const x=lots.find(x=>!x.lot.project&&x.lot.price<=170);
    if(!x)continue;const price=Math.min(c.terms.reward,Math.round(x.lot.price*1.15));
    x.lot.owner=-1;p.money+=price;p.governmentCards=p.governmentCards.filter(y=>y!==c);
-   note('🤖 '+p.name+' передал участок по госзаказу за '+price);return;
+   note('🤖 '+p.name+' передал участок по госзаказу за '+price);return true;
   }
  }
+ return false;
 }
 function botBusiness(){
  const p=current(),playerIndex=state.turn;if(!p.bot)return;
  const lots=state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===playerIndex);
  for(const {lot,i} of lots){
-  if(lot.project?.stage===4&&!lot.tenant){const ti=p.marketCards.findIndex(c=>c.type==='tenant');if(ti>=0){const c=p.marketCards.splice(ti,1)[0];lot.tenant={percent:c.card.percent,cardId:c.id};lot.tenant.income=tenantIncomeForLot(lot);note('🤖 '+p.name+' заселил арендатора на '+lot.name+'.');}}
+  if(lot.project?.stage===4&&!lot.tenant){const ti=p.marketCards.findIndex(c=>c.type==='tenant');if(ti>=0){const c=p.marketCards.splice(ti,1)[0];lot.tenant={percent:c.card.percent,cardId:c.id};lot.tenant.income=tenantIncomeForLot(lot);note('🤖 '+p.name+' заселил арендатора на '+lot.name+'.');return true;}}
  }
- botGovernmentContracts(p,lots);
+ if(botGovernmentContracts(p,lots))return true;
  if(p.money<250&&lots.some(x=>x.lot.project?.stage!==4)){
-  const ii=p.marketCards.findIndex(c=>c.type==='investor');if(ii>=0){const c=p.marketCards.splice(ii,1)[0];p.money+=c.card.investment;if(!p.investments)p.investments=[];p.investments.push({principal:c.card.investment,unpaid:Math.round(c.card.investment*1.25),share:c.card.share});note('🤖 '+p.name+' привлёк инвестора: '+c.card.investment+' тыс.');}
+  const ii=p.marketCards.findIndex(c=>c.type==='investor');if(ii>=0){const c=p.marketCards.splice(ii,1)[0];p.money+=c.card.investment;if(!p.investments)p.investments=[];p.investments.push({principal:c.card.investment,unpaid:Math.round(c.card.investment*1.25),share:c.card.share});note('🤖 '+p.name+' привлёк инвестора: '+c.card.investment+' тыс.');return true;}
  }
+ return false;
 }
 function bot(){
  if(!state?.players?.[state.turn]?.bot||Number.isInteger(state.winnerIndex))return;
  if(!state.rolled)roll(); // Legacy roll already handles special cells and drawing
  if(state.pendingCard||state.auction||state.constructionDeckChoice){setTimeout(endTurn,350);return;}
- ensureEconomy();botBuyLand();botTradeFromPeers();botBuildAndConnect();botBusiness();render();
+ ensureEconomy();let aiActions=0; if(botBuyLand())aiActions++; if(aiActions<TWO_ACTIONS&&botTradeFromPeers())aiActions++; if(aiActions<TWO_ACTIONS&&botBuildAndConnect())aiActions++; if(aiActions<TWO_ACTIONS&&botBusiness())aiActions++; render();
  setTimeout(endTurn,350);
 }
 function settleInvestment(){
