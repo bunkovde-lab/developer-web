@@ -80,8 +80,8 @@ function cleanup(){
 function triggerToast(label,kind='info',key){
  if(!enabled())return;
  let host=$('sceneNotices');
- if(!host){host=document.createElement('div');host.id='sceneNotices';host.setAttribute('role','presentation');document.body.appendChild(host);}
- if(host.children.length>=3)host.firstElementChild.remove();
+ if(!host){host=document.createElement('div');host.id='sceneNotices';host.setAttribute('role','presentation');(document.querySelector('.game-field')||document.body).appendChild(host);}
+ if(host.children.length>=2)host.firstElementChild.remove();
  const n=document.createElement('div');n.className='scene-toast scene-'+kind;
  const art=urlFor(key);
  if(art){const img=document.createElement('img');img.src=art;img.alt='';img.setAttribute('aria-hidden','true');n.appendChild(img);}
