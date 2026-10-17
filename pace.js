@@ -51,7 +51,7 @@ function selectConstructionDeck(deck){
 const player=state.players[before],priority=stageDemand(before);
  let extra=0;
  for(let i=1;i<(state.players.length===6?PACE.largeTableConstructionDraws:PACE.constructionDraws);i++){
-  const available=priority.find(d=>state.stock.stage[d]?.length&&player.cards.filter(c=>c.deck===d).length<3);
+  const available=priority.find(d=>state.stock.stage[d]?.length);
   if(!available)break;
   if(grantCard(before,available))extra++;
  }
