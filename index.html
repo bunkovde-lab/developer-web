@@ -222,15 +222,52 @@ const SPECIAL_CARDS={
  buyer:Array.from({length:10},(_,i)=>({percent:105+5*i}))
 };
 function randomPick(a){return a[Math.floor(Math.random()*a.length)]}
+function showResolvedCard(title,description,effect){
+ const p=current();
+ if(p.bot)return;
+ state.pendingCard={special:true,playerIndex:state.turn,title,description,effect};
+ showCard();
+}
 function resolveSpecialCell(){
  const p=current(),cell=eventNames[p.pos];
- if(cell==='Работа'){const c=randomPick(SPECIAL_CARDS.job),pay=Math.round(c.pay*(p.profession===c.profession?1.25:1));p.money+=pay;note('Работа: '+p.name+' получил '+pay+' тыс.');}
- if(cell==='Налоговая проверка'){p.skipTurns=randomPick(SPECIAL_CARDS.tax).skip;note('Налоговая проверка: '+p.name+' пропускает '+p.skipTurns+' следующих ходов');}
- if(cell==='События'){const amount=randomPick(SPECIAL_CARDS.individual);p.money+=amount;note('Личное событие: '+p.name+' '+(amount>=0?'+':'')+amount+' тыс.');}
- if(cell==='Кризис'){const percent=randomPick(SPECIAL_CARDS.crisis);state.crisis={percent,until:state.round+2};note('Кризис для всех: рыночный коэффициент '+percent+'% на два раунда (экономическое применение в разработке)');}
- if(cell==='Рынок'){if(!p.marketCards)p.marketCards=[];const type=randomPick(['investor','tenant','buyer']),card=randomPick(SPECIAL_CARDS[type]);p.marketCards.push({type,card,id:state.nextCardId=(state.nextCardId||0)+1});note(p.name+' получил предложение '+type+' и сохранил в инвентаре');}
- if(cell==='Госзаказ'){if(!p.governmentCards)p.governmentCards=[];const c={id:state.nextCardId=(state.nextCardId||0)+1,type:randomPick(['investment','construction','land']),deadline:state.round+8,accepted:false};p.governmentCards.push(c);note('Госзаказ: '+p.name+' получил предложение '+c.type+'. Принятие и исполнение ещё в разработке.');}
+ if(cell==='Работа'){
+  const c=randomPick(SPECIAL_CARDS.job),matched=p.profession===c.profession,pay=Math.round(c.pay*(matched?1.25:1));
+  p.money+=pay;note('Работа: '+p.name+' получил '+pay+' тыс.');
+  showResolvedCard('💼 Профессиональный заказ','Выполнена работа по специальности: '+({'foreman':'Инженер-строитель','designer':'Проектировщик','permits':'Согласования','lawyer':'Юрист','financier':'Финансист'}[c.profession]||c.profession), 'Вознаграждение: +'+pay+' тыс.'+(matched?' (профильный бонус +25%)':''));
+ }
+ if(cell==='Налоговая проверка'){
+  p.skipTurns=randomPick(SPECIAL_CARDS.tax).skip;
+  note('Налоговая проверка: '+p.name+' пропускает '+p.skipTurns+' следующих ходов');
+  showResolvedCard('📋 Налоговая проверка','Проверка завершена. Ограничение применяется только к вашему игроку.','Пропустить следующие ходы: '+p.skipTurns);
+ }
+ if(cell==='События'){
+  const amount=randomPick(SPECIAL_CARDS.individual);p.money+=amount;
+  note('Личное событие: '+p.name+' '+(amount>=0?'+':'')+amount+' тыс.');
+  showResolvedCard('🎴 Индивидуальное событие','Экономическое событие применяется только к вашему игроку.','Изменение капитала: '+(amount>=0?'+':'')+amount+' тыс.');
+ }
+ if(cell==='Кризис'){
+  const percent=randomPick(SPECIAL_CARDS.crisis);state.crisis={percent,until:state.round+2};
+  note('Кризис для всех: рыночный коэффициент '+percent+'% на два раунда (экономическое применение в разработке)');
+  showResolvedCard('📉 Глобальное событие','Карточка влияет на всех участников. Расчёт применения эффекта ещё в разработке.','Предварительный рыночный коэффициент: '+percent+'%, два раунда');
+ }
+ if(cell==='Рынок'){
+  if(!p.marketCards)p.marketCards=[];
+  const type=randomPick(['investor','tenant','buyer']),card=randomPick(SPECIAL_CARDS[type]);
+  p.marketCards.push({type,card,id:state.nextCardId=(state.nextCardId||0)+1});
+  note(p.name+' получил предложение '+type+' и сохранил в инвентаре');
+  const label={investor:'Инвестор',tenant:'Арендатор',buyer:'Покупатель'}[type];
+  const effect=type==='investor'?'Инвестиция '+card.investment+' тыс. за '+card.share+'% прибыли проекта': 'Предлагаемая цена: '+card.percent+'% базовой '+(type==='tenant'?'аренды':'стоимости продажи');
+  showResolvedCard('📈 '+label,'Коммерческое предложение сохранено в вашем инвентаре. Выбор колоды вручную пока не реализован.',effect);
+ }
+ if(cell==='Госзаказ'){
+  if(!p.governmentCards)p.governmentCards=[];
+  const c={id:state.nextCardId=(state.nextCardId||0)+1,type:randomPick(['investment','construction','land']),deadline:state.round+8,accepted:false};
+  p.governmentCards.push(c);
+  note('Госзаказ: '+p.name+' получил предложение '+c.type+'. Принятие и исполнение ещё в разработке.');
+  showResolvedCard('🏛️ Государственный заказ','Предложение добавлено в раздел «Госзаказы». Принятие и исполнение в разработке.','Тип: '+c.type+' · предполагаемый срок: '+c.deadline+'-й раунд');
+ }
 }
+
 const eventDecks={
  permits:[{title:"Проверка документации",text:"Рассмотрение проектной документации.",effect:"Параметры механики ещё не утверждены.",delta:0},{title:"Дополнительные материалы",text:"Запрошены уточнения к комплекту разрешительных документов.",effect:"Параметры механики ещё не утверждены.",delta:0}],
  utilities:[{title:"Технические условия",text:"Определяются условия подключения инженерных сетей.",effect:"Параметры механики ещё не утверждены.",delta:0},{title:"Доступная мощность",text:"Проверяется возможность подключения к сетям.",effect:"Параметры механики ещё не утверждены.",delta:0}],
@@ -281,6 +318,7 @@ function drawCard(deck){
 function showCard(){
  const pending=state?.pendingCard;
  if(!pending){$('cardOverlay').hidden=true;return}
+ if(pending.special){$('cardDeck').textContent='Карта клетки';$('cardTitle').textContent=pending.title;$('cardText').textContent=pending.description;$('cardEffect').textContent=pending.effect;$('cardOverlay').hidden=false;return;}
  const card=(BALANCED_DECKS[pending.deck]||eventDecks[pending.deck])?.[pending.index];if(!card){state.pendingCard=null;return}
  $('cardDeck').textContent='Колода · '+deckNames[pending.deck];
  $('cardTitle').textContent=card.title;$('cardText').textContent=card.text;
