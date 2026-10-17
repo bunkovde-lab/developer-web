@@ -293,6 +293,7 @@ $('players').innerHTML=state.players.map((u,i)=>'<div><span style="color:'+color
 $('log').innerHTML=state.logs.map(t=>'<div>• '+t+'</div>').join('');
 $('roll').disabled=state.rolled||p.bot;$('end').disabled=!state.rolled||p.bot;
 $('cardInventory').innerHTML=availableCards(p).map(c=>'<div class="inventory-card">🎴 '+deckNames[c.deck]+' — '+eventDecks[c.deck][c.index].title+' <small>№'+c.id+'</small></div>').join('')||'<p class="muted">Карты появятся после посещения клетки «Строительство».</p>';
+if(eventNames[p.pos]==='Сделка'&&state.rolled&&!p.bot&&availableCards(p).length)$('cardInventory').innerHTML+='<button onclick="openCardTrade()">🤝 Продать карту на клетке «Сделка»</button>';
 let x=state.plots[(Math.max(1,p.pos)-1)%30];
 $('buy').disabled=!state.rolled||p.bot||![1,9,24].includes(p.pos)||!!state.auction||!!state.pendingCard||!!state.constructionDeckChoice||auctionLotIndex()<0;
 $('build').disabled=!state.rolled||p.bot||p.pos===0||p.pos===31||x.owner!==state.turn||x.level>=3;
