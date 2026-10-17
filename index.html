@@ -243,52 +243,44 @@ function beginAuction(index){
 }
 function showAuction(){
  closeAuctionResult();
- const a=state.auction;if(!a)return;
+ const a=state?.auction;if(!a)return;
+ const bidder=a.humanBidder??state.turn,player=state.players[bidder];
  const next=a.price?a.price+a.step:a.minBid;
- $('auctionTitle').textContent='🔨 Пошаговый аукцион';
- $('auctionInfo').textContent=state.plots[a.lot].name+' · текущая цена: '+(a.price||'нет ставок')+' · следующий шаг: '+next+' · лидер: '+(a.leader<0?'нет':state.players[a.leader].name)+' · ваш капитал: '+current().money+'.';
- $('auctionBid').min=next;$('auctionBid').max=current().money;$('auctionBid').value=next;
- document.querySelector('.auction-box label[for="auctionBid"]').textContent='Предложение (не ниже следующего шага)';
- document.querySelector('.auction-buttons button').textContent=a.leader===state.turn?'Подтвердить лидерство':'Повысить цену';
- $('auctionBid').disabled=a.leader===state.turn;
- document.querySelector('.auction-buttons button').disabled=!a.active[state.turn]||(!a.price&&current().money<a.minBid)||next>current().money&&a.leader!==state.turn;
- $('auctionError').textContent=a.history.slice(-4).map(x=>x).join(' • ')||'Боты ответят после вашей ставки.';
+ $('auctionTitle').textContent=a.botInitiated?'🔨 Аукцион бота · можете участвовать':'🔨 Аукцион · конкурентные ставки';
+ $('auctionInfo').textContent=state.plots[a.lot].name+' · текущая цена: '+(a.price||'нет ставок')+' · следующая ставка: '+next+' · лидер: '+(a.leader<0?'нет':state.players[a.leader].name)+' · ваши деньги: '+player.money+'.';
+ $('auctionBid').min=next;$('auctionBid').max=player.money;$('auctionBid').value=next;
+ document.querySelector('.auction-box label[for="auctionBid"]').textContent='Ваша ставка (от '+next+' тыс.)';
+ document.querySelector('.auction-buttons button').textContent=a.leader===bidder?'Удержать ставку':'Повысить цену';
+ $('auctionBid').disabled=a.leader===bidder;
+ document.querySelector('.auction-buttons button').disabled=!a.active[bidder]||next>player.money&&a.leader!==bidder;
+ $('auctionError').textContent=a.history.slice(-5).join(' • ')||'Боты будут отвечать на ваши предложения.';
  $('auctionOverlay').hidden=false;
 }
-function buy(){if(!state||!state.rolled||current().bot||![1,9,18,24].includes(current().pos)||state.pendingCard||state.auction)return;openLandSelection()}
 function submitAuctionBid(pass=false){
- const a=state.auction;if(!a||current().bot||!a.active[state.turn])return;
- if(pass){
-  a.active[state.turn]=false;a.history.push('Вы вышли из торгов');
- }else if(a.leader===state.turn){
-  a.history.push('Вы удерживаете лидерство');
- }else{
-  const n=Number($('auctionBid').value),minimum=a.price?a.price+a.step:a.minBid;
-  if(!Number.isSafeInteger(n)||n<minimum||n>current().money){
-   $('auctionError').textContent='Допустимая ставка: от '+minimum+' до '+current().money;return;
+ const a=state?.auction;if(!a)return;
+ const bidder=a.humanBidder??state.turn,p=state.players[bidder];
+ if(p.bot||!a.active[bidder])return;
+ if(pass){a.active[bidder]=false;a.history.push(p.name+': пас');}
+ else if(a.leader===bidder){a.history.push(p.name+': удерживает лидерство');}
+ else{
+  const minimum=a.price?a.price+a.step:a.minBid,n=Number($('auctionBid').value);
+  if(!Number.isSafeInteger(n)||n<minimum||n>p.money){
+   $('auctionError').textContent='Ставка от '+minimum+' до '+p.money;return;
   }
-  a.price=n;a.leader=state.turn;a.history.push('Вы: '+n);
+  a.price=n;a.leader=bidder;a.history.push(p.name+': '+n);
  }
- // Each remaining bot takes one turn; no precommitted hidden bids.
  for(let k=0;k<state.players.length;k++){
-  const bot=state.players[k];if(!bot.bot||!a.active[k])continue;
-  const next=a.price?a.price+a.step:a.minBid;
-  const budget=Math.floor(bot.money*.82);
-  const intelligence=territoryAnalysis(a.lot,k);
-  const ceiling=Math.floor(a.minBid*(1.05+Math.min(1.1,intelligence.score/850)+(intelligence.blocking>=2?.18:0)));
-  if(next<=budget&&next<=ceiling){
-   a.price=next;a.leader=k;a.history.push(bot.name+': '+next);
-  }else{a.active[k]=false;a.history.push(bot.name+': пас')}
+  const bot=state.players[k];if(!bot.bot||!a.active[k]||a.leader===k)continue;
+  const next=a.price?a.price+a.step:a.minBid,limit=Math.min(Math.floor(bot.money*.82),Math.floor(a.minBid*(1.05+Math.max(0,Math.min(1.1,territoryAnalysis(a.lot,k).score/850))+(territoryAnalysis(a.lot,k).blocking>=2?.18:0))));
+  if(next<=limit){a.price=next;a.leader=k;a.history.push(bot.name+': '+next);}
+  else{a.active[k]=false;a.history.push(bot.name+': пас');}
  }
  a.round++;
- const active=a.active.map((v,k)=>v?k:-1).filter(k=>k>=0);
- if(a.leader>=0 && (active.length<=1 || (active.length===2&&active.includes(a.leader)&&active.every(k=>k===a.leader||!a.active[k])))){
-  // If human and current leading bot remain, human must still have a chance to respond.
-  if(active.length<=1){resolveAuction();return}
- }
- if(a.leader<0&&active.length===0){resolveAuction();return}
- if(a.leader!==state.turn&&!a.active[state.turn]){resolveAuction();return}
- if(a.leader===state.turn&&a.active.filter(Boolean).length===1){resolveAuction();return}
+ const botsRemaining=a.active.some((v,k)=>v&&state.players[k].bot&&k!==a.leader);
+ if(!a.active[bidder]||!botsRemaining&&a.leader===bidder||a.round>=20){resolveAuction();return;}
+ if(a.leader!==bidder&&a.active[bidder]){showAuction();render();return;}
+ // No other bidder can raise and the current leader is a bot: settle immediately.
+ if(!botsRemaining){resolveAuction();return;}
  showAuction();render();
 }
 function resolveAuction(){
@@ -1039,7 +1031,7 @@ if(!loaded||!Array.isArray(loaded.players)||!Array.isArray(loaded.plots)||!Array
   $('count').value=String(state.players.length);
   render();
   state.players.forEach(p=>{if(!Array.isArray(p.cards))p.cards=[]});if(state.pendingCard&&!current().bot)showCard();if(state.constructionDeckChoice)showConstructionDeckChoice();
-  if(state.auction&&!current().bot)showAuction();
+  if(state.auction)showAuction();
   if(current().bot&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice)setTimeout(bot,450);
  }catch(e){const status=$('sessionStatus');if(status)status.textContent='⚠ '+(e.message||'Сохранение недоступно');showSessionMenu();}
 }
