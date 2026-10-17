@@ -22,3 +22,5 @@ jobs:
         run: node tests/pace.cjs
       - name: V0.16 gameplay, sealed auctions and alternate ending
         run: node tests/rework.cjs
+      - name: V0.16 sixteen complete deterministic campaigns
+        run: node tests/tournament-v016.cjs
