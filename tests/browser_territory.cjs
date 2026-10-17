@@ -59,6 +59,16 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.equal(await page.evaluate(()=>state.plots[0].owner),0,'Human must be able to win a bot-hosted land auction');
    assert.equal(await page.evaluate(()=>state.players[0].money),2450,'Human bidder pays her bid, not current bot');
    assert.equal(await page.evaluate(()=>state.auctionHistory.at(-1).winner),0,'Auction result must record a real contest');
+   await page.evaluate(()=>{
+      newGame();closeSessionMenu();state.turn=0;state.rolled=true;
+      state.players[0].pos=4;state.constructionDeckChoice={playerIndex:0};showConstructionDeckChoice();
+   });
+   assert.equal(await page.locator('#constructionDeckOverlay').isVisible(),true);
+   assert.equal(await page.locator('.construction-deck-choices .deck-count-info').count(),4);
+   for(const c of await page.locator('.construction-deck-choices .deck-count-info').allTextContents()){
+     assert.match(c,/В руке:\s*\d+/,'Every construction deck must display current hand count');
+     assert.match(c,/в колоде:\s*\d+/,'Every construction deck must display shared supply count');
+   }
 
    assert.equal(errors.length,0,'Client runtime errors: '+errors.join(';'));
    console.log('TERRITORY BROWSER PASSED '+size.width+'×'+size.height+', zoning, land choice and chain threats');
