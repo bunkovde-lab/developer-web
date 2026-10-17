@@ -79,3 +79,21 @@ run('bot()');
 assert(run('state.plots.filter(l=>l.owner===1).length')>=1,'Bot should acquire land on auction');
 assert(run('state.players[1].money')<600);
 console.log('PASS syntax, finite decks, consumption/recycling, market purchase, anti-double-trade, networks, crisis and bot land purchase');
+
+const simulations=[];
+for(const [players,s] of [[3,31415],[4,27182],[6,16180]]){
+ seed=s;node('count').value=String(players);
+ run('newGame();state.players.forEach(p=>p.bot=true);');
+ let turns=0,errors=0;
+ for(;turns<900;turns++){
+  if(run('Number.isInteger(state.winnerIndex)'))break;
+  try{run('bot();endTurn();');}
+  catch(error){errors++;console.error('SIMULATION ERROR',players,turns,error.stack);break;}
+ }
+ const result={players,turns,winner:run('state.winnerIndex??null'),round:run('state.round'),built:run('state.plots.filter(p=>p.project?.stage===4).length'),owned:run('state.plots.filter(p=>p.owner>=0).length'),networks:run('state.plots.reduce((n,p)=>n+(p.project?.connections?.length||0),0)'),capital:run('state.players.map(p=>p.money)'),errors};
+ simulations.push(result);
+ assert.equal(errors,0,'Full-game simulation must not crash');
+ assert(run('state.players.every(p=>Number.isFinite(p.money))'),'Player capital must stay finite');
+ assert(run('state.plots.every(p=>p.owner>=-1&&p.owner<state.players.length)'),'All plot owners valid');
+}
+console.log('SIMULATION RESULTS',JSON.stringify(simulations));
