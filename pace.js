@@ -12,7 +12,7 @@ function takeFromStock(deck){
  return pile.pop();
 }
 function grantCard(playerIndex,deck){
- const player=state.players[playerIndex];if(!player||player.cards.length>=8)return false;
+ const player=state.players[playerIndex];if(!player)return false;
  const index=takeFromStock(deck);if(index===null)return false;
  if(!Number.isInteger(state.nextCardId))state.nextCardId=0;
  player.cards.push({id:++state.nextCardId,deck,index});
@@ -51,7 +51,6 @@ function selectConstructionDeck(deck){
 const player=state.players[before],priority=stageDemand(before);
  let extra=0;
  for(let i=1;i<(state.players.length===6?PACE.largeTableConstructionDraws:PACE.constructionDraws);i++){
-  if(player.cards.length>=8)break;
   const available=priority.find(d=>state.stock.stage[d]?.length&&player.cards.filter(c=>c.deck===d).length<3);
   if(!available)break;
   if(grantCard(before,available))extra++;
