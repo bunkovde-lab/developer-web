@@ -284,12 +284,9 @@ function botBuyLand(){
   return p.money>=cost+reserve && (x.t.blocking>=2||x.t.own>0||already===0||x.t.score>15);
  });
  if(!candidate)return false;
- const price=Math.round(candidate.lot.price*(1.06+Math.min(.25,candidate.t.blocking*.07)));
- if(p.money<price)return false;
- candidate.lot.owner=i;p.money-=price;
- state.landDeck=(state.landDeck||[]).filter(j=>j!==candidate.index);
- note('🤖 '+p.name+' выбрал участок №'+(candidate.index+1)+' ('+zoneOf(candidate.index).short+') на аукционе за '+price+' тыс.'+(candidate.t.blocking>=2?' — перехвачена важная клетка чужой цепи':''));
- return true;
+ // No direct acquisition: the chosen plot MUST enter the same competitive auction as a human bid.
+ if(typeof window.startBotAuction!=='function')return false;
+ return window.startBotAuction(candidate.index,i);
 }
 function botBuildAndConnect(){
  const p=current(),i=state.turn;if(!p.bot||!state.rolled)return false;
@@ -394,7 +391,7 @@ function bot(){
  if(!state?.players?.[state.turn]?.bot||Number.isInteger(state.winnerIndex))return;
  if(!state.rolled)roll(); // Legacy roll already handles special cells and drawing
  if(state.pendingCard||state.auction||state.constructionDeckChoice){setTimeout(endTurn,350);return;}
- ensureEconomy();let aiActions=0; if(botBuyLand())aiActions++; if(aiActions<TWO_ACTIONS&&botTradeFromPeers())aiActions++; if(aiActions<TWO_ACTIONS&&botBuildAndConnect())aiActions++; if(aiActions<TWO_ACTIONS&&botBusiness())aiActions++; if(aiActions<TWO_ACTIONS&&botBuildAndConnect())aiActions++; render();
+ ensureEconomy();let aiActions=0; if(botBuyLand()){aiActions++;if(state.auction){render();return;}} if(aiActions<TWO_ACTIONS&&botTradeFromPeers())aiActions++; if(aiActions<TWO_ACTIONS&&botBuildAndConnect())aiActions++; if(aiActions<TWO_ACTIONS&&botBusiness())aiActions++; if(aiActions<TWO_ACTIONS&&botBuildAndConnect())aiActions++; render();
  setTimeout(endTurn,350);
 }
 function settleInvestment(){
