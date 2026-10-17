@@ -22,7 +22,9 @@ function requestDeck(){
  return state.cityRequestDeck;
 }
 function putBack(index){
- requestDeck().push(index);mixRequest(state.cityRequestDeck);
+ if(!Array.isArray(state.cityRequestDeck))state.cityRequestDeck=[];
+ if(!state.cityRequestDeck.includes(index))state.cityRequestDeck.push(index);
+ mixRequest(state.cityRequestDeck);
 }
 function canCityAction(i=state?.turn){
  if(!state||!state.rolled||!!state.auction||!!state.pendingCard||!!state.constructionDeckChoice||Number.isInteger(state.winnerIndex))return false;
