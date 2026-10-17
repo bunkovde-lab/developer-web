@@ -51,6 +51,10 @@ assert.equal(run('state.plots.filter(l=>l.owner>=0).length'),0);
 assert.equal(run('state.plots[0].price'),120);
 assert(run('state.plots[29].price')>run('state.plots[0].price')*8);
 assert.equal(run('state.plots[29].zone'),'UNIQUE');
+assert.equal(run('locationYield(28,"buyer")'),2.05);
+assert.equal(run('locationYield(29,"tenant")'),2.14);
+assert(run('locationYield(28,"buyer")')>run('locationYield(29,"buyer")'));
+assert(run('locationYield(29,"tenant")')>run('locationYield(28,"tenant")'));
 assert.equal(run('zoneOf(0).sizes.includes(2)'),false);
 assert.equal(run('zoneOf(0).sizes.includes(0)'),true);
 assert.equal(run('zoneOf(14).sizes.includes(2)'),false); // Retail permits small and medium, not large.
@@ -93,6 +97,12 @@ assert.equal(run('state.plots[23].project===undefined'),true,'Cannot build a sec
 run('state.plots[22].project.stage=4;state.plots[22].level=1');
 assert.equal(run('completedNetworkPlot(state.plots[22],0)'),true);
 assert.equal(run('completedNetworkPlot(state.plots[23],0)'),false);
+assert.equal(run('municipalTargets({type:"land"},0).some(x=>x.i===23)'),false,'Reserved second footprint is not separately saleable');
+run('transferLargeSection(22,1);state.plots[22].owner=1');
+assert.equal(run('state.plots[23].owner'),1,'Property transfer carries its reserved second parcel');
+assert.equal(run('state.plots[23].reservedFor'),22);
+assert.equal(run('completedNetworkPlot(state.plots[22],1)'),true);
+assert.equal(run('completedNetworkPlot(state.plots[23],1)'),false);
 run('transferLargeSection(22,-1)');
 assert.equal(run('state.plots[23].owner'),-1);
 assert.equal(run('state.plots[23].reservedFor===undefined'),true);
