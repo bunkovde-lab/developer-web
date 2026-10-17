@@ -207,14 +207,44 @@ function build(){alert('Строительство теперь выполняе
 /* Prototype decks: content requires game-design approval. */
 const STAGE_DECKS=["permits","utilities","construction","commissioning"];
 const STAGE_LABELS=["Разрешения","Инженерные сети","Строительство","Ввод в эксплуатацию"];
-const BALANCE_V02={
- permits:[[28,32,35,38,42,46],[52,58,65,72,78,84],[92,104,115,127,138,150]],
- utilities:[[36,41,45,49,54,59],[72,81,90,99,108,117],[128,144,160,176,192,208]],
- construction:[[108,122,135,149,162,176],[232,261,290,319,348,377],[432,486,540,594,648,702]],
- commissioning:[[24,27,30,33,36,39],[44,50,55,61,66,72],[88,99,110,121,132,143]]
+// Experimental costs in thousands: 12 unique cards per stage, with three independently priced sizes.
+// A card can favor small, medium or large construction instead of following a single markup.
+const STAGE_BASE={permits:[35,65,115],utilities:[45,90,160],construction:[135,290,540],commissioning:[30,55,110]};
+const STAGE_VARIANTS={
+ permits:[
+ ['Стандартный пакет', [1.00,1.00,1.00]],['Сложная экспертиза',[1.45,1.10,0.97]],['Зелёный стандарт',[1.36,0.92,1.05]],
+ ['Ускоренное согласование',[1.62,1.22,1.08]],['Комплексная документация',[0.91,0.96,1.23]],['Повторная экспертиза',[1.18,1.40,1.03]],
+ ['Архитектурный регламент',[1.08,0.85,1.34]],['Технический надзор',[1.26,1.31,0.90]],['Экологическая оценка',[1.56,1.00,1.16]],
+ ['Проектирование в центре',[1.48,1.17,1.31]],['Пакет согласований',[0.82,1.27,1.11]],['Градостроительная комиссия',[1.29,0.89,1.38]]
+ ],
+ utilities:[
+ ['Базовое подключение',[1.00,1.00,1.00]],['Новая подстанция',[1.52,1.04,0.91]],['Теплоснабжение',[1.23,0.88,1.20]],
+ ['Резервная мощность',[1.38,1.19,1.02]],['Магистральный коллектор',[1.11,1.34,0.94]],['Удалённые сети',[1.60,0.97,1.17]],
+ ['Водоснабжение',[0.92,1.25,1.35]],['Высоковольтная линия',[1.32,0.91,1.29]],['Локальная генерация',[1.49,1.15,0.87]],
+ ['Комплексные техусловия',[1.21,1.43,1.09]],['Резерв водоотведения',[1.04,0.86,1.44]],['Сети ускоренного ввода',[1.41,1.23,1.15]]
+ ],
+ construction:[
+ ['Генеральный подряд',[1.00,1.00,1.00]],['Дорогие материалы',[1.48,1.12,0.95]],['Заводская модульная сборка',[1.15,0.87,1.22]],
+ ['Сложный фундамент',[1.36,1.27,1.11]],['Ресурсосберегающая технология',[0.91,1.08,1.28]],['Премиальная отделка',[1.59,1.18,1.30]],
+ ['Ускоренный подряд',[1.42,1.39,0.97]],['Массовое домостроение',[1.18,0.92,0.82]],['Высотные работы',[1.25,1.11,1.48]],
+ ['Нестандартная архитектура',[1.54,1.34,1.20]],['Региональный подряд',[0.86,1.21,1.09]],['Сложная логистика',[1.32,0.98,1.42]]
+ ],
+ commissioning:[
+ ['Стандартная приёмка',[1.00,1.00,1.00]],['Дополнительная инспекция',[1.42,1.10,0.92]],['Пожарная сертификация',[1.16,0.89,1.24]],
+ ['Ускоренный ввод',[1.55,1.20,1.11]],['Испытание коммуникаций',[0.94,1.31,1.09]],['Повторная комиссия',[1.34,1.45,0.98]],
+ ['Энергопаспорт',[1.24,0.95,1.37]],['Документы на собственность',[1.08,1.18,0.85]],['Стресс-тест здания',[1.39,1.05,1.29]],
+ ['Техническая инвентаризация',[1.13,1.35,1.17]],['Комплексное освидетельствование',[1.50,0.87,1.32]],['Финальная госкомиссия',[0.88,1.25,1.46]]
+ ]
 };
 const BALANCED_DECKS={};
-for(const deck of Object.keys(BALANCE_V02))BALANCED_DECKS[deck]=Array.from({length:12},(_,i)=>({title:deck+' — пакет '+(i+1),text:'Стоимость зависит от размера здания.',effect:'Карта в инвентаре',delta:0,costs:[0,1,2].map(size=>BALANCE_V02[deck][size][i%6])}));
+for(const deck of Object.keys(STAGE_VARIANTS)){
+ BALANCED_DECKS[deck]=STAGE_VARIANTS[deck].map(([title,multipliers],i)=>({
+  title:title,text:'Индивидуальная смета: цена различается по масштабу проекта. Оплачивается только при розыгрыше карты.',
+  effect:'Карта в инвентаре',delta:0,
+  costs:multipliers.map((factor,size)=>Math.round(STAGE_BASE[deck][size]*factor)),
+  index:i
+ }));
+}
 const SPECIAL_CARDS={
  job:Array.from({length:8},(_,i)=>({pay:45+8*i,profession:['foreman','designer','permits','lawyer','financier'][i%5]})),
  tax:Array.from({length:8},(_,i)=>({skip:1+i%3})),
@@ -421,7 +451,7 @@ function inspectLot(i){
  $('plotCardTitle').textContent='🏗 Участок №'+(i+1);
  $('plotCardInfo').textContent=zone+' · цена земли: '+x.price+' игровых денег · владелец: '+owner+' · текущая застройка: '+x.level+'/3';
  $('plotCardProjects').innerHTML=projectCatalog.map(p=>{
- const total=p.permit+p.utility+p.steps*p.stepCost+p.commission;
+ const total=p.permit+p.utility+p.steps*p.stepCost+p.commission; // reference cost only; actual stage amounts come from the selected cards
  const requirements=p.land===2?'Нужны два соседних участка.':'Достаточно одного участка.';
  const size=projectCatalog.indexOf(p),project=x.project,chosen=project&&project.size===size,stage=chosen?project.stage:0,canChoose=x.owner===state.turn&&(!project||chosen);
  const playable=canChoose&&stage<4?availableCards(current(),STAGE_DECKS[stage]):[];
