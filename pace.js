@@ -4,7 +4,7 @@
  */
 (function(){
 "use strict";
-const PACE={version:1,startCapital:1250,largeTableCapital:1650,sixPlayerCapital:1650,starterPlots:[0,5,12,17,24,29],clusterPairs:[[0,1],[4,5],[12,13],[16,17],[24,25],[28,29]],starterStages:['utilities','permits','construction'],constructionDraws:3,largeTableConstructionDraws:5,workMultiplier:1};
+const PACE={version:1,startCapital:1250,largeTableCapital:1650,sixPlayerCapital:1650,starterPlots:[0,5,12,17,24,29],clusterPairs:[[0,1],[4,5],[12,13],[16,17],[24,25],[28,29]],starterStages:['utilities','permits','construction'],constructionDraws:3,largeTableConstructionDraws:4,workMultiplier:1};
 const stageIds=['utilities','permits','construction','commissioning'];
 const baseNewGame=window.newGame,baseChoice=window.selectConstructionDeck;
 function takeFromStock(deck){
@@ -46,7 +46,7 @@ function seedNewGame(){
     if(Array.isArray(state.landDeck))state.landDeck=state.landDeck.filter(n=>n!==plotIndex);
    }
   }
-  let items=0;for(const deck of PACE.starterStages)if(grantCard(i,deck))items++;
+  let items=0;for(const deck of (state.players.length===6?[...PACE.starterStages,'commissioning']:PACE.starterStages))if(grantCard(i,deck))items++;
   note('⚡ '+p.name+': стартовые участки '+acquired.join(', ')+', карты '+items+'. Оплачено по кадастровой оценке, участки не бесплатны.');
  }
  note('⚡ Ускоренная партия v0.10: стартовый капитал '+(state.players.length===6?PACE.sixPlayerCapital:largerTable?PACE.largeTableCapital:PACE.startCapital)+' тыс., '+(largerTable?2:1)+' участка по цене; 3 карты за попадание на «Строительство». Торговля и лимиты колод сохранены.');
