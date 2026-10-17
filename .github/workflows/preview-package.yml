@@ -25,10 +25,12 @@ jobs:
           set -euo pipefail
           mkdir -p preview
           cp index.html preview/
-          for file in balance.js marketplace.js pace.js auction-competition.js city-requests.js visual.js visual.css game-rework-v016.js; do
-            test -f "$file"
-            cp "$file" preview/
-          done
+          # Include every root-level game module, including future animation
+          # modules (scene-motion.js/css in v0.18), without freezing a file list.
+          find . -maxdepth 1 -type f \( -name '*.js' -o -name '*.css' \) -exec cp -t preview/ {} +
+          test -f preview/balance.js
+          test -f preview/visual.js
+          test -f preview/visual.css
           if [[ -d assets ]]; then
             cp -R assets preview/
           fi
