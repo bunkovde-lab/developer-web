@@ -866,16 +866,17 @@ let ring=coords.map(([r,c],i)=>{
  const label=eventNames[i],look=trackIcons[label]||['◆','event'];
  return '<div class="cell '+(p.pos===i?'active':'')+'" data-kind="'+look[1]+'" style="grid-row:'+r+';grid-column:'+c+'" title="'+label+'" aria-label="'+label+', клетка '+(i+1)+'"'+(p.pos===i?' aria-current="location"':'')+'><b><small class="track-index">'+String(i+1).padStart(2,'0')+'</small>'+label+'</b><span class="track-icon" aria-hidden="true">'+look[0]+'</span><div class="tokens">'+state.players.map((u,k)=>u.pos===i?'<i class="token" style="background:'+colors[k]+'"></i>':'').join('')+'</div></div>';
 }).join('');
-let districtNames=['Ж1 · ИЖС','Торговля','ПК · Промзона','ОД · Коммерция','ЖК-4 · Жильё','Городской район'];
-let districtColors=['#2a8764','#bd9145','#58798b','#945382','#168fa1','#397857'];
+let districtNames=ZONE_GRID.map((code,i)=>zoneOf(i).title);
+let districtColors=ZONE_GRID.map((code,i)=>zoneOf(i).color);
 let city='<div class="city city-map"><div class="city-title">🏙 ДЕВЕЛОПЕР • ГОРОД</div><div class="city-lots">'+state.plots.map((x,i)=>{
- let d=Math.floor(i/5),owner=x.owner>=0?state.players[x.owner]:null;
+ let d=i,owner=x.owner>=0?state.players[x.owner]:null;
  const progress=x.project?.stage||0,built=progress===4;
  let stage=!owner?'◇':built?'🏢':['▫','📐','📑','🏗'][progress]||'🏗';
- const status=!owner?'Свободен':built?(x.tenant?'Сдан в аренду':'Введён'):x.investor?'Инвестиционный проект':'В работе';
- const stageLabel=owner?(built?'ГОТОВО':progress+'/4 ЭТАПОВ'):x.price+' тыс.';
- return '<button class="map-plot '+(x.level?'built ':'')+(selectedLot===i?'chosen ':'')+'" data-status="'+(!owner?'free':built?'completed':x.investor?'investor':'construction')+'" style="--zone:'+districtColors[d]+';--owner:'+(owner?colors[x.owner]:'#c1cecb')+'" onclick="inspectLot('+i+')" aria-label="'+x.name+', '+districtNames[d]+', '+(owner?'владелец '+owner.name+', этап '+progress+' из 4':status)+'" title="'+x.name+' · '+districtNames[d]+' · '+x.price+'"><span class="plot-id">'+(i+1)+'</span><span class="plot-stage">'+stage+'</span><span class="plot-zone">'+status+'</span><span class="plot-progress">'+stageLabel+'</span></button>'
- }).join('')+'</div><div class="map-key">■ Ж1 &nbsp; ■ Торговля &nbsp; ■ ПК &nbsp; ■ ОД &nbsp; ■ ЖК-4 &nbsp; ■ Город</div></div>';
+ const tactics=territoryAnalysis(i,state.turn);
+ const status=Number.isInteger(x.reservedFor)?'Секция комплекса':!owner?'Свободен':built?(x.tenant?'Сдан в аренду':'Введён'):x.investor?'Инвестиционный проект':'В работе';
+ const stageLabel=Number.isInteger(x.reservedFor)?'СЕКЦИЯ':owner?(built?'ГОТОВО':progress+'/4 ЭТАПОВ'):x.price+' тыс.';
+ return '<button class="map-plot '+(x.level?'built ':'')+(selectedLot===i?'chosen ':'')+'" data-status="'+(Number.isInteger(x.reservedFor)?'reserved':!owner?'free':built?'completed':x.investor?'investor':'construction')+'" data-zone="'+x.zone+'" style="--zone:'+districtColors[d]+';--owner:'+(owner?colors[x.owner]:'#c1cecb')+'" onclick="inspectLot('+i+')" aria-label="'+x.name+', '+districtNames[d]+', '+(owner?'владелец '+owner.name+', этап '+progress+' из 4':status)+'" title="'+x.name+' · '+districtNames[d]+' · '+x.price+'"><span class="plot-id">'+(i+1)+'</span><span class="plot-stage">'+stage+'</span><span class="plot-zone">'+(owner?status:zoneOf(i).short)+'</span><span class="plot-progress">'+stageLabel+'</span><span class="plot-tactics">'+(tactics.own?'🔗'+tactics.own:'')+(tactics.blocking?' ⛨'+tactics.blocking:'')+'</span></button>'
+ }).join('')+'</div><div class="map-key">● Ж1 (12) · Т (7) · ПК (4) · ОД (3) · Ж4 (2) · ★ Уникальные (2) &nbsp; 🔗 соседство &nbsp; ⛨ блокировка</div></div>';
 $('board').innerHTML=ring+city;
 let info=selectedLot>=0&&selectedLot<state.plots.length?state.plots[selectedLot]:null;
 $('players').innerHTML=state.players.map((u,i)=>'<div><span style="color:'+colors[i]+'">●</span> <b>'+u.name+'</b> · '+professionName(u.profession)+': '+u.money+' 💰 · активы '+value(i)+'</div>').join('')+(info?'<hr><b>'+info.name+'</b> · '+info.price+' 💰 · '+(info.owner<0?'свободен':'владелец: '+state.players[info.owner].name)+' · стройка '+info.level+'/3':'');
@@ -923,7 +924,7 @@ function closePlotCard(){$('plotCardOverlay').hidden=true}
 function inspectLot(i){
  if(!state?.plots?.[i])return;
  selectedLot=i;render();
- const x=state.plots[i],zone=zoneLabels[Math.floor(i/5)]||'Смешанная зона';
+ const x=state.plots[i],zone=zoneOf(i).title;
  const owner=x.owner<0?'Свободный':state.players[x.owner].name;
  const commissioned=x.level>0&&x.project?.stage===4;
  const project=x.project,chosenSize=project?.size;
@@ -932,6 +933,7 @@ function inspectLot(i){
  $('plotCardInfo').textContent=zone+' · участок: '+x.price+' тыс. · владелец: '+owner+
   (commissioned?' · введён в эксплуатацию':' · строительный этап: '+(project?.stage||0)+'/4');
  const options=existing?[projectCatalog[chosenSize]]:projectCatalog;
+ const tactics=territoryAnalysis(i,state.turn);
  $('plotCardProjects').innerHTML=options.map(p=>{
   const size=projectCatalog.indexOf(p),chosen=project&&project.size===size,stage=chosen?project.stage:0;
   if(commissioned&&chosen){
@@ -955,13 +957,14 @@ function inspectLot(i){
     '<p><b>Инженерные требования:</b> '+connections.filter(t=>requirements.includes(t)).length+' / '+requirements.length+' подключений.</p>'+
     '<div class="pc-networks">'+steps+'</div><p class="muted">Каждая подходящая сеть: +10% к базовой аренде и цене продажи. Стоимость подключения экспериментальная.</p></article>';
   }
-  const requirements=p.land===2?'Нужны два соседних участка.':'Достаточно одного участка.';
-  const canChoose=x.owner===state.turn&&(!project||chosen),playable=canChoose&&stage<4?availableCards(current(),nextStageDeck(project)):[];
+  const requirements=p.land===2?'Нужен второй собственный свободный соседний участок для секции комплекса.':'Достаточно одного участка.';
+  const zoneAllowed=allowedProject(i,size),pairCandidate=size===2?largePairCandidate(i,state.turn):-1;
+  const canChoose=x.owner===state.turn&&!Number.isInteger(x.reservedFor)&&(!project||chosen)&&zoneAllowed&&(size!==2||project||pairCandidate>=0),playable=canChoose&&stage<4?availableCards(current(),nextStageDeck(project)):[];
   const buttons=playable.map(card=>'<button onclick="playStageCard('+i+','+size+','+card.id+')">Разыграть: '+(BALANCED_DECKS[card.deck]||eventDecks[card.deck])[card.index].title+' · '+(BALANCED_DECKS[card.deck]?.[card.index]?.costs?.[size]??stageCost(card.deck,size))+' тыс.</button>').join('');
   return '<article class="pc-project"><strong>'+p.name+'</strong><p>'+p.desc+'</p><p>Участков: '+p.land+' · '+requirements+' Статус: '+p.license+'</p>'+
-   '<p><b>Этапы оплачиваются при розыгрыше соответствующих карт.</b></p><p>Проектирование → Разрешения → Строительство → Ввод в эксплуатацию.</p>'+
+   '<p><b>Разрешено в зоне:</b> '+(zoneAllowed?'да':'нет')+(size===2&&!project?' · второй участок: '+(pairCandidate>=0?'№'+(pairCandidate+1):'требуется'):'')+'.</p><p><b>Этапы оплачиваются при розыгрыше соответствующих карт.</b></p><p>Проектирование → Разрешения → Строительство → Ввод в эксплуатацию.</p>'+
    '<p>'+(chosen?'Текущий этап: '+(stage<4?nextStageLabel(project):'объект введён в эксплуатацию'):project?'На участке выбран другой проект.':x.owner!==state.turn?'Для розыгрыша нужно владеть участком.':'Для запуска нужна карта «Проектирование».')+'</p>'+(x.investor?'<p class="muted"><b>💼 Инвестор: '+x.investor.capital+' тыс., доля '+x.investor.share+'% прибыли.</b> После ввода здание будет автоматически продано. Аренда недоступна.</p>':'')+buttons+'</article>';
- }).join('');
+ }).join('')+(x.owner<0&&state.rolled&&!current().bot&&[1,9,24].includes(current().pos)?'<div class="pc-buy-land"><p><b>⚖️ Аукцион:</b> участок доступен для выбора. Рядом своих: '+tactics.own+', цепь соперника для блокировки: '+tactics.blocking+'.</p><button onclick="closePlotCard();beginAuction('+i+')">⚖️ Купить через аукцион · от '+x.price+' тыс.</button></div>':'')+'<div class="pc-strategy"><b>🔗 Позиция:</b> своих соседей '+tactics.own+' · соседей соперников '+tactics.enemy+' · свободных рядом '+tactics.free+'. Победа: 4 отдельных готовых соседних здания.</div>';
  $('plotCardOverlay').hidden=false;
 }
 function showProjectNotice(){alert('Для строительства получите карты этапов и разыграйте их на своём участке.')}
