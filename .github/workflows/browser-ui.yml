@@ -6,12 +6,14 @@ on:
       - 'index.html'
       - 'balance.js'
       - 'marketplace.js'
+      - 'city-requests.js'
       - 'visual.js'
       - 'visual.css'
       - 'pace.js'
       - 'tests/browser_visual.cjs'
       - 'tests/browser_territory.cjs'
       - 'tests/browser_marketplace.cjs'
+      - 'tests/browser_city_requests.cjs'
       - '.github/workflows/browser-ui.yml'
   pull_request:
   workflow_dispatch:
