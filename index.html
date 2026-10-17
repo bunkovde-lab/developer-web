@@ -109,6 +109,7 @@ header{padding:7px 10px}header h1{font-size:clamp(15px,2.5vw,22px)}header small{
 .construction-deck-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.construction-deck-choices button{min-height:75px;white-space:normal}@media(max-width:420px){.construction-deck-choices{grid-template-columns:1fr}}#cardEffect{white-space:pre-line;text-align:left;line-height:1.6}.inventory-card{padding:6px 8px;border:1px solid #496481;border-radius:8px;margin:5px 0;font-size:12px}.pc-project button{margin:5px 0;white-space:normal}
 .hand-section{margin-top:14px}.hand-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;align-items:center}.hand-heading h3{margin:3px 0 10px}.hand-heading span{font-size:12px;color:#c2d3ea}.hand-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hand-category{border:1px solid #476282;border-radius:10px;background:#142840;min-width:0;overflow:hidden}.hand-category summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:11px;font-size:13px;font-weight:700;list-style:none}.hand-category summary::-webkit-details-marker{display:none}.hand-category summary:after{content:'⌄';color:#b9d0f0}.hand-category[open] summary:after{content:'⌃'}.hand-count{display:inline-block;min-width:24px;text-align:center;background:#36547a;color:#fff;border-radius:99px;padding:2px 7px}.hand-stack{padding:0 10px 10px;display:grid;gap:7px}.hand-card{background:#253c5c;border:1px solid #56739b;border-radius:9px;padding:10px;font-size:12px;overflow-wrap:anywhere}.hand-card strong{display:block;font-size:13px;margin-bottom:5px}.hand-card small{display:block;color:#d4e1f1;line-height:1.45}.hand-empty{color:#93a8c5;font-size:12px;margin:0}.hand-card button{margin-top:8px;width:100%;padding:9px;font-size:12px}@media(min-width:650px){.hand-groups{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .contract-detail{padding:0}.contract-detail summary{display:block;cursor:pointer;padding:10px;list-style:none}.contract-detail summary::-webkit-details-marker{display:none}.contract-detail summary strong{margin-bottom:5px}.contract-detail summary small{margin:0}.contract-body{padding:0 10px 10px}.contract-body p{margin:7px 0;line-height:1.45}.contract-detail[open]{border-color:#e0b568}
+.market-apply-label{display:block;font-size:12px;margin-top:8px}.market-apply-label select{display:block;width:100%;margin-top:5px;min-width:0;font-size:14px}.hand-card button{margin-top:8px}
 </style></head>
 <body><header><h1>🏙️ ДЕВЕЛОПЕР</h1><small>HTML · v0.6.0 · автосохранение и меню партии</small></header><main class="wrap">
 <div class="session-menu"><button onclick="showSessionMenu()">☰ Меню партии</button><span class="session-status" id="sessionStatus">Загрузка…</span><span class="share-note">Сетевая игра: пока не подключена</span></div><div class="layout"><div class="game-field"><div class="board" id="board"></div><p class="scene-tip">Внешняя дорожка — ход фишек; внутренние кварталы — участки. Нажмите на участок, чтобы увидеть его статус.</p><section class="panel hand-section" aria-label="Карты текущего игрока"><div class="hand-heading"><h3>🎴 Мои карты на руках</h3><span id="handOwner"></span></div><div class="hand-groups" id="handGroups"></div></section></div><aside class="cols company-panel" aria-label="Кабинет компании и управление"><section class="panel"><h3>Игровой кабинет</h3><div class="stats"><div class="pill">Раунд: <b id="round">1</b></div><div class="pill">Ход: <b id="who">—</b></div><div class="pill">Капитал: <b id="money">—</b></div><div class="pill">Бросок: <b id="dice">—</b></div></div><div class="actions"><label class="pill">Участники <select id="count"><option>3</option><option>4</option><option>5</option><option>6</option></select></label><button onclick="requestNewGame()">Новая партия</button><button onclick="roll()" id="roll">🎲 Бросить кубик</button><button onclick="buy()" id="buy">Аукцион (только клетка)</button><button onclick="build()" id="build">🏗️ Построить</button><button onclick="loan()" id="loan">Кредит +300</button><button onclick="sell()" id="sell">Продать объект</button><button onclick="endTurn()" id="end">Завершить ход</button><button onclick="save()">Сохранить</button><button onclick="load()">Загрузить</button></div></section><section class="panel"><h3>Кабинет компании</h3><div id="players"></div><p class="muted">Карты по категориям находятся под игровым полем.</p><p class="muted">Покупка земли, строительство, кредиты и доходы от аренды — упрощённая модель для тестирования интерфейса.</p></section><section class="panel"><h3>События партии</h3><div id="log"></div></section></aside></div>
@@ -202,7 +203,7 @@ function closeAuctionResult(){
  document.querySelector('.auction-buttons button').disabled=false;
  $('auctionError').textContent='';
 }
-function build(){alert('Строительство теперь выполняется розыгрышем четырёх карт на своём участке. Откройте карточку участка и используйте карты из инвентаря.');render()}function loan(){let p=current();if(p.debt<900){p.money+=300;p.debt+=300;note(p.name+' получил кредит 300')}render()}function sell(){let p=current(),x=state.plots[p.pos];if(state.rolled&&x.owner===state.turn){let val=x.price+250*x.level;p.money+=val;x.owner=-1;x.level=0;x.project=null;note(p.name+' продал объект за '+val)}render()}function endTurn(){if(state.pendingCard||state.constructionDeckChoice||state.auction)return;if(!state.rolled)return;closeCardTrade();state.turn++;if(state.turn>=state.players.length){state.turn=0;state.round++;state.players.forEach((p,i)=>{let income=state.plots.filter(x=>x.owner===i).reduce((s,x)=>s+35*x.level,0);p.money+=income-Math.floor(p.debt*.05);if(income)note(p.name+' получил доход '+income)})}state.rolled=false;state.dice='—';let safety=0;while((current().skipTurns||0)>0&&safety++<state.players.length*4){let skipped=current();skipped.skipTurns--;note(skipped.name+' пропускает ход. Осталось '+skipped.skipTurns);state.turn++;if(state.turn>=state.players.length){state.turn=0;state.round++;}}render();if(current().bot)setTimeout(bot,450)}function bot(){if(!current().bot)return;roll();let p=current(),x=state.plots[p.pos];/* Боты пока не разыгрывают строительные карты автоматически. */if(p.money<200&&p.debt<900)loan();setTimeout(endTurn,350)}function value(i){let p=state.players[i];return p.money-p.debt+state.plots.filter(x=>x.owner===i).reduce((s,x)=>s+x.price+250*x.level,0)}const eventNames=["СТАРТ","Аукцион","Работа","Рынок","Строительство","События","Сети","Сделка","Налоговая проверка","Аукцион","Госзаказ","Кризис","Работа","Рынок","Сети","Строительство","Сделка","События","Госзаказ","Работа","Кризис","Рынок","Строительство","Сети","Аукцион","Сделка","События","Госзаказ","Работа","Строительство","Биржа недвижимости","События"];
+function build(){alert('Строительство теперь выполняется розыгрышем четырёх карт на своём участке. Откройте карточку участка и используйте карты из инвентаря.');render()}function loan(){let p=current();if(p.debt<900){p.money+=300;p.debt+=300;note(p.name+' получил кредит 300')}render()}function sell(){let p=current(),x=state.plots[p.pos];if(state.rolled&&x.owner===state.turn){let val=x.price+250*x.level;p.money+=val;x.owner=-1;x.level=0;x.project=null;x.tenant=null;note(p.name+' продал объект за '+val)}render()}function endTurn(){if(state.pendingCard||state.constructionDeckChoice||state.auction)return;if(!state.rolled)return;closeCardTrade();state.turn++;if(state.turn>=state.players.length){state.turn=0;state.round++;state.players.forEach((p,i)=>{let income=state.plots.filter(x=>x.owner===i&&x.level>0).reduce((s,x)=>s+(x.tenant?.income||0),0);p.money+=income-Math.floor(p.debt*.05);if(income)note(p.name+' получил доход '+income)})}state.rolled=false;state.dice='—';let safety=0;while((current().skipTurns||0)>0&&safety++<state.players.length*4){let skipped=current();skipped.skipTurns--;note(skipped.name+' пропускает ход. Осталось '+skipped.skipTurns);state.turn++;if(state.turn>=state.players.length){state.turn=0;state.round++;}}render();if(current().bot)setTimeout(bot,450)}function bot(){if(!current().bot)return;roll();let p=current(),x=state.plots[p.pos];/* Боты пока не разыгрывают строительные карты автоматически. */if(p.money<200&&p.debt<900)loan();setTimeout(endTurn,350)}function value(i){let p=state.players[i];return p.money-p.debt+state.plots.filter(x=>x.owner===i).reduce((s,x)=>s+x.price+250*x.level,0)}const eventNames=["СТАРТ","Аукцион","Работа","Рынок","Строительство","События","Сети","Сделка","Налоговая проверка","Аукцион","Госзаказ","Кризис","Работа","Рынок","Сети","Строительство","Сделка","События","Госзаказ","Работа","Кризис","Рынок","Строительство","Сети","Аукцион","Сделка","События","Госзаказ","Работа","Строительство","Биржа недвижимости","События"];
 
 /* Prototype decks: content requires game-design approval. */
 const STAGE_DECKS=["permits","utilities","construction","commissioning"];
@@ -402,6 +403,45 @@ function renderGovernmentContract(c,i){
  '<p class="muted">Отказ от предложения до принятия — без штрафа. После принятия контракт обязателен. Кнопки принятия и выполнения пока не реализованы.</p></div></details>';
 }
 
+
+function applySelectedMarketCard(cardId){
+ const selector=document.getElementById('market-target-'+cardId);
+ if(!selector)return;
+ const lotIndex=Number(selector.value);
+ if(!Number.isInteger(lotIndex))return;
+ applyMarketCard(cardId,lotIndex);
+}
+function ownedFinishedPlots(){
+ return state.plots.map((lot,index)=>({lot,index})).filter(x=>x.lot.owner===state.turn&&x.lot.level>0&&x.lot.project?.stage===4);
+}
+function marketBase(lot,kind){
+ const size=lot.project?.size;
+ const catalog=projectCatalog[size];
+ if(!catalog)return 0;
+ return kind==='tenant'?catalog.rent:catalog.sale;
+}
+function applyMarketCard(cardId,lotIndex){
+ if(!state||current().bot||state.pendingCard||state.auction)return;
+ const p=current(),cards=p.marketCards||[],i=cards.findIndex(c=>c.id===cardId);
+ if(i<0)return;
+ const c=cards[i],lot=state.plots[lotIndex];
+ if(!['tenant','buyer'].includes(c.type)||!lot||lot.owner!==state.turn||lot.level<1||lot.project?.stage!==4){alert('Нужен ваш полностью введённый в эксплуатацию объект.');return}
+ if(c.type==='tenant'&&lot.tenant){alert('У этого объекта уже есть арендатор.');return}
+ const percentage=Number(c.card?.percent);
+ if(!Number.isFinite(percentage)||percentage<=0)return;
+ const money=Math.round(marketBase(lot,c.type)*percentage/100);
+ if(c.type==='tenant'){
+  lot.tenant={percent:percentage,income:money,cardId};
+  note(p.name+' заключил договор аренды для '+lot.name+': '+money+' тыс. за раунд');
+ }else{
+  p.money+=money;
+  note(p.name+' продал '+lot.name+' покупателю за '+money+' тыс.');
+  lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;
+ }
+ cards.splice(i,1);
+ render();
+}
+
 function renderHand(player){
  $('handOwner').textContent=player.name+' · карта компании';
  const cards=(player.cards||[]),market=(player.marketCards||[]),gov=(player.governmentCards||[]);
@@ -410,6 +450,12 @@ function renderHand(player){
   const items=type==='government'?gov:type==='investor'||type==='tenant'||type==='buyer'?market.filter(c=>c.type===type):cards.filter(c=>c.deck===type);
   const html=items.map((c,i)=>{
    if(type==='government')return renderGovernmentContract(c,i);
+   if(type==='tenant'||type==='buyer'){
+    const targets=ownedFinishedPlots().filter(x=>type!=='tenant'||!x.lot.tenant);
+    const list=targets.length?'<label class="market-apply-label">Объект<select id="market-target-'+c.id+'">'+targets.map(x=>'<option value="'+x.index+'">'+x.lot.name+' — '+Math.round(marketBase(x.lot,type)*c.card.percent/100)+' тыс.'+(type==='tenant'?'/раунд':'')+'</option>').join('')+'</select></label><button type="button" onclick="applySelectedMarketCard('+c.id+')">'+(type==='tenant'?'Назначить арендатора':'Продать покупателю')+'</button>':'<small>Нет подходящего готового объекта</small>';
+    return '<article class="hand-card"><strong>'+({'tenant':'Арендатор','buyer':'Покупатель'}[type])+' №'+c.id+'</strong><small>'+handCardDetails(c,type)+'</small>'+list+'</article>';
+   }
+
    const model=(BALANCED_DECKS[type]||eventDecks[type]||[])[c.index],title=type==='government'?'Госконтракт №'+(c.id||i+1):['investor','tenant','buyer'].includes(type)?label.replace(/^[^ ]+ /,'')+' №'+(c.id||i+1):model?.title||'Карта '+(i+1);
    return '<article class="hand-card"><strong>'+title+'</strong><small>'+handCardDetails(c,type)+'</small></article>';
   }).join('')||'<p class="hand-empty">Нет карт</p>';
@@ -455,7 +501,7 @@ function inspectLot(i){
  const requirements=p.land===2?'Нужны два соседних участка.':'Достаточно одного участка.';
  const size=projectCatalog.indexOf(p),project=x.project,chosen=project&&project.size===size,stage=chosen?project.stage:0,canChoose=x.owner===state.turn&&(!project||chosen);
  const playable=canChoose&&stage<4?availableCards(current(),STAGE_DECKS[stage]):[];
- const buttons=playable.map(card=>'<button onclick="playStageCard('+i+','+size+','+card.id+')">Разыграть: '+(BALANCED_DECKS[card.deck]||eventDecks[card.deck])[card.index].title+' · '+stageCost(card.deck,size)+' у.е.</button>').join('');
+ const buttons=playable.map(card=>'<button onclick="playStageCard('+i+','+size+','+card.id+')">Разыграть: '+(BALANCED_DECKS[card.deck]||eventDecks[card.deck])[card.index].title+' · '+(BALANCED_DECKS[card.deck]?.[card.index]?.costs?.[size]??stageCost(card.deck,size))+' тыс.</button>').join('');
  return '<article class="pc-project"><strong>'+p.name+'</strong><p>'+p.desc+'</p><p>Участков: '+p.land+' · '+requirements+' Статус: '+p.license+'</p><p><b>Этапы оплачиваются только при розыгрыше соответствующих карт.</b></p><p>Разрешения → Сети → Строительство → Ввод в эксплуатацию.</p><p>'+(chosen?'Текущий этап: '+(stage<4?STAGE_LABELS[stage]:'объект введён в эксплуатацию'):project?'На участке выбран другой размер объекта.':x.owner!==state.turn?'Для розыгрыша нужно владеть участком.':'Для запуска нужна карта «Разрешения».')+'</p>'+buttons+'</article>';
  }).join('');
  $('plotCardOverlay').hidden=false;
