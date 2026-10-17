@@ -10,6 +10,7 @@ on:
       - 'visual.css'
       - 'pace.js'
       - 'tests/browser_visual.cjs'
+      - 'tests/browser_territory.cjs'
       - 'tests/browser_marketplace.cjs'
       - '.github/workflows/browser-ui.yml'
   pull_request:
@@ -31,6 +32,8 @@ jobs:
         run: node tests/browser_marketplace.cjs
       - name: Responsive visual and audio UI
         run: node tests/browser_visual.cjs
+      - name: Deterministic land market and territorial tactics UI
+        run: node tests/browser_territory.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
