@@ -66,7 +66,7 @@ assert.equal(run('state.landDeck[29]'),29);
 run('state.rolled=true;state.players[0].pos=1;state.players[0].money=3000');
 assert.equal(run('openLandSelection()'),true);
 assert.equal(run('document.getElementById("landSelectOverlay").hidden'),false);
-assert(run('document.getElementById("landBrowse").innerHTML.includes("Набережная"))');
+assert(run('document.getElementById("landBrowse").innerHTML.includes("Набережная")'));
 run('chooseAuctionLand(29)');
 assert.equal(run('chosenLand'),29,'User can choose the premium lot instead of receiving random land');
 assert.equal(run('startSelectedLandAuction()'),true);
