@@ -6,6 +6,10 @@ on:
       - 'index.html'
       - 'balance.js'
       - 'marketplace.js'
+      - 'visual.js'
+      - 'visual.css'
+      - 'pace.js'
+      - 'tests/browser_visual.cjs'
       - 'tests/browser_marketplace.cjs'
       - '.github/workflows/browser-ui.yml'
   pull_request:
@@ -25,3 +29,11 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Run mobile marketplace browser test
         run: node tests/browser_marketplace.cjs
+      - name: Responsive visual and audio UI
+        run: node tests/browser_visual.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: developer-v010-screenshots
+          path: ui-snapshots/*.png
+          if-no-files-found: ignore
