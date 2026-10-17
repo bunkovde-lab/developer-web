@@ -313,7 +313,7 @@ function botTradeFromPeers(){
   p.money-=price;seller.money+=price;state.econMetrics.botTrades++;
   note('🤖 '+p.name+' приобрёл '+kindLabel+' у '+seller.name+' на клетке «'+cell+'» за '+price+' тыс.');return true;
  }
- return false;
+ return cell==='Сделка'&&typeof window.cityRequestBot==='function'?window.cityRequestBot():false;
 }
 function beginConstructionDeckChoice(){
  const p=current();
