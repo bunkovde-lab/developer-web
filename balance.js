@@ -49,6 +49,7 @@ function ensureEconomy(){
   if(!Array.isArray(p.governmentCards))p.governmentCards=[];
  }
  migrateMunicipalOffers();
+ for(const p of state.players)p.governmentCards=[]; // discontinued; old advance is refunded once by migration
  if(!Number.isInteger(state.nextCardId))state.nextCardId=Math.max(0,...state.players.flatMap(p=>[...p.cards,...p.networkCards,...p.marketCards,...p.governmentCards].map(c=>Number(c.id)||0)));
 }
 function refreshStock(){
@@ -129,7 +130,7 @@ function applyNetworkCard(lotIndex,cardId){
  if(ok){consumeAction();returnNetwork(card.type);render();}
  return ok;
 }
-function newGame(){OLD_NEW_GAME();ensureEconomy();note('Ограниченный рынок карт: 12 экземпляров на этап и '+(GAME_V2.networkCopies*NETWORK_CARDS.length)+' инженерных карт; повторная выдача после периода возврата.');render();}
+function newGame(){OLD_NEW_GAME();ensureEconomy();note('Рынок карт: общие колоды ограничены, лимита руки нет. Сыгранные карты возвращаются сразу; запросы города доступны на клетке «Сделка».');render();}
 function marketBase(lot,kind){
  const base=OLD_MARKET_BASE(lot,kind),cr=state?.crisis;
  return cr&&state.round<=cr.until?Math.round(base*cr.percent/100):base;
@@ -235,7 +236,7 @@ function executeTradeMarket(){
  else $('tradePreview').textContent=message||'Выберите доступную сделку.';
 }
 function botBuyLand(){
- const i=state.turn,p=current();if(!p.bot||!state.rolled||![1,9,24].includes(p.pos))return false;
+ const i=state.turn,p=current();if(!p.bot||!state.rolled||![1,9,18,24].includes(p.pos))return false;
  const already=state.plots.filter(l=>l.owner===i).length;
  if(already>=7)return false;
  ensureLandDeck();
@@ -297,7 +298,7 @@ function botTradeFromPeers(){
    lots.some(x=>x.lot.project?.stage!==4)&&p.money<250&&!p.marketCards.some(c=>c.type==='investor')?'investor':null;
   kind='market';kindLabel=need==='tenant'?'Арендатор':'Инвестор';
  }else return false;
- if(!need)return false;
+ if(!need)return cell==='Сделка'&&typeof window.cityRequestBot==='function'?window.cityRequestBot():false;
  for(let j=0;j<state.players.length;j++){
   if(j===i||!state.players[j].bot)continue;
   const seller=state.players[j];
@@ -346,7 +347,7 @@ function botBusiness(){
  for(const {lot,i} of lots){
   if(lot.project?.stage===4&&!lot.tenant&&!lot.investor){const ti=p.marketCards.findIndex(c=>c.type==='tenant');if(ti>=0){const c=p.marketCards.splice(ti,1)[0];lot.tenant={percent:c.card.percent,cardId:c.id};lot.tenant.income=tenantIncomeForLot(lot);note('🤖 '+p.name+' заселил арендатора на '+lot.name+'.');return true;}}
  }
- if(botGovernmentContracts(p,lots))return true;
+
  if(p.money<230){
   const investor=p.marketCards.find(c=>c.type==='investor');
   const lot=lots.find(x=>x.lot.project?.stage!==4&&!x.lot.investor&&lots.filter(o=>o.lot.project?.stage===4).length<3);
