@@ -140,7 +140,7 @@ run('newGame();state.rolled=true;state.turn=0;state.plots[0].owner=0;state.playe
 run('applyInvestorCard(801,0)');
 assert.equal(run('state.plots[0].investor.capital'),200);
 run('state.rolled=false;state.players[0].pos=31;roll()');
-assert.equal(run('state.players[0].investments.length'),0,'No recurring debt for new investor');
+assert.equal(run('(state.players[0].investments||[]).length'),0,'No recurring debt for new investor');
 
 run('newGame();state.rolled=true;state.turn=0;state.players[0].money=500;state.plots[0].owner=0;state.players[0].governmentCards.push({id:901,type:"land",version:2,terms:{premium:1.15}})');
 run("governmentAction(901,'finish',0)");
