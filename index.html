@@ -765,13 +765,20 @@ function checkVictory(){
 }
 function render(){if(!state)return;const winner=checkVictory();persistState();let p=current();const banner=$('winBanner');banner.hidden=winner<0;if(winner>=0){$('winTitle').textContent='🏆 Победитель: '+state.players[winner].name;$('winDetails').textContent='Четыре введённых в эксплуатацию здания на участках №'+state.winningLots.map(i=>i+1).join(', ')+'. Соседство только по горизонтали и вертикали; каждый объект прошёл этап «Проектирование». Прокладка линий между клетками не требуется.';}$('round').textContent=state.round;$('who').textContent=p.name;$('money').textContent=p.money;$('dice').textContent=state.dice;const settlement=startSettlement(state.turn);$('rentalIncome').textContent=settlement.rent;$('startPayout').textContent=settlement.total;
 let coords=[];for(let c=1;c<=9;c++)coords.push([1,c]);for(let r=2;r<=9;r++)coords.push([r,9]);for(let c=8;c>=1;c--)coords.push([9,c]);for(let r=8;r>=2;r--)coords.push([r,1]);
-let ring=coords.map(([r,c],i)=>'<div class="cell '+(p.pos===i?'active':'')+'" style="grid-row:'+r+';grid-column:'+c+'" title="'+eventNames[i]+'"><b>'+(i+1)+'. '+eventNames[i]+'</b><span>'+(i===0?'💰+60 + аренда':'🎲')+'</span><div class="tokens">'+state.players.map((u,k)=>u.pos===i?'<i class="token" style="background:'+colors[k]+'"></i>':'').join('')+'</div></div>').join('');
+const trackIcons={'СТАРТ':['🏁','start'],'Аукцион':['⚖️','auction'],'Работа':['🛠','work'],'Рынок':['💠','market'],'Строительство':['🏗','build'],'Инженерные сети':['⚡','network'],'Сделка':['🤝','deal'],'Налоговая проверка':['📋','danger'],'Госзаказ':['🏛','gov'],'События':['✦','event'],'Кризис':['📉','danger'],'Биржа недвижимости':['📊','market']};
+let ring=coords.map(([r,c],i)=>{
+ const label=eventNames[i],look=trackIcons[label]||['◆','event'];
+ return '<div class="cell '+(p.pos===i?'active':'')+'" data-kind="'+look[1]+'" style="grid-row:'+r+';grid-column:'+c+'" title="'+label+'" aria-label="'+label+', клетка '+(i+1)+'"'+(p.pos===i?' aria-current="location"':'')+'><b><small class="track-index">'+String(i+1).padStart(2,'0')+'</small>'+label+'</b><span class="track-icon" aria-hidden="true">'+look[0]+'</span><div class="tokens">'+state.players.map((u,k)=>u.pos===i?'<i class="token" style="background:'+colors[k]+'"></i>':'').join('')+'</div></div>';
+}).join('');
 let districtNames=['Ж1 · ИЖС','Торговля','ПК · Промзона','ОД · Коммерция','ЖК-4 · Жильё','Городской район'];
 let districtColors=['#2a8764','#bd9145','#58798b','#945382','#168fa1','#397857'];
 let city='<div class="city city-map"><div class="city-title">🏙 ДЕВЕЛОПЕР • ГОРОД</div><div class="city-lots">'+state.plots.map((x,i)=>{
  let d=Math.floor(i/5),owner=x.owner>=0?state.players[x.owner]:null;
- let stage=x.level?'🏢':owner?'🏗':'▫';
- return '<button class="map-plot '+(x.level?'built ':'')+(selectedLot===i?'chosen ':'')+'" style="--zone:'+districtColors[d]+';--owner:'+(owner?colors[x.owner]:'#c1cecb')+'" onclick="inspectLot('+i+')" aria-label="'+x.name+', '+districtNames[d]+', '+(owner?'владелец '+owner.name:'свободен')+'" title="'+x.name+' · '+districtNames[d]+' · '+x.price+'"><span class="plot-id">'+(i+1)+'</span><span class="plot-stage">'+stage+'</span><span class="plot-zone">'+districtNames[d].split(' · ')[0]+'</span></button>'
+ const progress=x.project?.stage||0,built=progress===4;
+ let stage=!owner?'◇':built?'🏢':['▫','📐','📑','🏗'][progress]||'🏗';
+ const status=!owner?'Свободен':built?(x.tenant?'Сдан в аренду':'Введён'):x.investor?'Инвестиционный проект':'В работе';
+ const stageLabel=owner?(built?'ГОТОВО':progress+'/4 ЭТАПОВ'):x.price+' тыс.';
+ return '<button class="map-plot '+(x.level?'built ':'')+(selectedLot===i?'chosen ':'')+'" data-status="'+(!owner?'free':built?'completed':x.investor?'investor':'construction')+'" style="--zone:'+districtColors[d]+';--owner:'+(owner?colors[x.owner]:'#c1cecb')+'" onclick="inspectLot('+i+')" aria-label="'+x.name+', '+districtNames[d]+', '+(owner?'владелец '+owner.name+', этап '+progress+' из 4':status)+'" title="'+x.name+' · '+districtNames[d]+' · '+x.price+'"><span class="plot-id">'+(i+1)+'</span><span class="plot-stage">'+stage+'</span><span class="plot-zone">'+status+'</span><span class="plot-progress">'+stageLabel+'</span></button>'
  }).join('')+'</div><div class="map-key">■ Ж1 &nbsp; ■ Торговля &nbsp; ■ ПК &nbsp; ■ ОД &nbsp; ■ ЖК-4 &nbsp; ■ Город</div></div>';
 $('board').innerHTML=ring+city;
 let info=selectedLot>=0&&selectedLot<state.plots.length?state.plots[selectedLot]:null;
