@@ -16,6 +16,8 @@ async function waitServer(){for(let i=0;i<50;i++){try{await new Promise((resolve
   await page.goto(url,{waitUntil:'networkidle'});
   await page.evaluate(()=>{
     newGame();
+    // Return speed-mode starter cards of bots to the physical stock to isolate these trade assertions.
+    for(let i=1;i<state.players.length;i++){for(const c of state.players[i].cards)state.stock.stage[c.deck].push(c.index);state.players[i].cards=[];}
     if(typeof closeSessionMenu==='function')closeSessionMenu();
     state.rolled=true;
     state.players[0].pos=7;
