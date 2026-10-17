@@ -1,0 +1,79 @@
+name: Package Developer Web PR preview
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: developer-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble playable HTML package and verify entrypoint dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p preview
+          cp index.html preview/
+          for file in balance.js marketplace.js pace.js auction-competition.js city-requests.js visual.js visual.css game-rework-v016.js; do
+            test -f "$file"
+            cp "$file" preview/
+          done
+          if [[ -d assets ]]; then
+            cp -R assets preview/
+          fi
+
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const html = fs.readFileSync('preview/index.html', 'utf8');
+          const refs = [...html.matchAll(/<(?:script|link)\b[^>]*?\b(?:src|href)\s*=\s*["']([^"']+)["']/gi)].map(match => match[1]);
+          const missing = [];
+          for (const ref of refs) {
+            const clean = ref.split('?')[0].split('#')[0];
+            if (!clean || /^(?:https?:|data:|\/\/)/i.test(clean)) continue;
+            const local = decodeURIComponent(clean);
+            if (local.startsWith('/') || local.split('/').includes('..')) {
+              missing.push(`${ref} (invalid local path)`);
+              continue;
+            }
+            if (!fs.existsSync(path.join('preview', local))) missing.push(ref);
+          }
+          if (missing.length) {
+            console.error('Missing referenced files:\n' + missing.join('\n'));
+            process.exit(1);
+          }
+          console.log(`Validated ${refs.length} script/link references`);
+          NODE
+
+          {
+            printf "Build SHA: %s\n" "$GITHUB_SHA"
+            printf "PR number: %s\n" "${{ github.event.pull_request.number || 'manual' }}"
+            printf "Source head SHA: %s\n" "${{ github.event.pull_request.head.sha || github.sha }}"
+          } > preview/BUILD_INFO.txt
+
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          ### Developer Web preview package
+          Download the developer-preview artifact from this workflow run, unpack it,
+          and serve index.html with a local HTTP server. See docs/PREVIEW_BUILDS.md.
+          This is not a hosted PR URL; successful packaging does not replace gameplay
+          simulation or browser UI tests.
+          SUMMARY
+
+      - name: Upload playable preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: developer-preview-${{ github.event.pull_request.number || github.run_number }}
+          path: preview/
+          if-no-files-found: error
+          retention-days: 14
