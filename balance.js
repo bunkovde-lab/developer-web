@@ -5,7 +5,7 @@
 (function () {
 "use strict";
 const GAME_V2 = {version:2,stageHandCap:8,networkHandCap:4,networkCopies:3,stageCooldown:4,networkCooldown:4};
-const OLD_NEW_GAME=window.newGame, OLD_ROLL=window.roll, OLD_END_TURN=window.endTurn, OLD_MARKET_BASE=window.marketBase, OLD_RESOLVE_SPECIAL=window.resolveSpecialCell, OLD_BEGIN_CONSTRUCTION=window.beginConstructionDeckChoice;
+const OLD_NEW_GAME=window.newGame, OLD_ROLL=window.roll, OLD_END_TURN=window.endTurn, OLD_MARKET_BASE=window.marketBase, OLD_RESOLVE_SPECIAL=window.resolveSpecialCell, OLD_BEGIN_CONSTRUCTION=window.beginConstructionDeckChoice, OLD_APPLY_MARKET=window.applyMarketCard, OLD_PROPERTY_SALE=window.runPropertySale, OLD_SELL=window.sell;
 const STAGE_IDS=['utilities','permits','construction','commissioning'];
 function mixDeck(arr){for(let i=arr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 function ensureEconomy(){
@@ -73,18 +73,20 @@ function drawNetworkCard(){
  render();
 }
 function playStageCard(lotIndex,size,cardId){
+ if(!actionAllowed()){denyActions();return;}
  ensureEconomy();const owner=current(),card=owner.cards.find(c=>c.id===cardId),lot=state.plots[lotIndex],before=lot?.project?.stage||0;
  if(!card||!lot||lot.owner!==state.turn||card.deck!==nextStageDeck(lot.project))return;
  const money=owner.money;window._developerLegacyPlayStageCard(lotIndex,size,cardId);
  if(owner.cards.find(c=>c.id===cardId))return; // legacy rejected
  returnStage(card.deck,card.index);
- if((lot.project?.stage||0)===before+1){note('Израсходованная строительная карта №'+cardId+' будет вновь доступна через '+GAME_V2.stageCooldown+' раунда.');render();}
+ if((lot.project?.stage||0)===before+1){consumeAction();note('Израсходованная строительная карта №'+cardId+' будет вновь доступна через '+GAME_V2.stageCooldown+' раунда.');render();}
 }
 function applyNetworkCard(lotIndex,cardId){
+ if(!actionAllowed()){denyActions();return false;}
  ensureEconomy();const p=current(),card=p.networkCards.find(c=>c.id===cardId);
  if(!card)return false;
  const ok=window._developerLegacyApplyNetworkCard(lotIndex,cardId);
- if(ok){returnNetwork(card.type);render();}
+ if(ok){consumeAction();returnNetwork(card.type);render();}
  return ok;
 }
 function newGame(){OLD_NEW_GAME();ensureEconomy();note('Ограниченный рынок карт: 12 экземпляров на этап и '+(GAME_V2.networkCopies*NETWORK_CARDS.length)+' инженерных карт; повторная выдача после периода возврата.');render();}
@@ -122,7 +124,20 @@ function sellQuote(i,c){
  return Math.round(cardPrice(c)*(wants?1.12:.70)/5)*5;
 }
 function selectedCardOption(c){return '<option value="'+c.id+'">'+cardName(c)+' №'+c.id+'</option>';}
-function dealAllowed(){return !!state&&state.rolled&&!current().bot&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice&&!Number.isInteger(state.winnerIndex);}
+const TWO_ACTIONS=2;
+function turnActionKey(){return state?.turn+'-'+state?.round;}
+function actionAllowed(){
+ if(!state||current().bot)return true;
+ return state.rolled&&!state.pendingCard&&!state.auction&&!state.constructionDeckChoice&&!Number.isInteger(state.winnerIndex)&&
+ (state.actionKey!==turnActionKey()||(state.actionsUsed||0)<TWO_ACTIONS);
+}
+function consumeAction(){
+ if(current().bot)return;
+ if(state.actionKey!==turnActionKey()){state.actionKey=turnActionKey();state.actionsUsed=0;}
+ state.actionsUsed=(state.actionsUsed||0)+1;
+}
+function denyActions(){alert('Два основных действия за ход уже использованы либо есть незавершённое событие.');}
+function dealAllowed(){return !!state&&state.rolled&&!current().bot&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice&&!Number.isInteger(state.winnerIndex)&&actionAllowed();}
 function openTradeMarket(){
  if(!dealAllowed()){alert('Переговоры доступны в ваш ход после броска кубика, если нет незавершённого события.');return;}
  ensureEconomy();renderTradeMarket();$('tradeOverlay').hidden=false;
@@ -131,12 +146,16 @@ function closeTradeMarket(){$('tradeOverlay').hidden=true;}
 function renderTradeMarket(){
  if(!$('tradeMode'))return;
  const mode=$('tradeMode').value,own=cardInventory(current()),offers=botOffers(),bots=state.players.map((p,i)=>({p,i})).filter(o=>o.p.bot);
+ const prevMine=$('tradeMine').value,prevOffer=$('tradeBotOffer').value,prevBuyer=$('tradeBuyer').value;
  $('tradeMineLabel').hidden=(mode==='buy');
  $('tradeOfferLabel').hidden=(mode==='sell');
  $('tradeBuyerLabel').hidden=(mode!=='sell');
  $('tradeMine').innerHTML=own.map(selectedCardOption).join('');
  $('tradeBotOffer').innerHTML=offers.map((o,i)=>'<option value="'+i+'">'+state.players[o.owner].name+': '+cardName(o.card)+' №'+o.card.id+' · '+o.ask+' тыс.</option>').join('');
  $('tradeBuyer').innerHTML=bots.map(o=>'<option value="'+o.i+'">'+o.p.name+'</option>').join('');
+ if(own.some(c=>String(c.id)===String(prevMine)))$('tradeMine').value=prevMine;
+ if(offers[Number(prevOffer)])$('tradeBotOffer').value=prevOffer;
+ if(bots.some(o=>String(o.i)===String(prevBuyer)))$('tradeBuyer').value=prevBuyer;
  let mine=own.find(c=>c.id===Number($('tradeMine').value))||own[0],off=offers[Number($('tradeBotOffer').value)]||offers[0],buyer=state.players[Number($('tradeBuyer').value)]||bots[0]?.p;
  const preview=mode==='buy'?(off?'Вы покупаете у '+state.players[off.owner].name+' за '+off.ask+' тыс.':'Нет карт, выставленных ботами.'):
  mode==='sell'?(mine&&buyer?'Бот предложит около '+sellQuote(state.players.indexOf(buyer),mine)+' тыс. за вашу карту.':'Нет карт или покупателей.'):
@@ -172,7 +191,7 @@ function executeTradeMarket(){
   }
   if(!change)message='Обмен отклонён: не хватает средств или карта уже недоступна.';
  }
- if(change){state.tradeMarker=state.turn+'-'+state.round;note('🤝 '+message);closeTradeMarket();render();}
+ if(change){consumeAction();state.tradeMarker=state.turn+'-'+state.round;note('🤝 '+message);closeTradeMarket();render();}
  else $('tradePreview').textContent=message||'Выберите доступную сделку.';
 }
 function botBuyLand(){
@@ -255,7 +274,7 @@ function settleInvestment(){
  const player=current();if(!player||!player.investments?.length)return;
  const rentGross=rentalIncomeFor(state.turn),withheld=[];
  player.investments=player.investments.filter(inv=>{
-  const slice=Math.min(inv.unpaid,Math.round(rentGross*inv.share/100));
+  const slice=Math.min(inv.unpaid,Math.max(20,Math.round(inv.principal*.08),Math.round(rentGross*inv.share/100)));
   if(slice>0){player.money-=slice;inv.unpaid-=slice;withheld.push(slice);}
   return inv.unpaid>0;
  });
@@ -265,45 +284,45 @@ function resolveSpecialCell(){
  const p=current(),oldGov=(p.governmentCards||[]).length,wasCrisis=state.crisis?.until;
  OLD_RESOLVE_SPECIAL();
  if(eventNames[p.pos]==='Госзаказ'){
-  const cards=p.governmentCards||[];if(cards.length>oldGov){const c=cards.at(-1);c.deadline=state.round+16;c.terms.penalty=60;}
+  const cards=p.governmentCards||[];if(cards.length>oldGov){const c=cards.at(-1);c.deadline=state.round+16;c.terms.penalty=60;if(c.type==='investment')c.terms.reward=145;}
  }
  if(eventNames[p.pos]==='Кризис')note('Кризис активен до раунда '+state.crisis.until+': рыночные базовые цены и аренда ×'+state.crisis.percent+'%.');
 }
 function applyInvestorCard(cardId,plotIndex){
- if(!state||current().bot||state.auction||state.pendingCard)return false;
+ if(!state||current().bot||!actionAllowed()){denyActions();return false;}
  const p=current(),ix=p.marketCards.findIndex(c=>c.id===cardId),c=p.marketCards[ix],lot=state.plots[plotIndex];
  if(!c||c.type!=='investor'||!lot||lot.owner!==state.turn||lot.project?.stage===4){alert('Нужен собственный участок с незавершённым строительством.');return false;}
  if(!Number.isFinite(c.card?.investment)||!Number.isFinite(c.card?.share))return false;
  p.money+=c.card.investment;
  if(!p.investments)p.investments=[];
  p.investments.push({principal:c.card.investment,unpaid:Math.round(c.card.investment*1.25),share:c.card.share,lot:plotIndex});
- p.marketCards.splice(ix,1);note(p.name+' привлёк инвестора: +'+c.card.investment+' тыс., обязательство '+Math.round(c.card.investment*1.25)+' тыс., удержание '+c.card.share+'% арендных поступлений.');render();return true;
+ p.marketCards.splice(ix,1);consumeAction();note(p.name+' привлёк инвестора: +'+c.card.investment+' тыс., обязательство '+Math.round(c.card.investment*1.25)+' тыс., удержание '+c.card.share+'% арендных поступлений.');render();return true;
 }
 function governmentAction(id,action){
- if(!state||current().bot||state.pendingCard||state.auction)return false;
+ if(!state||current().bot||!actionAllowed()){denyActions();return false;}
  const p=current(),cards=p.governmentCards||[],ix=cards.findIndex(c=>c.id===id),c=cards[ix];
  if(!c)return false;
- if(action==='reject'&&!c.accepted){cards.splice(ix,1);note('Госзаказ №'+id+' отклонён.');render();return true;}
+ if(action==='reject'&&!c.accepted){cards.splice(ix,1);consumeAction();note('Госзаказ №'+id+' отклонён.');render();return true;}
  if(action==='accept'&&!c.accepted){
   if(c.type==='investment'){
    const cost=c.terms?.invest||120;if(p.money<cost){alert('Недостаточно средств для инвестиционного госзаказа.');return false;}
-   p.money-=cost;c.ready=state.round+3;
+   p.money-=cost;c.ready=state.round+6;
   }
-  c.accepted=true;note('Госзаказ №'+id+' принят. Срок: раунд '+c.deadline);render();return true;
+  c.accepted=true;consumeAction();note('Госзаказ №'+id+' принят. Срок: раунд '+c.deadline);render();return true;
  }
  if(action==='finish'&&c.accepted){
   if(c.type==='investment'){if(state.round<(c.ready||0)){alert('Вознаграждение выплачивается начиная с раунда '+c.ready);return false;}}
   if(c.type==='land'){
    const lot=state.plots.find(x=>x.owner===state.turn&&!x.project);
    if(!lot){alert('Для сдачи нужен свободный от строительства участок в вашей собственности.');return false;}
-   lot.owner=-1;lot.level=0;
+   state.lastGovernmentLandPrice=lot.price;lot.owner=-1;lot.level=0;
   }
   if(c.type==='construction'){
    const lot=state.plots.find(x=>x.owner===state.turn&&x.project?.stage===4&&x.project.size===0);
    if(!lot){alert('Для сдачи нужен собственный введённый малый объект.');return false;}
    lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;
   }
-  const reward=c.terms?.reward||0;p.money+=reward;cards.splice(ix,1);
+  const reward=c.type==='land'?Math.min(c.terms?.reward||0,Math.round(state.lastGovernmentLandPrice*1.15)):(c.terms?.reward||0);p.money+=reward;cards.splice(ix,1);consumeAction();
   note('Госзаказ №'+id+' выполнен: +'+reward+' тыс.');render();return true;
  }
  return false;
@@ -358,7 +377,25 @@ function addTradeUi(){
  '<p class="auction-hint">Торговля между двумя живыми игроками на разных устройствах пока не работает — необходим сетевой сервер. Цены ботов тестовые.</p></div>';
  document.body.appendChild(overlay);
  const toolbar=document.querySelector('.company-panel .actions');
- if(toolbar){const button=document.createElement('button');button.id='marketTradeBtn';button.textContent='🤝 Обмен карт';button.onclick=openTradeMarket;toolbar.insertBefore(button,toolbar.querySelector('#end'));}
+ if(toolbar){const indicator=document.createElement('div');indicator.className='pill';indicator.innerHTML='Действий осталось: <b id="actionsLeft">2</b>';toolbar.insertBefore(indicator,toolbar.querySelector('#end'));const button=document.createElement('button');button.id='marketTradeBtn';button.textContent='🤝 Обмен карт';button.onclick=openTradeMarket;toolbar.insertBefore(button,toolbar.querySelector('#end'));}
+}
+function applyMarketCard(cardId,lotIndex){
+ if(!actionAllowed()){denyActions();return false;}
+ const before=(current().marketCards||[]).some(c=>c.id===cardId);
+ OLD_APPLY_MARKET(cardId,lotIndex);
+ if(before&&!(current().marketCards||[]).some(c=>c.id===cardId)){consumeAction();render();return true;}
+ return false;
+}
+function runPropertySale(){
+ if(!actionAllowed()){denyActions();return;}
+ const seller=current(),before=state.plots.map(x=>x.owner);
+ OLD_PROPERTY_SALE();
+ if(state.plots.some((x,i)=>before[i]===state.turn&&x.owner!==state.turn)){consumeAction();render();}
+}
+function sell(){
+ if(!actionAllowed()){denyActions();return;}
+ const before=current().money;OLD_SELL();
+ if(current().money>before){consumeAction();render();}
 }
 function ensureMarketActions(){
  if(!state)return;
@@ -371,6 +408,7 @@ function ensureMarketActions(){
   const container=document.querySelector('.hand-category[data-deck="investor"] .hand-stack');if(container)container.insertAdjacentHTML('beforeend',html);
  }
  const b=$('marketTradeBtn');if(b)b.disabled=!dealAllowed()||state.tradeMarker===state.turn+'-'+state.round;
+ const actions=$('actionsLeft');if(actions)actions.textContent=(state.actionKey===turnActionKey()?Math.max(0,TWO_ACTIONS-(state.actionsUsed||0)):TWO_ACTIONS);
 }
 const OLD_RENDER=window.render;
 function render(){
@@ -379,7 +417,7 @@ function render(){
 }
 window._developerLegacyDrawCard=window.drawCard;window._developerLegacyPlayStageCard=window.playStageCard;
 window._developerLegacyApplyNetworkCard=window.applyNetworkCard;window._developerLegacyGovCard=window.renderGovernmentContract;
-Object.assign(window,{newGame,drawCard,drawNetworkCard,playStageCard,applyNetworkCard,marketBase,openTradeMarket,closeTradeMarket,renderTradeMarket,executeTradeMarket,bot,beginConstructionDeckChoice,resolveSpecialCell,applyInvestorCard,governmentAction,renderGovernmentContract,roll,endTurn,render});
+Object.assign(window,{newGame,drawCard,drawNetworkCard,playStageCard,applyNetworkCard,applyMarketCard,runPropertySale,sell,marketBase,openTradeMarket,closeTradeMarket,renderTradeMarket,executeTradeMarket,bot,beginConstructionDeckChoice,resolveSpecialCell,applyInvestorCard,governmentAction,renderGovernmentContract,roll,endTurn,render});
 addTradeUi();
 if(state){ensureEconomy();render();}
 })();
