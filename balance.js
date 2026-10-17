@@ -106,7 +106,8 @@ function finalizeInvestorSale(lotIndex){
  const sellerPayout=Math.max(0,salePrice-investorPayout);
  p.money+=sellerPayout;
  note('🏢 '+p.name+': инвестиционный проект «'+lot.name+'» введён и автоматически продан за '+salePrice+' тыс. Инвестору перечислено '+investorPayout+', девелоперу '+sellerPayout+' тыс. Аренда недоступна.');
- lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;lot.investor=null;lot.developmentSpent=0;
+ lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;
+ if(!p.bot){const overlay=$('plotCardOverlay');if(overlay)overlay.hidden=true;showResolvedCard('🏢 Инвестиционный объект продан','Здание продано автоматически в момент ввода в эксплуатацию. Сдать его в аренду нельзя.','Цена продажи: '+salePrice+' тыс. · инвестору: '+investorPayout+' тыс. · вам: '+sellerPayout+' тыс.');}
  return true;
 }
 function playStageCard(lotIndex,size,cardId){
