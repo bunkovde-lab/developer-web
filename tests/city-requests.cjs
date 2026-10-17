@@ -30,6 +30,7 @@ vm.runInContext(extension,sandbox,{filename:'balance.js',timeout:5000});
 const run=(src)=>vm.runInContext(src,sandbox,{timeout:4000});
 
 vm.runInContext(fs.readFileSync('marketplace.js','utf8'),sandbox,{filename:'marketplace.js',timeout:4000});
+vm.runInContext(fs.readFileSync('auction-competition.js','utf8'),sandbox,{filename:'auction-competition.js',timeout:5000});
 vm.runInContext(fs.readFileSync('city-requests.js','utf8'),sandbox,{filename:'city-requests.js',timeout:4000});
 assert.equal(run('eventNames.length'),32);
 assert.equal(run('eventNames.includes("Госзаказ")'),false);
