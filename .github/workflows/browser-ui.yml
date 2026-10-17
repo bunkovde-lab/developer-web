@@ -43,6 +43,8 @@ jobs:
         run: node tests/browser_visual.cjs
       - name: Deterministic land market and territorial tactics UI
         run: node tests/browser_territory.cjs
+      - name: Financial integrity and save/load browser flow
+        run: node tests/browser_finance.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
