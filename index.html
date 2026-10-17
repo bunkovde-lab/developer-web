@@ -714,9 +714,9 @@ function renderHandDock(player){
  const host=$('handQuick');if(!host)return;
  host.innerHTML=HAND_CATEGORIES.map(([type,label])=>{
   const total=handItems(player,type).length;
-  const icon=label.trim().split(/\\s+/)[0];
-  const readable=label.replace(/^\\S+\\s*/,'');
-  return '<button type="button" class="hand-quick-item'+(openHandDeck===type&&!$('handOverlay').hidden?' selected':'')+(total?'':' empty')+'" data-hand-type="'+type+'" onclick="openHandCategory(\\''+type+'\\')" aria-label="'+readable+': '+total+' карт" title="'+readable+' — '+total+'"><span class="hand-quick-icon" aria-hidden="true">'+icon+'</span><span class="hand-quick-count" aria-hidden="true">'+total+'</span></button>';
+  const icon=label.trim().split(' ')[0];
+  const readable=label.slice(icon.length).trim();
+  return '<button type="button" class="hand-quick-item'+(openHandDeck===type&&!$('handOverlay').hidden?' selected':'')+(total?'':' empty')+'" data-hand-type="'+type+'" onclick="openHandCategory(this.dataset.handType)" aria-label="'+readable+': '+total+' карт" title="'+readable+' — '+total+'"><span class="hand-quick-icon" aria-hidden="true">'+icon+'</span><span class="hand-quick-count" aria-hidden="true">'+total+'</span></button>';
  }).join('');
 }
 function filterHandGroups(){
