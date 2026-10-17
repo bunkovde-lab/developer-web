@@ -403,6 +403,24 @@ function botBusiness(){
   if(lot.project?.stage===4&&!lot.tenant&&!lot.investor){const ti=p.marketCards.findIndex(c=>c.type==='tenant');if(ti>=0){const c=p.marketCards.splice(ti,1)[0];returnMarketCard(c);lot.tenant={percent:c.card.percent,cardId:c.id};lot.tenant.income=tenantIncomeForLot(lot);note('🤖 '+p.name+' заселил арендатора на '+lot.name+'.');return true;}}
  }
 
+ // AI portfolio strategy: recycle isolated buildings rather than permanently filling the city.
+ const completed=lots.filter(x=>x.lot.project?.stage===4&&!Number.isInteger(x.lot.reservedFor));
+ const freeLand=state.plots.filter(x=>x.owner<0).length;
+ const isolated=completed.map(x=>({...x,links:neighborsBySide(x.i).filter(j=>state.plots[j].owner===playerIndex&&state.plots[j].project?.stage===4).length}))
+  .filter(x=>x.links<=1&&(x.lot.project.size===0||completed.length>=4));
+ const rotate=completed.length>=3&&(freeLand<=6||p.money<450||(p.completedProjects||0)>=5);
+ if(rotate&&isolated.length&&Math.random()<.65){
+  isolated.sort((a,b)=>a.links-b.links||marketBase(b.lot,'buyer')-marketBase(a.lot,'buyer'));
+  const {lot,i}=isolated[0],buyer=p.marketCards.find(c=>c.type==='buyer');
+  const percent=buyer?buyer.card.percent:88,proceeds=Math.round(marketBase(lot,'buyer')*percent/100);
+  if(buyer){p.marketCards=p.marketCards.filter(c=>c.id!==buyer.id);returnMarketCard(buyer);}
+  p.money+=proceeds;p.saleRevenue=(Number(p.saleRevenue)||0)+proceeds;
+  transferLargeSection(i,-1);
+  lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;
+  if(state.econMetrics)state.econMetrics.botAssetSales=(state.econMetrics.botAssetSales||0)+1;
+  note('🏷 '+p.name+' продал '+lot.name+' за '+proceeds+' тыс. для реинвестирования.');
+  return true;
+ }
  if(p.money<230){
   const investor=p.marketCards.find(c=>c.type==='investor');
   const lot=lots.find(x=>x.lot.project?.stage!==4&&!x.lot.investor&&lots.filter(o=>o.lot.project?.stage===4).length<3);
