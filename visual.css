@@ -259,3 +259,42 @@ body>header>small{font-size:11px}
  .cabinet-main .actions #marketTradeBtn{order:0}
  .cabinet-main .actions button:not(#roll):not(#end){min-height:45px!important}
 }
+
+/* v0.13 — spatial strategy, six land classes and a deterministic land catalogue. */
+.board .map-plot{position:relative;border-bottom-width:4px;isolation:isolate}
+.board .map-plot[data-zone="J1"]{box-shadow:inset 0 0 0 1px #4cb38a55,0 2px 8px #0002}
+.board .map-plot[data-zone="RET"]{box-shadow:inset 0 0 0 1px #e7b85e66,0 2px 8px #0002}
+.board .map-plot[data-zone="PK"]{box-shadow:inset 0 0 0 1px #77a5c588,0 2px 8px #0002}
+.board .map-plot[data-zone="OD"]{box-shadow:inset 0 0 0 1px #bc90d688,0 2px 8px #0002}
+.board .map-plot[data-zone="JK4"]{box-shadow:inset 0 0 0 1px #78dbe5aa,0 2px 8px #0002}
+.board .map-plot[data-zone="UNIQUE"]{background:linear-gradient(145deg,#79592b,#2e4851)!important;border:1px solid #efd68e;box-shadow:0 0 12px #dab36755,inset 0 0 0 1px #e2c47966}
+.board .map-plot[data-zone="UNIQUE"] .plot-zone{color:#fff2a8}
+.board .map-plot[data-status="reserved"]{background:linear-gradient(145deg,#304e61,#213242)!important;border-style:dashed;opacity:.82}
+.board .plot-tactics{color:#f5f7cd;font-size:clamp(7px,.76vw,11px);font-weight:850;letter-spacing:.015em;text-shadow:0 1px 3px #0008;white-space:nowrap;line-height:1.1}
+.board .map-key{line-height:1.35}
+.board.zoom-map .plot-tactics{font-size:clamp(11px,1.2vw,15px)}
+.land-select-box{width:min(1060px,97vw)!important;max-height:91dvh!important;overflow:auto!important;padding:clamp(13px,1.6vw,23px)!important}
+.land-select-box .pc-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.land-select-box .pc-top h2{font-size:clamp(19px,2vw,27px);color:#ffe0a4;margin:0}
+.land-select-box .pc-top button{background:#29475d;color:white}
+.land-select-box p{color:#c9dce7;font-size:13px;line-height:1.5}
+.land-select-box label{display:block;font-size:12px;color:#e8ce9c;margin:10px 0 12px}
+.land-select-box select{width:100%;max-width:420px;min-height:49px}
+.land-browse{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;max-height:51dvh;overflow:auto;padding:4px 5px 8px 0}
+.land-option{display:flex;flex-direction:column;justify-content:center;gap:7px;min-height:107px;padding:12px!important;text-align:left!important;background:linear-gradient(155deg,#234358,#183045)!important;border:1px solid #4a6b7c!important;border-radius:11px;color:#ecf5ff!important}
+.land-option:hover{background:#2a5366!important;border-color:#edcb85!important}
+.land-option.selected{border-color:#ffdb8f!important;box-shadow:inset 0 0 0 2px #ffdb8f,0 6px 20px #c49c542f}
+.land-option:disabled{opacity:.44}
+.land-option-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px}
+.land-option-top b{font-size:13px;color:#f6e4be}
+.land-option-top strong{font-size:14px;color:#e9b965}
+.land-zone{font-size:11px;color:#bad9e1}
+.land-tactics{font-size:11px;color:#b6d0cd}
+.land-selection-actions{display:flex;gap:9px}
+.land-selection-actions button{flex:1;min-height:54px}
+.land-selection-actions .land-primary{background:#e8ba74;color:#203044;border-color:#fbe3ab}
+.land-selection-info{min-height:40px;font-weight:650}
+.pc-strategy,.pc-buy-land{background:#1a3947;padding:11px 14px;border:1px solid #5a857b;border-radius:10px;margin-top:10px;font-size:13px;line-height:1.5;color:#bde1d8}
+.pc-buy-land button{background:#e4b56e;color:#1e3042;min-height:50px}
+@media(max-width:780px){.land-browse{grid-template-columns:repeat(2,minmax(0,1fr))}.land-option{min-height:109px;padding:9px!important}.board .plot-tactics{font-size:clamp(6px,1.65vw,10px)}}
+@media(max-width:440px){.land-browse{grid-template-columns:1fr;max-height:50dvh}.land-option{min-height:95px}.land-select-box{padding:11px!important}.land-selection-actions{flex-direction:column}.board .plot-tactics{font-size:7px}}
