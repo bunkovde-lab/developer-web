@@ -264,7 +264,7 @@ let city='<div class="city city-map"><div class="city-title">🏙 ДЕВЕЛОП
  }).join('')+'</div><div class="map-key">■ Ж1 &nbsp; ■ Торговля &nbsp; ■ ПК &nbsp; ■ ОД &nbsp; ■ ЖК-4 &nbsp; ■ Город</div></div>';
 $('board').innerHTML=ring+city;
 let info=selectedLot>=0&&selectedLot<state.plots.length?state.plots[selectedLot]:null;
-$('players').innerHTML=state.players.map((u,i)=>'<div><span style="color:'+colors[i]+'">●</span> <b>'+u.name+'</b> · '+professionName(u.profession)+': '+u.money+' 💰 · долг +u.debt+' · активы '+value(i)+'</div>').join('')+(info?'<hr><b>'+info.name+'</b> · '+info.price+' 💰 · '+(info.owner<0?'свободен':'владелец: '+state.players[info.owner].name)+' · стройка '+info.level+'/3':'');
+$('players').innerHTML=state.players.map((u,i)=>'<div><span style="color:'+colors[i]+'">●</span> <b>'+u.name+'</b> · '+professionName(u.profession)+': '+u.money+' 💰 · долг '+u.debt+' · активы '+value(i)+'</div>').join('')+(info?'<hr><b>'+info.name+'</b> · '+info.price+' 💰 · '+(info.owner<0?'свободен':'владелец: '+state.players[info.owner].name)+' · стройка '+info.level+'/3':'');
 $('log').innerHTML=state.logs.map(t=>'<div>• '+t+'</div>').join('');
 $('roll').disabled=state.rolled||p.bot;$('end').disabled=!state.rolled||p.bot;
 let x=state.plots[(Math.max(1,p.pos)-1)%30];
@@ -316,7 +316,7 @@ function showSessionMenu(){updateLobby();const raw=localStorage.getItem(STORAGE_
 function closeSessionMenu(){$('sessionOverlay').hidden=true}
 function requestNewGame(){showSessionMenu()}
 function selectProfession(id){if(!PROFESSIONS.some(p=>p.id===id))return;chosenProfession=id;updateLobby()}
-function updateLobby(){const bots=Number($('lobbyBots').value);const start=PROFESSIONS.findIndex(p=>p.id===chosenProfession);$('professionChoices').innerHTML=PROFESSIONS.map(p=>'<button type="button" class="profession-choice" role="radio" aria-checked="'+(p.id===chosenProfession)+'" onclick="selectProfession(\''+p.id+'\')"><b>'+p.name+'</b><small>'+p.description+'</small></button>').join('');$('lobbySlots').innerHTML='<div>👤 Вы — '+professionName(chosenProfession)+'</div>'+Array.from({length:bots},(_,i)=>'<div>🤖 Бот '+(i+1)+' — '+professionName(PROFESSIONS[(start+i+1)%PROFESSIONS.length].id)+'</div>').join('')+'<div class="lobby-wait">🔗 Сетевые игроки — пока недоступны</div>';}
+function updateLobby(){const bots=Number($('lobbyBots').value);const start=PROFESSIONS.findIndex(p=>p.id===chosenProfession);$('professionChoices').innerHTML=PROFESSIONS.map(p=>'<button type="button" class="profession-choice" role="radio" aria-checked="'+(p.id===chosenProfession)+'" data-profession="'+p.id+'" onclick="selectProfession(this.dataset.profession)"><b>'+p.name+'</b><small>'+p.description+'</small></button>').join('');$('lobbySlots').innerHTML='<div>👤 Вы — '+professionName(chosenProfession)+'</div>'+Array.from({length:bots},(_,i)=>'<div>🤖 Бот '+(i+1)+' — '+professionName(PROFESSIONS[(start+i+1)%PROFESSIONS.length].id)+'</div>').join('')+'<div class="lobby-wait">🔗 Сетевые игроки — пока недоступны</div>';}
 function startLobbyGame(){if(localStorage.getItem(STORAGE_KEY)&&!confirm('Создать новую партию? Текущее сохранение будет заменено.'))return;$('count').value=String(1+Number($('lobbyBots').value));closeSessionMenu();newGame();}
 function save(){persistState();note('Партия сохранена на этом устройстве');render()}
 function load(){closeSessionMenu();resumeSavedGame()}
