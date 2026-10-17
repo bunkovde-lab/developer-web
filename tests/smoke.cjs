@@ -77,8 +77,12 @@ run('state.round+=2');
 assert.equal(run("marketBase(state.plots[3],'buyer')"),base);
 run('newGame();state.rolled=true;state.turn=1;state.players[1].pos=1;');
 run('bot()');
-assert(run('state.plots.filter(l=>l.owner===1).length')>=1,'Bot should acquire land on auction');
-assert(run('state.players[1].money')<750);
+assert.equal(run('state.plots.filter(l=>l.owner===1).length'),0,'Bot may not obtain land before bidding concludes');
+assert.equal(run('state.auction?.initiator'),1,'Bot must initiate an auction');
+assert.equal(run('state.auction?.humanBidder'),0,'Human has a seat even during a bot turn');
+run('submitAuctionBid(true)');
+assert.equal(run('state.auction'),null,'Human pass resolves shared auction');
+assert(run('state.auctionHistory.length')>=1,'Auction result is recorded');
 console.log('PASS syntax, finite decks, consumption/recycling, market purchase, anti-double-trade, networks, crisis and bot land purchase');
 
 const simulations=[];
