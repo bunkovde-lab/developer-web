@@ -273,7 +273,7 @@ function executeTradeMarket(){
 function botBuyLand(){
  const i=state.turn,p=current();if(!p.bot||!state.rolled||![1,9,18,24].includes(p.pos))return false;
  const already=state.plots.filter(l=>l.owner===i).length;
- if(already>=7)return false;
+ if(already>=(state.players.length>=5?5:7))return false;
  ensureLandDeck();
  const options=state.plots.map((lot,index)=>({index,lot})).filter(x=>x.lot.owner<0).map(x=>({...x,t:territoryAnalysis(x.index,i)}));
  options.sort((a,b)=>b.t.score-a.t.score||a.lot.price-b.lot.price||a.index-b.index);
@@ -312,9 +312,31 @@ function botBuildAndConnect(){
  }
  return false;
 }
+function botLandDeal(){
+ const buyer=current(),buyerIndex=state.turn;
+ if(!buyer?.bot||!state.rolled||eventNames[buyer.pos]!=='Сделка'||state.tradeMarker===buyerIndex+'-'+state.round)return false;
+ // A strategic land trade is a real transaction: the seller gives up an empty title
+ // and receives cash, the buyer gains a missing piece of a possible 4-lot chain.
+ const options=state.plots.map((lot,index)=>({lot,index})).filter(x=>x.lot.owner>=0&&x.lot.owner!==buyerIndex&&!x.lot.project&&!Number.isInteger(x.lot.reservedFor)&&state.players[x.lot.owner].bot);
+ const ranked=options.map(o=>{
+  const ours=neighborsBySide(o.index).filter(j=>state.plots[j].owner===buyerIndex).length;
+  const seller=neighborsBySide(o.index).filter(j=>state.plots[j].owner===o.lot.owner).length;
+  const price=Math.round(o.lot.price*(1.23+ours*.09));
+  const sellerHoldings=state.plots.filter(l=>l.owner===o.lot.owner).length;
+  return {...o,ours,seller,price,sellerHoldings,priority:ours*130-seller*120-o.lot.price*.08};
+ }).filter(o=>o.ours>=2&&o.seller<=1&&o.sellerHoldings>=2&&buyer.money>=o.price+100).sort((a,b)=>b.priority-a.priority||a.price-b.price);
+ const chosen=ranked[0];if(!chosen)return false;
+ const sellerIndex=chosen.lot.owner,seller=state.players[sellerIndex];
+ chosen.lot.owner=buyerIndex;buyer.money-=chosen.price;seller.money+=chosen.price;
+ state.tradeMarker=buyerIndex+'-'+state.round;
+ if(state.econMetrics)state.econMetrics.botLandTrades=(state.econMetrics.botLandTrades||0)+1;
+ note('🤝 '+buyer.name+' выкупил участок №'+(chosen.index+1)+' у '+seller.name+' за '+chosen.price+' тыс. — закрыта брешь в цепочке, продавец получил капитал.');
+ return true;
+}
 function botTradeFromPeers(){
  const p=current(),i=state.turn;if(!p.bot||!state.rolled)return false;
  const cell=eventNames[p.pos];
+ if(cell==='Сделка'&&botLandDeal())return true;
  let kind='',need='',kindLabel='';
  const lots=state.plots.map((lot,j)=>({lot,j})).filter(x=>x.lot.owner===i);
  if(cell==='Сделка'){
