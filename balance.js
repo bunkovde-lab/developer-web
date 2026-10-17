@@ -41,6 +41,15 @@ function ensureEconomy(){
  if(!Array.isArray(state.stock.returnNetwork))state.stock.returnNetwork=[];
  for(const d of STAGE_IDS)if(!Array.isArray(state.stock.stage[d]))state.stock.stage[d]=[];
  if(!Array.isArray(state.stock.network))state.stock.network=[];
+ if(!Array.isArray(state.stock.market)){
+  const market=[];
+  for(const type of ['investor','tenant','buyer']){
+   const held=new Set(state.players.flatMap(p=>(p.marketCards||[]).filter(c=>c.type===type).map(marketModelIndex)).filter(i=>i>=0));
+   for(let index=0;index<SPECIAL_CARDS[type].length;index++)if(!held.has(index))market.push({type,index});
+  }
+  state.stock.market=mixDeck(market);
+ }
+
  if(!state.econMetrics)state.econMetrics={stageDraws:0,networkDraws:0,stageStockouts:0,networkStockouts:0,botTrades:0,humanTrades:0,stagesCompleted:0,govCompleted:0};
  for(const p of state.players){
   if(!Array.isArray(p.cards))p.cards=[];
@@ -51,6 +60,32 @@ function ensureEconomy(){
  migrateMunicipalOffers();
  for(const p of state.players)p.governmentCards=[]; // discontinued; old advance is refunded once by migration
  if(!Number.isInteger(state.nextCardId))state.nextCardId=Math.max(0,...state.players.flatMap(p=>[...p.cards,...p.networkCards,...p.marketCards,...p.governmentCards].map(c=>Number(c.id)||0)));
+}
+function marketModelIndex(card){
+ if(!card||!['investor','tenant','buyer'].includes(card.type))return -1;
+ if(Number.isInteger(card.modelIndex))return card.modelIndex;
+ return SPECIAL_CARDS[card.type].findIndex(m=>JSON.stringify(m)===JSON.stringify(card.card));
+}
+function returnMarketCard(card){
+ ensureEconomy();
+ const index=marketModelIndex(card);
+ if(index>=0&&state.stock.market)state.stock.market.push({type:card.type,index});
+}
+function drawMarketCard(){
+ ensureEconomy();
+ const pool=state.stock.market;
+ if(!pool.length){
+  state.econMetrics.marketStockouts=(state.econMetrics.marketStockouts||0)+1;
+  note('Рынок: все карты покупателей, арендаторов и инвесторов находятся у игроков.');
+  if(!current().bot)showResolvedCard('Дефицит рынка','Нет доступных рыночных карт.','Карты можно выкупить у других игроков на клетке «Рынок».');
+  return;
+ }
+ const pos=Math.floor(Math.random()*pool.length),m=pool.splice(pos,1)[0],model=SPECIAL_CARDS[m.type][m.index];
+ const card={id:++state.nextCardId,type:m.type,card:model,modelIndex:m.index};
+ current().marketCards.push(card);
+ const label={investor:'Инвестор',tenant:'Арендатор',buyer:'Покупатель'}[m.type];
+ note(current().name+' получил рыночную карту «'+label+'» №'+card.id+'. В общей колоде осталось '+pool.length);
+ if(!current().bot)showResolvedCard('📈 '+label,'Карта добавлена в инвентарь и изъята из общего запаса.','После розыгрыша карта вернётся в общую колоду.');
 }
 function refreshStock(){
  ensureEconomy();const stock=state.stock;
@@ -345,7 +380,7 @@ function botBusiness(){
  const p=current(),playerIndex=state.turn;if(!p.bot)return;
  const lots=state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===playerIndex);
  for(const {lot,i} of lots){
-  if(lot.project?.stage===4&&!lot.tenant&&!lot.investor){const ti=p.marketCards.findIndex(c=>c.type==='tenant');if(ti>=0){const c=p.marketCards.splice(ti,1)[0];lot.tenant={percent:c.card.percent,cardId:c.id};lot.tenant.income=tenantIncomeForLot(lot);note('🤖 '+p.name+' заселил арендатора на '+lot.name+'.');return true;}}
+  if(lot.project?.stage===4&&!lot.tenant&&!lot.investor){const ti=p.marketCards.findIndex(c=>c.type==='tenant');if(ti>=0){const c=p.marketCards.splice(ti,1)[0];returnMarketCard(c);lot.tenant={percent:c.card.percent,cardId:c.id};lot.tenant.income=tenantIncomeForLot(lot);note('🤖 '+p.name+' заселил арендатора на '+lot.name+'.');return true;}}
  }
 
  if(p.money<230){
@@ -373,7 +408,7 @@ function settleInvestment(){
  if(withheld.length)note(player.name+' выплатил инвесторам '+withheld.reduce((a,b)=>a+b,0)+' тыс. из арендных поступлений.');
 }
 function resolveSpecialCell(){
- OLD_RESOLVE_SPECIAL();
+ if(eventNames[current().pos]==='Рынок')drawMarketCard();else OLD_RESOLVE_SPECIAL();
  if(eventNames[current().pos]==='Кризис'&&state.crisis)note('Влияние на рынок: '+state.crisis.percent+'% (временный коэффициент кризиса).');
 }
 function bindInvestorToProject(player,playerIndex,card,lotIndex){
@@ -383,7 +418,7 @@ function bindInvestorToProject(player,playerIndex,card,lotIndex){
  if(!Number.isFinite(amount)||amount<=0||!Number.isFinite(share)||share<0||share>100)return false;
  lot.investor={capital:amount,share,cardId:card.id};
  player.money+=amount;
- player.marketCards=player.marketCards.filter(c=>c.id!==card.id);
+ player.marketCards=player.marketCards.filter(c=>c.id!==card.id);returnMarketCard(card);
  note('💼 '+player.name+' привлёк '+amount+' тыс. к '+lot.name+'. Договор инвестора: продажа сразу после ввода; инвестор получит капитал и '+share+'% положительной прибыли.');
  return true;
 }
@@ -457,6 +492,7 @@ function bankruptcyPlayer(i){
  // Retain turn and player identity, reset holdings, discard cards with cooldown.
  (p.cards||[]).forEach(c=>returnStage(c.deck,c.index));
  (p.networkCards||[]).forEach(c=>returnNetwork(c.type));
+ (p.marketCards||[]).forEach(returnMarketCard);
  p.cards=[];p.networkCards=[];p.marketCards=[];p.governmentCards=[];p.investments=[];p.money=120;p.pos=0;
  note('⚠ '+p.name+' обанкротился, активы утрачены; новый стартовый капитал 120 тыс.');return true;
 }
@@ -489,7 +525,9 @@ function addTradeUi(){
 function applyMarketCard(cardId,lotIndex){
  if(!actionAllowed()){denyActions();return false;}
  const before=(current().marketCards||[]).some(c=>c.id===cardId);
+ const consumed=(current().marketCards||[]).find(c=>c.id===cardId);
  OLD_APPLY_MARKET(cardId,lotIndex);
+ if(consumed&&!(current().marketCards||[]).some(c=>c.id===cardId))returnMarketCard(consumed);
  if(before&&!(current().marketCards||[]).some(c=>c.id===cardId)){consumeAction();render();return true;}
  return false;
 }
