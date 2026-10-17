@@ -16,5 +16,7 @@ jobs:
         run: node tests/smoke.cjs
       - name: Spatial map, explicit land auction and development rules
         run: node tests/territory.cjs
+      - name: Unlimited finite cards and city request sales
+        run: node tests/city-requests.cjs
       - name: Accelerated game pacing benchmark
         run: node tests/pace.cjs
