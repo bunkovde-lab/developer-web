@@ -138,9 +138,9 @@ assert.equal(run('state.players[0].cards.some(c=>c.id===703)'),true,'Denied acti
 
 run('newGame();state.rolled=true;state.turn=0;state.plots[0].owner=0;state.players[0].marketCards.push({id:801,type:"investor",card:{investment:200,share:20}});');
 run('applyInvestorCard(801,0)');
-assert.equal(run('state.players[0].investments[0].unpaid'),250);
+assert.equal(run('state.plots[0].investor.capital'),200);
 run('state.rolled=false;state.players[0].pos=31;roll()');
-assert(run('state.players[0].investments[0].unpaid')<250,'Investor payout must service principal without a tenant');
+assert.equal(run('state.players[0].investments.length'),0,'No recurring debt for new investor');
 
 run('newGame();state.rolled=true;state.turn=0;state.players[0].money=500;state.players[0].governmentCards.push({id:901,type:"investment",accepted:false,deadline:100,terms:{invest:120,reward:145,penalty:60}})');
 run("governmentAction(901,'accept')");
