@@ -773,7 +773,9 @@ function marketBase(lot,kind){
  const catalog=projectCatalog[size];
  if(!catalog)return 0;
  const base=kind==='tenant'?catalog.rent:catalog.sale;
- return Math.round(base*(1+NETWORK_BONUS_PER_CONNECTION*connectedNetworksFor(lot).length));
+ const pos=state?.plots?.indexOf(lot);
+ const zoningYield={J1:1,RET:1.12,PK:1.24,OD:1.47,JK4:1.63,UNIQUE:1.92}[ZONE_GRID[pos]]||1;
+ return Math.round(base*zoningYield*(1+NETWORK_BONUS_PER_CONNECTION*connectedNetworksFor(lot).length));
 }
 function tenantIncomeForLot(lot){
  if(!lot?.tenant)return 0;
@@ -974,16 +976,18 @@ function inspectLot(i){
  const commissioned=x.level>0&&x.project?.stage===4;
  const project=x.project,chosenSize=project?.size;
  const existing=project&&Number.isInteger(chosenSize)&&projectCatalog[chosenSize];
+ const allowedSizes=zoneOf(i).sizes.map(k=>['малый','средний','крупный'][k]).join(' / ');
  $('plotCardTitle').textContent=(commissioned?'🏢 Объект на участке №':'🏗 Участок №')+(i+1);
- $('plotCardInfo').textContent=zone+' · участок: '+x.price+' тыс. · владелец: '+owner+
+ $('plotCardInfo').textContent=zone+' · участок: '+x.price+' тыс. · разрешено: '+allowedSizes+' · владелец: '+owner+
   (commissioned?' · введён в эксплуатацию':' · строительный этап: '+(project?.stage||0)+'/4');
- const options=existing?[projectCatalog[chosenSize]]:projectCatalog;
+ const options=existing?[projectCatalog[chosenSize]]:projectCatalog.filter((p,k)=>zoneOf(i).sizes.includes(k));
  const tactics=territoryAnalysis(i,state.turn);
  $('plotCardProjects').innerHTML=options.map(p=>{
   const size=projectCatalog.indexOf(p),chosen=project&&project.size===size,stage=chosen?project.stage:0;
   if(commissioned&&chosen){
    const requirements=requiredNetworkTypes(i,size),connections=connectedNetworksFor(x),hand=current().networkCards||[];
-   const baseRent=p.rent,baseSale=p.sale;
+   const zoneYield=({J1:1,RET:1.12,PK:1.24,OD:1.47,JK4:1.63,UNIQUE:1.92}[ZONE_GRID[i]]||1);
+   const baseRent=Math.round(p.rent*zoneYield),baseSale=Math.round(p.sale*zoneYield);
    const upgradedRent=marketBase(x,'tenant'),upgradedSale=marketBase(x,'buyer');
    const tenantCash=tenantIncomeForLot(x);
    const steps=requirements.map(type=>{
@@ -1007,7 +1011,7 @@ function inspectLot(i){
   const canChoose=x.owner===state.turn&&!Number.isInteger(x.reservedFor)&&(!project||chosen)&&zoneAllowed&&(size!==2||project||pairCandidate>=0),playable=canChoose&&stage<4?availableCards(current(),nextStageDeck(project)):[];
   const buttons=playable.map(card=>'<button onclick="playStageCard('+i+','+size+','+card.id+')">Разыграть: '+(BALANCED_DECKS[card.deck]||eventDecks[card.deck])[card.index].title+' · '+(BALANCED_DECKS[card.deck]?.[card.index]?.costs?.[size]??stageCost(card.deck,size))+' тыс.</button>').join('');
   return '<article class="pc-project"><strong>'+p.name+'</strong><p>'+p.desc+'</p><p>Участков: '+p.land+' · '+requirements+' Статус: '+p.license+'</p>'+
-   '<p><b>Разрешено в зоне:</b> '+(zoneAllowed?'да':'нет')+(size===2&&!project?' · второй участок: '+(pairCandidate>=0?'№'+(pairCandidate+1):'требуется'):'')+'.</p><p><b>Этапы оплачиваются при розыгрыше соответствующих карт.</b></p><p>Проектирование → Разрешения → Строительство → Ввод в эксплуатацию.</p>'+
+   '<p><b>Зона:</b> '+zoneOf(i).desc+'</p><p><b>Разрешено в зоне:</b> '+(zoneAllowed?'да':'нет')+(size===2&&!project?' · второй участок: '+(pairCandidate>=0?'№'+(pairCandidate+1):'требуется'):'')+'.</p><p><b>Этапы оплачиваются при розыгрыше соответствующих карт.</b></p><p>Проектирование → Разрешения → Строительство → Ввод в эксплуатацию.</p>'+
    '<p>'+(chosen?'Текущий этап: '+(stage<4?nextStageLabel(project):'объект введён в эксплуатацию'):project?'На участке выбран другой проект.':x.owner!==state.turn?'Для розыгрыша нужно владеть участком.':'Для запуска нужна карта «Проектирование».')+'</p>'+(x.investor?'<p class="muted"><b>💼 Инвестор: '+x.investor.capital+' тыс., доля '+x.investor.share+'% прибыли.</b> После ввода здание будет автоматически продано. Аренда недоступна.</p>':'')+buttons+'</article>';
  }).join('')+(x.owner<0&&state.rolled&&!current().bot&&[1,9,24].includes(current().pos)?'<div class="pc-buy-land"><p><b>⚖️ Аукцион:</b> участок доступен для выбора. Рядом своих: '+tactics.own+', цепь соперника для блокировки: '+tactics.blocking+'.</p><button onclick="closePlotCard();beginAuction('+i+')">⚖️ Купить через аукцион · от '+x.price+' тыс.</button></div>':'')+'<div class="pc-strategy"><b>🔗 Позиция:</b> своих соседей '+tactics.own+' · соседей соперников '+tactics.enemy+' · свободных рядом '+tactics.free+'. Победа: 4 отдельных готовых соседних здания.</div>';
  $('plotCardOverlay').hidden=false;
