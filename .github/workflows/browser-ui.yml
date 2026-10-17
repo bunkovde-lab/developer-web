@@ -32,6 +32,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Run mobile marketplace browser test
         run: node tests/browser_marketplace.cjs
+      - name: City request and land-card barter browser flow
+        run: node tests/browser_city_requests.cjs
       - name: Responsive visual and audio UI
         run: node tests/browser_visual.cjs
       - name: Deterministic land market and territorial tactics UI
