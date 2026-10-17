@@ -1,0 +1,110 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const html=fs.readFileSync('index.html','utf8');
+const legacy=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+assert(legacy,'Legacy inline script must exist');
+const extension=fs.readFileSync('balance.js','utf8');
+new vm.Script(legacy,{filename:'index.html'});
+new vm.Script(extension,{filename:'balance.js'});
+class El {
+ constructor(){this._innerHTML='';this.textContent='';this.hidden=false;this.disabled=false;this.value='';this.style={};this.dataset={};this.className='';this.children=[];}
+ set innerHTML(v){this._innerHTML=String(v);const first=this._innerHTML.match(/<option[^>]*value="([^"]+)"/);if(first)this.value=first[1];}
+ get innerHTML(){return this._innerHTML;}
+ setAttribute(){}
+ appendChild(x){this.children.push(x);}
+ remove(){}
+ addEventListener(){}
+ insertBefore(x){this.children.push(x);}
+ insertAdjacentHTML(_place,s){this._innerHTML+=s;}
+ querySelector(){return new El();}
+ querySelectorAll(){return [];}
+}
+let seed=15023;const rMath=Object.create(Math);rMath.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+const elements=new Map();const node=(id)=>{if(!elements.has(id))elements.set(id,new El());return elements.get(id);};
+const document={getElementById:node,querySelector:()=>new El(),querySelectorAll:()=>[],createElement:()=>new El(),body:new El(),head:new El(),addEventListener:()=>{}};
+node('count').value='6';node('lobbyBots').value='5';
+const storage=new Map();
+const sandbox={window:null,document,Math:rMath,console,alert:()=>{},confirm:()=>true,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},setTimeout:()=>0};
+sandbox.window=sandbox;vm.createContext(sandbox);
+vm.runInContext(legacy.replace(/resumeSavedGame\(\);\s*$/,''),sandbox,{filename:'index.html',timeout:5000});
+vm.runInContext(extension,sandbox,{filename:'balance.js',timeout:5000});
+const run=(src)=>vm.runInContext(src,sandbox,{timeout:4000});
+
+vm.runInContext(fs.readFileSync('marketplace.js','utf8'),sandbox,{filename:'marketplace.js',timeout:5000});
+vm.runInContext(fs.readFileSync('pace.js','utf8'),sandbox,{filename:'pace.js',timeout:5000});
+vm.runInContext(fs.readFileSync('auction-competition.js','utf8'),sandbox,{filename:'auction-competition.js',timeout:5000});
+vm.runInContext(fs.readFileSync('city-requests.js','utf8'),sandbox,{filename:'city-requests.js',timeout:5000});
+vm.runInContext(fs.readFileSync('game-rework-v016.js','utf8'),sandbox,{filename:'game-rework-v016.js',timeout:5000});
+run('newGame()');
+assert.equal(run('state.paceVersion'),1);
+assert.equal(run('state.players.length'),6);
+assert.equal(run('state.plots.filter(l=>l.owner>=0).length'),0,'All land must be free at the beginning');
+assert.equal(run('state.speedStartKit.length'),0,'No gifted, auto-purchased or reserved starter parcels');
+assert.equal(run('state.players.every(p=>p.cards.length===4)'),true);
+assert.equal(run('state.stock.stage.utilities.length'),6);
+assert.equal(run('state.stock.stage.permits.length'),6);
+assert.equal(run('state.stock.stage.construction.length'),6);
+assert.equal(run('state.stock.stage.commissioning.length'),6);
+assert.equal(run('state.players.every(p=>p.money===1650)'),true,'No capital charged for imaginary starter lots');
+run('state.rolled=true;state.constructionDeckChoice={playerIndex:0};selectConstructionDeck("commissioning");');
+assert.equal(run('state.players[0].cards.length'),8,'Six-player construction picks up to hand cap eight including the starter cards');
+assert.equal(run('state.players.reduce((sum,p)=>sum+p.cards.length,0)'),28);
+assert.equal(run('state.stock.stage.commissioning.length'),5);
+console.log('START RULE PASSED: zero owned land, no reserved lots, finite initial cards and construction limit');
+
+
+/*
+ * QA mass game BASELINE v0.17.0. Runs the CURRENT JavaScript engine, not the
+ * independent Python financial approximation.
+ * Only real bots are used: there is no synthetic rental/flipper bot profile.
+ * Browser/audio rendering and real human negotiations are out of scope.
+ */
+/* Headless economic run: render only the win-state evaluator, not expensive DOM. */
+run('window.render=function(){window.checkVictory()};');
+const gameCount=Number(process.env.QA_GAMES||1000);
+assert(Number.isInteger(gameCount)&&gameCount>=4&&gameCount%4===0,'QA_GAMES must be a multiple of four');
+const perSize=gameCount/4;
+const raw=[];
+run('window.qaEvents=[];var _qaNote=note;note=function(t){window.qaEvents.push(String(t));_qaNote(t)};');
+const median=xs=>{const a=xs.slice().sort((a,b)=>a-b);return a.length%2?a[(a.length-1)/2]:(a[a.length/2-1]+a[a.length/2])/2;};
+const mean=xs=>xs.reduce((s,v)=>s+v,0)/xs.length;
+for(const n of [3,4,5,6]){
+ for(let i=0;i<perSize;i++){
+  seed=(202610180+n*100000+i)>>>0;
+  node('count').value=String(n);
+  run('qaEvents=[];newGame();state.players.forEach(p=>p.bot=true)');
+  let t=0;
+  for(;t<245;t++){
+   if(run('Number.isInteger(state.winnerIndex)'))break;
+   try{run('bot();endTurn();');}
+   catch(e){throw Error('simulation n='+n+', trial='+i+', seed='+seed+': '+e.stack);}
+  }
+  const snap=run('({winner:state.winnerIndex??null,winType:state.winType??"territory",completedTurns:state.completedTurns??0,money:state.players.map(p=>p.money),profession:state.players.map(p=>p.profession),built:state.plots.filter(l=>l.project?.stage===4).length,land:state.plots.filter(l=>l.owner>=0).length,saleRevenue:state.players.reduce((s,p)=>s+(p.saleRevenue||0),0),botTrades:state.econMetrics?.botTrades||0,landTrades:state.econMetrics?.botLandTrades||0,assetSales:state.econMetrics?.botAssetSales||0,stageStockouts:state.econMetrics?.stageStockouts||0,networkStockouts:state.econMetrics?.networkStockouts||0,bankruptcies:qaEvents.filter(x=>x.includes("обанкротился")).length})');
+  assert(Number.isInteger(snap.winner),'Every campaign must terminate with a winner');
+  assert(snap.completedTurns<=240,'Turn horizon must hold');
+  assert(snap.money.every(Number.isFinite),'No invalid money');
+  raw.push({players:n,trial:i,seed:(202610180+n*100000+i)>>>0,...snap});
+ }
+}
+const sizeReports=[3,4,5,6].map(n=>{
+ const rows=raw.filter(x=>x.players===n);
+ const modes={};const professionWins={};
+ rows.forEach(r=>{modes[r.winType]=(modes[r.winType]||0)+1;const winnerProf=r.profession[r.winner];professionWins[winnerProf]=(professionWins[winnerProf]||0)+1;});
+ return {players:n,games:rows.length,completed:rows.length,completionPercent:100,
+   averageTurns:Number(mean(rows.map(x=>x.completedTurns)).toFixed(2)),
+   medianTurns:median(rows.map(x=>x.completedTurns)),
+   finishReasons:modes,professionWins,
+   avgFinalCashPerPlayer:Number(mean(rows.flatMap(x=>x.money)).toFixed(2)),
+   minFinalCash:Math.min(...rows.flatMap(x=>x.money)),
+   maxFinalCash:Math.max(...rows.flatMap(x=>x.money)),
+   bankruptcies:rows.reduce((s,x)=>s+x.bankruptcies,0),
+   peerCardTrades:rows.reduce((s,x)=>s+x.botTrades,0),
+   peerLandTrades:rows.reduce((s,x)=>s+x.landTrades,0),
+   buildingSales:rows.reduce((s,x)=>s+x.assetSales,0),
+   constructionStockouts:rows.reduce((s,x)=>s+x.stageStockouts,0),
+   networkStockouts:rows.reduce((s,x)=>s+x.networkStockouts,0)};
+});
+const allTurns=raw.map(x=>x.completedTurns);
+const summary={kind:"actual-engine-vm",commit:process.env.GITHUB_SHA||"local",rules:"HTML v0.17.0 baseline 34dfaadc1cf5ffd79f6e0360634bf18dab71e59b",games:raw.length,seeds:"202610180+player_count*100000+trial",complete:raw.length,meanTurns:Number(mean(allTurns).toFixed(2)),medianTurns:median(allTurns),byPlayerCount:sizeReports,limitations:["all bots use the same existing AI, no human strategy archetypes", "headless Node VM; no full Chromium interaction", "real human time, deal negotiation, exact cumulative rent/sales split not measured"]};
+console.log('QA_BASELINE_SUMMARY '+JSON.stringify(summary));
