@@ -4,7 +4,7 @@
  */
 (function(){
 "use strict";
-const PACE={version:1,startCapital:1250,largeTableCapital:1650,starterPlots:[0,5,12,17,24,29],clusterPairs:[[0,1],[4,5],[12,13],[16,17],[24,25],[28,29]],starterStages:['utilities','permits','construction'],constructionDraws:3,workMultiplier:1};
+const PACE={version:1,startCapital:1250,largeTableCapital:1650,starterPlots:[0,5,12,17,24,29],clusterPairs:[[0,1],[4,5],[12,13],[16,17],[24,25],[28,29]],starterStages:['utilities','permits','construction'],constructionDraws:3,largeTableConstructionDraws:4,workMultiplier:1};
 const stageIds=['utilities','permits','construction','commissioning'];
 const baseNewGame=window.newGame,baseChoice=window.selectConstructionDeck;
 function takeFromStock(deck){
@@ -60,7 +60,7 @@ function selectConstructionDeck(deck){
  // The base game already prepares its finite-card economy.
 const player=state.players[before],priority=stageDemand(before);
  let extra=0;
- for(let i=1;i<PACE.constructionDraws;i++){
+ for(let i=1;i<(state.players.length>=5?PACE.largeTableConstructionDraws:PACE.constructionDraws);i++){
   if(player.cards.length>=8)break;
   const available=priority.find(d=>state.stock.stage[d]?.length&&player.cards.filter(c=>c.deck===d).length<3);
   if(!available)break;
