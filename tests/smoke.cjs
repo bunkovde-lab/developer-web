@@ -119,3 +119,34 @@ const summary=[3,4,5,6].map(players=>{
 });
 assert.equal(tournament.length,16);
 console.log('TOURNAMENT REPORT',JSON.stringify(summary));
+
+node('count').value='3';
+run('newGame();state.rolled=true;state.turn=0;state.players[0].cards.push({id:501,deck:"utilities",index:0});');
+run("document.getElementById('tradeMode').value='sell';renderTradeMarket();executeTradeMarket()");
+assert(run('state.players[1].cards.some(c=>c.id===501)'),'Human sale to bot must transfer the card');
+assert.equal(run('state.players[0].cards.some(c=>c.id===501)'),false);
+
+run('newGame();state.rolled=true;state.turn=0;state.players[0].cards.push({id:601,deck:"utilities",index:0});state.players[1].cards.push({id:602,deck:"construction",index:0});');
+run("document.getElementById('tradeMode').value='swap';renderTradeMarket();executeTradeMarket()");
+assert(run('state.players[0].cards.some(c=>c.id===602)'),'Swap must credit buyer inventory');
+assert(run('state.players[1].cards.some(c=>c.id===601)'),'Swap must credit counterparty inventory');
+
+run('newGame();state.rolled=true;state.turn=0;state.players[0].money=5000;state.plots[0].owner=0;state.players[0].cards.push({id:701,deck:"utilities",index:0},{id:702,deck:"permits",index:0},{id:703,deck:"construction",index:0});');
+run('playStageCard(0,0,701);playStageCard(0,0,702);playStageCard(0,0,703)');
+assert.equal(run('state.plots[0].project.stage'),2,'Third main action in one turn must be rejected');
+assert.equal(run('state.players[0].cards.some(c=>c.id===703)'),true,'Denied action must not burn card');
+
+run('newGame();state.rolled=true;state.turn=0;state.plots[0].owner=0;state.players[0].marketCards.push({id:801,type:"investor",card:{investment:200,share:20}});');
+run('applyInvestorCard(801,0)');
+assert.equal(run('state.players[0].investments[0].unpaid'),250);
+run('state.rolled=false;state.players[0].pos=31;roll()');
+assert(run('state.players[0].investments[0].unpaid')<250,'Investor payout must service principal without a tenant');
+
+run('newGame();state.rolled=true;state.turn=0;state.players[0].money=500;state.players[0].governmentCards.push({id:901,type:"investment",accepted:false,deadline:100,terms:{invest:120,reward:145,penalty:60}})');
+run("governmentAction(901,'accept')");
+assert.equal(run('state.players[0].money'),380);
+run('state.round+=6');
+run("governmentAction(901,'finish')");
+assert.equal(run('state.players[0].money'),525);
+assert.equal(run('state.players[0].governmentCards.length'),0);
+console.log('EXTENDED CONTRACT TESTS PASSED: sale, swap, two actions, investor repayment, government completion');
