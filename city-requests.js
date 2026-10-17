@@ -114,9 +114,14 @@ function addUI(){
  const style=document.createElement('style');style.textContent='.city-deal-box,.city-request-box{max-width:580px;width:min(95vw,580px)}.city-deal-actions{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin:15px 0}.city-deal-actions button,.city-request-box button{min-height:55px}.city-request-box select{min-height:50px;width:100%;margin:10px 0}@media(max-width:480px){.city-deal-actions{grid-template-columns:1fr}}';
  document.head.appendChild(style);
 }
-const originalRoll=window.roll,originalRender=window.render,originalNew=window.newGame;
+const originalRoll=window.roll,originalRender=window.render,originalNew=window.newGame,originalEndTurn=window.endTurn;
 window.roll=function(){originalRoll();if(state?.rolled&&!current().bot&&eventNames[current().pos]==='Сделка'&&!state.pendingCard&&!state.auction)openCityDeal();};
 window.render=function(){originalRender();const btn=$c('cityDealButton');if(btn)btn.disabled=!state||!state.rolled||current().bot||eventNames[current().pos]!=='Сделка';};
+window.endTurn=function(){
+ const active=state?.activeCityRequest;
+ if(active?.owner===state?.turn){putBack(active.index);state.activeCityRequest=null;}
+ clearDealModals();originalEndTurn();
+};
 window.newGame=function(){clearDealModals();originalNew();};
 Object.assign(window,{drawCityRequest,fulfillCityRequest,refuseCityRequest,cityRequestBot,openCityDeal,closeCityDeal,tradeOnDeal,takeCityOffer});
 addUI();
