@@ -272,16 +272,37 @@ function botBuildAndConnect(){
 }
 function botTradeFromPeers(){
  const p=current(),i=state.turn;if(!p.bot||!state.rolled)return false;
- const next=state.plots.filter(l=>l.owner===i&&l.project?.stage!==4).map(l=>nextStageDeck(l.project));
- const need=STAGE_IDS.find(d=>next.includes(d)&&!p.cards.some(c=>c.deck===d));
+ const cell=eventNames[p.pos];
+ let kind='',need='',kindLabel='';
+ const lots=state.plots.map((lot,j)=>({lot,j})).filter(x=>x.lot.owner===i);
+ if(cell==='Сделка'){
+  const next=lots.filter(x=>x.lot.project?.stage!==4).map(x=>nextStageDeck(x.lot.project));
+  need=STAGE_IDS.find(d=>next.includes(d)&&!p.cards.some(c=>c.deck===d));
+  kind='stage';kindLabel=deckNames[need];
+ }else if(cell==='Инженерные сети'){
+  const missing=lots.filter(x=>x.lot.project?.stage===4).flatMap(x=>requiredNetworkTypes(x.j,x.lot.project.size).filter(t=>!connectedNetworksFor(x.lot).includes(t)));
+  need=missing.find(t=>!p.networkCards.some(c=>c.type===t));
+  kind='network';kindLabel=NETWORK_CARDS.find(n=>n.type===need)?.title;
+ }else if(cell==='Рынок'){
+  need=lots.some(x=>x.lot.project?.stage===4&&!x.lot.tenant)&&!p.marketCards.some(c=>c.type==='tenant')?'tenant':
+   lots.some(x=>x.lot.project?.stage!==4)&&p.money<250&&!p.marketCards.some(c=>c.type==='investor')?'investor':null;
+  kind='market';kindLabel=need==='tenant'?'Арендатор':'Инвестор';
+ }else return false;
  if(!need)return false;
  for(let j=0;j<state.players.length;j++){
   if(j===i||!state.players[j].bot)continue;
-  const seller=state.players[j],c=seller.cards.find(c=>c.deck===need&&!botNeedCard(j,{...c,kind:'stage'}));
-  if(!c)continue;const cost=Math.ceil(cardPrice({...c,kind:'stage'})*1.22/5)*5;
-  if(p.money<cost+50||p.cards.length>=GAME_V2.stageHandCap)continue;
-  seller.cards=seller.cards.filter(x=>x.id!==c.id);p.cards.push(c);p.money-=cost;seller.money+=cost;state.econMetrics.botTrades++;
-  note('🤖 '+p.name+' купил '+deckNames[need]+' у '+seller.name+' за '+cost);return true;
+  const seller=state.players[j];
+  const bucket=kind==='stage'?'cards':kind==='network'?'networkCards':'marketCards';
+  const candidate=seller[bucket].find(c=>(kind==='stage'?c.deck:c.type)===need&&
+   (kind==='market'?true:!botNeedCard(j,{...c,kind})));
+  if(!candidate)continue;
+  const price=kind==='market'?Math.max(50,Math.round((candidate.card?.investment||candidate.card?.percent||100)*.45)):
+   Math.ceil(cardPrice({...candidate,kind})*1.22/5)*5;
+  const maximum=kind==='stage'?GAME_V2.stageHandCap:kind==='network'?GAME_V2.networkHandCap:12;
+  if(p.money<price+45||p[bucket].length>=maximum)continue;
+  seller[bucket]=seller[bucket].filter(x=>x.id!==candidate.id);p[bucket].push(candidate);
+  p.money-=price;seller.money+=price;state.econMetrics.botTrades++;
+  note('🤖 '+p.name+' приобрёл '+kindLabel+' у '+seller.name+' на клетке «'+cell+'» за '+price+' тыс.');return true;
  }
  return false;
 }
@@ -423,7 +444,7 @@ function renderGovernmentContract(c,i){
 function checkGovernmentDeadlines(){ /* Отменены сроки, просрочки и штрафы муниципальных контрактов. */ }
 function bankruptcyPlayer(i){
  const p=state.players[i];if(p.money>=0)return false;
- for(const lot of state.plots)if(lot.owner===i){lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;}
+ for(const lot of state.plots)if(lot.owner===i){lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;}
  // Retain turn and player identity, reset holdings, discard cards with cooldown.
  (p.cards||[]).forEach(c=>returnStage(c.deck,c.index));
  (p.networkCards||[]).forEach(c=>returnNetwork(c.type));
