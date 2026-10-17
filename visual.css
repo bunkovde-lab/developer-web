@@ -251,3 +251,11 @@ body>header>small{font-size:11px}
  .cabinet-main .actions{gap:5px}
  .cabinet-main .stats{gap:4px}
 }
+
+/* Keep the two turn-critical controls above situational actions on portrait phones. */
+@media(max-width:760px){
+ .cabinet-main .actions #roll{order:-2;grid-column:auto!important;min-height:54px!important;font-size:15px}
+ .cabinet-main .actions #end{order:-1;grid-column:auto!important;min-height:54px!important;font-size:14px}
+ .cabinet-main .actions #marketTradeBtn{order:0}
+ .cabinet-main .actions button:not(#roll):not(#end){min-height:45px!important}
+}
