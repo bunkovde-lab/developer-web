@@ -7,7 +7,7 @@
 const $m=id=>document.getElementById(id);
 const html=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ui={mode:"buy",owner:"all",category:"all",query:"",remote:null,mine:null,buyer:null,feedback:"",quoteDirty:false};
-const BOT_LIMITS={stage:8,network:4,market:12};
+// Inventory is unbounded; scarcity comes from the finite physical deck, not hand storage.
 const MARKET_SCOPE={
  'Рынок':{title:'Рынок · покупатели, арендаторы, инвесторы',families:['investor','tenant','buyer']},
  'Инженерные сети':{title:'Инженерные сети · подключения',families:['network']},
@@ -57,11 +57,8 @@ function askFor(owner,c){return round5(basePrice(c)*(ownerNeeds(owner,c)?1.8:1.2
 function bidFrom(owner,c){return round5(basePrice(c)*(ownerNeeds(owner,c)?1.15:.68)*(scarcity(c)?1.08:1));}
 function effectiveMoney(owner){return state.players[owner]?.money||0;}
 function tradeAllowed(){return state&&!!scopeNow()&&state.turn===0&&!state.players[0]?.bot&&state.rolled&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice&&!Number.isInteger(state.winnerIndex)&&(state.actionKey!=="0-"+state.round||(state.actionsUsed||0)<2)&&state.tradeMarker!=="0-"+state.round;}
-function capacity(p,received,given){
- const existing=cardsOf(p).filter(x=>x.kind===received.kind).length;
- const count=existing+1-(given?.kind===received.kind?1:0);
- return count<=(BOT_LIMITS[received.kind]||12);
-}
+function capacity(p,received,given){return true;}
+
 function exists(owner,id){return state?.players?.[owner]&&findCard(owner,id);}
 function offers(){return state.players.flatMap((p,i)=>i===0?[]:cardsOf(p).filter(tradeInScope).map(c=>({owner:i,card:c,ask:askFor(i,c)})));}
 function playerOptions(){
@@ -103,15 +100,15 @@ function actionAvailability(ctx,price){
  if(!ctx.valid)return ctx.message;
  if(!tradeAllowed())return "Сделки доступны только в ваш ход после броска, пока осталось действие. Витрину можно изучать заранее.";
  if(ctx.mode==="buy"){
-  if(!capacity(state.players[0],ctx.remote,null))return "Ваш склад этой категории переполнен.";
+  if(!capacity(state.players[0],ctx.remote,null))return "У вас недостаточно денег.";
   if(price<ctx.quote)return "Продавец не согласен на такую цену. Встречное предложение: "+format(ctx.quote)+".";
   if(effectiveMoney(0)<price)return "Недостаточно средств для покупки.";
  }else if(ctx.mode==="sell"){
-  if(!capacity(ctx.other,ctx.mine,null))return "У покупателя нет места для этой карты.";
+  if(!capacity(ctx.other,ctx.mine,null))return "Покупатель не может принять карту.";
   if(price>ctx.quote)return "Покупатель отклонил цену. Его предложение: "+format(ctx.quote)+".";
   if(effectiveMoney(ctx.owner)<price)return "У покупателя недостаточно средств.";
  }else{
-  if(!capacity(state.players[0],ctx.remote,ctx.mine)||!capacity(ctx.other,ctx.mine,ctx.remote))return "Обмен невозможен: склад одного из участников переполнен.";
+  if(!capacity(state.players[0],ctx.remote,ctx.mine)||!capacity(ctx.other,ctx.mine,ctx.remote))return "Обмен карт недоступен.";
   if(price<ctx.quote)return "Игрок не согласен на размер доплаты. Минимальная разница: "+(ctx.quote>=0?"+":"")+format(ctx.quote)+".";
   if(price>0&&effectiveMoney(0)<price)return "Недостаточно средств для доплаты.";
   if(price<0&&effectiveMoney(ctx.owner)<-price)return "У соперника недостаточно денег для компенсации.";
