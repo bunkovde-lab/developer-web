@@ -5,7 +5,7 @@
 (function () {
 "use strict";
 const GAME_V2 = {version:2,stageHandCap:8,networkHandCap:4,networkCopies:3,stageCooldown:4,networkCooldown:4};
-const OLD_NEW_GAME=newGame, OLD_ROLL=roll, OLD_END_TURN=endTurn, OLD_MARKET_BASE=marketBase, OLD_RESOLVE_SPECIAL=resolveSpecialCell;
+const OLD_NEW_GAME=window.newGame, OLD_ROLL=window.roll, OLD_END_TURN=window.endTurn, OLD_MARKET_BASE=window.marketBase, OLD_RESOLVE_SPECIAL=window.resolveSpecialCell;
 const STAGE_IDS=['utilities','permits','construction','commissioning'];
 function mixDeck(arr){for(let i=arr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 function ensureEconomy(){
@@ -353,7 +353,7 @@ function ensureMarketActions(){
  }
  const b=$('marketTradeBtn');if(b)b.disabled=!dealAllowed()||state.tradeMarker===state.turn+'-'+state.round;
 }
-const OLD_RENDER=render;
+const OLD_RENDER=window.render;
 function render(){
  OLD_RENDER();
  if(state){ensureEconomy();ensureMarketActions();}
