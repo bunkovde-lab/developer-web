@@ -106,7 +106,7 @@ function finalizeInvestorSale(lotIndex){
  const sellerPayout=Math.max(0,salePrice-investorPayout);
  p.money+=sellerPayout;
  note('🏢 '+p.name+': инвестиционный проект «'+lot.name+'» введён и автоматически продан за '+salePrice+' тыс. Инвестору перечислено '+investorPayout+', девелоперу '+sellerPayout+' тыс. Аренда недоступна.');
- lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;
+ transferLargeSection(lotIndex,-1);lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;
  if(!p.bot){const overlay=$('plotCardOverlay');if(overlay)overlay.hidden=true;showResolvedCard('🏢 Инвестиционный объект продан','Здание продано автоматически в момент ввода в эксплуатацию. Сдать его в аренду нельзя.','Цена продажи: '+salePrice+' тыс. · инвестору: '+investorPayout+' тыс. · вам: '+sellerPayout+' тыс.');}
  return true;
 }
@@ -236,27 +236,36 @@ function executeTradeMarket(){
  else $('tradePreview').textContent=message||'Выберите доступную сделку.';
 }
 function botBuyLand(){
- const i=state.turn,p=current();if(!p.bot||!state.rolled||!([1,9,24].includes(p.pos)))return false;
- const already=state.plots.filter(l=>l.owner===i).length;if(already>=5)return false;
- ensureLandDeck();const options=state.landDeck.filter(k=>state.plots[k].owner<0).map(k=>({i:k,lot:state.plots[k]}));
- options.sort((a,b)=>{
-  const na=neighborsBySide(a.i).filter(j=>state.plots[j].owner===i).length;
-  const nb=neighborsBySide(b.i).filter(j=>state.plots[j].owner===i).length;
-  return (nb*220-b.lot.price)-(na*220-a.lot.price);
+ const i=state.turn,p=current();if(!p.bot||!state.rolled||![1,9,24].includes(p.pos))return false;
+ const already=state.plots.filter(l=>l.owner===i).length;
+ if(already>=7)return false;
+ ensureLandDeck();
+ const options=state.plots.map((lot,index)=>({index,lot})).filter(x=>x.lot.owner<0).map(x=>({...x,t:territoryAnalysis(x.index,i)}));
+ options.sort((a,b)=>b.t.score-a.t.score||a.lot.price-b.lot.price||a.index-b.index);
+ // Tactical land acquisition: expand an existing orthogonal group or take a contested gap.
+ const candidate=options.find(x=>{
+  const cost=Math.round(x.lot.price*(1.06+Math.min(.25,x.t.blocking*.07)));
+  const reserve=already>=3?100:210;
+  return p.money>=cost+reserve && (x.t.blocking>=2||x.t.own>0||already===0||x.t.score>15);
  });
- const choice=options.find(x=>p.money>=x.lot.price+140);if(!choice)return false;
- const price=Math.round(choice.lot.price*(1.07+((i+state.round)%3)*.04));
- if(p.money<price+130)return false;
- choice.lot.owner=i;p.money-=price;state.landDeck=state.landDeck.filter(k=>k!==choice.i);
- note('🤖 '+p.name+' выиграл автоматический аукцион: '+choice.lot.name+' за '+price+' тыс.');return true;
+ if(!candidate)return false;
+ const price=Math.round(candidate.lot.price*(1.06+Math.min(.25,candidate.t.blocking*.07)));
+ if(p.money<price)return false;
+ candidate.lot.owner=i;p.money-=price;
+ state.landDeck=(state.landDeck||[]).filter(j=>j!==candidate.index);
+ note('🤖 '+p.name+' выбрал участок №'+(candidate.index+1)+' ('+zoneOf(candidate.index).short+') на аукционе за '+price+' тыс.'+(candidate.t.blocking>=2?' — перехвачена важная клетка чужой цепи':''));
+ return true;
 }
 function botBuildAndConnect(){
  const p=current(),i=state.turn;if(!p.bot||!state.rolled)return false;
- const owned=state.plots.map((lot,j)=>({lot,j})).filter(x=>x.lot.owner===i);
+ const owned=state.plots.map((lot,j)=>({lot,j})).filter(x=>x.lot.owner===i&&!Number.isInteger(x.lot.reservedFor));
  const inProgress=owned.filter(x=>x.lot.project?.stage!==4).sort((a,b)=>(b.lot.project?.stage||0)-(a.lot.project?.stage||0));
  for(const {lot,j} of inProgress){
   const deck=nextStageDeck(lot.project),card=p.cards.find(c=>c.deck===deck);if(!card)continue;
-  const size=lot.project?.size??0;const cost=BALANCED_DECKS[deck][card.index].costs[size];
+  const allowed=zoneOf(j).sizes;
+  const size=lot.project?.size??(allowed.includes(0)?0:(allowed.includes(1)?1:2));
+  if(size===2&&!lot.project&&largePairCandidate(j,i)<0)continue;
+  const cost=BALANCED_DECKS[deck][card.index].costs[size];
   if(p.money>=cost+25){const before=lot.project?.stage||0;playStageCard(j,size,card.id);if((lot.project?.stage||0)>before)return true;}
  }
  for(const {lot,j} of owned){
@@ -407,7 +416,7 @@ function fulfillMunicipal(c,owner,target){
   found.lot.owner=-1;found.lot.level=0;
  }else if(c.type==='construction'){
   payout=Math.round(marketBase(found.lot,'buyer')*1.10);
-  found.lot.owner=-1;found.lot.level=0;found.lot.project=null;found.lot.tenant=null;found.lot.investor=null;
+  transferLargeSection(found.i,-1);found.lot.owner=-1;found.lot.level=0;found.lot.project=null;found.lot.tenant=null;found.lot.investor=null;
  }
  if(!payout||!Number.isFinite(payout))return false;
  p.money+=payout;p.governmentCards=p.governmentCards.filter(x=>x.id!==c.id);
