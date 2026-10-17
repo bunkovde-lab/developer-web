@@ -42,7 +42,8 @@ async function waitServer(){for(let i=0;i<50;i++){try{await new Promise((resolve
   assert.match(await page.locator('#marketHistory').innerText(),/купил/);
   // Trade is one per turn, while market remains browseable.
   await page.locator('#marketListings .mk-card').first().click();
-  await page.locator('#marketConfirm').click();
+  assert.equal(await page.locator('#marketConfirm').isDisabled(),true,'A second trade is disabled until the next turn');
+  assert.equal(await page.evaluate(()=>marketCommit()),false);
   assert.equal(await page.evaluate(()=>state.marketTransactions.length),1);
   // Reset the turn and test sale through real buttons.
   await page.evaluate(()=>{
