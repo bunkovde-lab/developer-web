@@ -97,3 +97,25 @@ for(const [players,s] of [[3,31415],[4,27182],[6,16180]]){
  assert(run('state.plots.every(p=>p.owner>=-1&&p.owner<state.players.length)'),'All plot owners valid');
 }
 console.log('SIMULATION RESULTS',JSON.stringify(simulations));
+
+const tournament=[];
+for(const players of [3,4,5,6]){
+ for(const seedStart of [11223,55667,99881,23456]){
+  seed=seedStart+players*987;
+  node('count').value=String(players);
+  run('newGame();state.players.forEach(p=>p.bot=true);');
+  let turns=0;
+  for(;turns<900;turns++){
+   if(run('Number.isInteger(state.winnerIndex)'))break;
+   run('bot();endTurn();');
+  }
+  tournament.push({players,seed:seedStart,turns,round:run('state.round'),winner:run('state.winnerIndex??null'),built:run('state.plots.filter(l=>l.project?.stage===4).length'),...run('state.econMetrics')});
+ }
+}
+const summary=[3,4,5,6].map(players=>{
+ const rows=tournament.filter(r=>r.players===players),wins=rows.filter(r=>r.winner!==null);
+ const times=wins.map(r=>r.turns).sort((a,b)=>a-b);
+ return {players,wins:wins.length,simulations:rows.length,minTurn:times[0]??null,medianTurn:times.length?times[Math.floor(times.length/2)]:null,maxTurn:times.at(-1)??null,stockouts:rows.reduce((n,r)=>n+r.stageStockouts+r.networkStockouts,0),botTrades:rows.reduce((n,r)=>n+r.botTrades,0)};
+});
+assert.equal(tournament.length,16);
+console.log('TOURNAMENT REPORT',JSON.stringify(summary));
