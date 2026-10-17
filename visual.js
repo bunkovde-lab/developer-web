@@ -14,22 +14,16 @@ const STAGE_TITLES=['Под проект','Проект','Разрешения',
 let previousRender={pos:null,dice:null,round:null,money:null,winner:null,logCount:0};
 let muted=localStorage.getItem('developer-v10-sound')==='off',audio=null,lastBoardMessage='',zoomOpen=false;
 const $v=id=>document.getElementById(id);
-function createHud(){
- if($v('v10Hud'))return;
- const hud=document.createElement('div');hud.id='v10Hud';hud.setAttribute('role','region');hud.setAttribute('aria-label','Статус развития города');
- hud.innerHTML='<div class="hud-block"><span>🏙</span><div><small>Экономическая стратегия</small><br><b>ДЕВЕЛОПЕР</b></div></div>'+
- '<div class="hud-block"><span>🎯</span><div><small>Цель победы</small><br><b id="v10Goal">4 соседних объекта</b></div></div>'+
- '<div class="hud-block hud-progress"><div><small>Макс. прогресс</small><br><b id="v10Progress">0 из 4</b></div><div class="hud-progress-bar"><span id="v10ProgressFill" style="width:0%"></span></div></div>'+
- '<div class="hud-block"><span class="hud-phase" id="v10Phase">Ход игрока</span></div>'+
- '<button id="v10Zoom" type="button" aria-label="Увеличить центральную карту участков">🔎 Увеличить город</button><button id="v10Sound" type="button" aria-label="Включить или отключить звуки игры" aria-pressed="false"></button>';
- const menu=document.querySelector('.session-menu');
- if(menu)menu.insertAdjacentElement('afterend',hud);
- else document.querySelector('main')?.prepend(hud);
- $v('v10Zoom').addEventListener('click',()=>toggleZoom());
- $v('v10Sound').addEventListener('click',()=>{
-  muted=!muted;localStorage.setItem('developer-v10-sound',muted?'off':'on');
-  updateSoundButton();if(!muted)play('confirm');
- });
+function createControls(){
+ const zoom=$v('v10Zoom'),sound=$v('v10Sound');
+ if(zoom&&!zoom.dataset.bound){zoom.addEventListener('click',()=>toggleZoom());zoom.dataset.bound='1';}
+ if(sound&&!sound.dataset.bound){
+  sound.addEventListener('click',()=>{
+   muted=!muted;localStorage.setItem('developer-v10-sound',muted?'off':'on');
+   updateSoundButton();if(!muted)play('confirm');
+  });
+  sound.dataset.bound='1';
+ }
  updateSoundButton();
 }
 function updateSoundButton(){const btn=$v('v10Sound');if(btn){btn.textContent=muted?'🔇 Включить звук':'🔊 Звук включён';btn.dataset.muted=String(muted);btn.setAttribute('aria-pressed',String(!muted));}}
@@ -91,13 +85,13 @@ function decoratePlots(){
   const label=el.querySelector('.plot-zone');
   if(label)label.textContent=sectorLabel(lot,lot.owner);
   el.dataset.status=!owned?'free':built?'completed':lot.investor?'investor':'construction';
-  const steps=document.createElement('span');steps.className='plot-progress';
+  const steps=el.querySelector('.plot-progress')||document.createElement('span');steps.className='plot-progress';
   steps.textContent=owned?(built?'ГОТОВО':stage+'/4 ЭТАПОВ'):lot.price+' тыс.';
-  el.appendChild(steps);
+  if(!steps.isConnected)el.appendChild(steps);
   if(owned){
-   const hint=document.createElement('small');hint.className='plot-hint';
+   const hint=el.querySelector('.plot-hint')||document.createElement('small');hint.className='plot-hint';
    hint.textContent=built?(lot.tenant?'Аренда '+tenantIncomeForLot(lot)+' тыс.':'Продажа '+marketBase(lot,'buyer')+' тыс.'):(STAGE_TITLES[stage]||'Стройка');
-   el.appendChild(hint);
+   if(!hint.isConnected)el.appendChild(hint);
   }
   let context='Участок '+(i+1)+'. '+(owned?'Владелец '+state.players[lot.owner]?.name+'. ':'Свободный участок. ')+
    (built?'Введён в эксплуатацию. '+(lot.tenant?'Арендатор есть. ':'Без арендатора. '):owned?'Этап '+stage+' из 4. ':'' );
@@ -118,13 +112,13 @@ function maxCluster(){
  }
  return Math.min(4,best);
 }
-function updateHud(){
- if(!$v('v10Hud'))createHud();
- const progress=maxCluster(),p=state.players[state.turn],cell=eventNames[p.pos]||'Старт';
- $v('v10Progress').textContent=progress+' из 4';
- $v('v10ProgressFill').style.width=(progress/4*100)+'%';
- $v('v10Phase').textContent=(p.bot?'🤖 ':'● ')+p.name+' · '+cell;
- const bonus=$v('startPayout')?.closest('.pill');if(bonus){const textNode=[...bonus.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.includes('Следующий'));if(textNode)textNode.textContent='Аренда на «Старте»: ';}
+function updateSidebar(){
+ // Keep information about rental settlements near the cabinet stats, not above the board.
+ const bonus=$v('startPayout')?.closest('.pill');
+ if(bonus){
+  const textNode=[...bonus.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.includes('Следующий'));
+  if(textNode)textNode.textContent='Аренда на «Старте»: ';
+ }
 }
 function feedbackMotion(){
  const p=state.players[state.turn],winner=Number.isInteger(state.winnerIndex)?state.winnerIndex:null;
@@ -137,7 +131,7 @@ function feedbackMotion(){
 }
 function visualRender(){
  if(!state)return;
- try{prettyTrack();decoratePlots();updateHud();feedbackMotion();}
+ try{prettyTrack();decoratePlots();updateSidebar();feedbackMotion();}
  catch(e){console.warn('UI enhancement skipped:',e);}
 }
 const original=window.render;
@@ -156,5 +150,16 @@ const originNote=window.note;
 if(typeof originNote==='function'){
  window.note=function(message){originNote(message);const line=String(message||'');if(line.includes('победил'))play('win');else if(/постро|введ|завершил строительство/.test(line))play('build');else if(/купил|продал|обменял|торговая площадка/.test(line))play('trade');else if(/получил|вытащил.*карт/.test(line))play('card');else if(/доход|аренд|заработал/.test(line))play('cash');else if(/штраф|кризис|не хватает/.test(line))play('bad');};
 }
-createHud();if(state)visualRender();
+createControls();
+const board=$v('board');
+if(board&&typeof MutationObserver!=='undefined'){
+ // The legacy engine rewrites board.innerHTML during a roll, card draw, and end turn.
+ // Immediately re-apply the modern map after ANY board replacement, not only
+ // when a window.render() override happens to execute.
+ const observer=new MutationObserver(records=>{
+  if(records.some(r=>r.target===board&&r.type==='childList')&&state)visualRender();
+ });
+ observer.observe(board,{childList:true});
+}
+if(state)visualRender();
 })();
