@@ -58,8 +58,8 @@ assert(run('locationYield(22,"buyer")')>run('locationYield(23,"buyer")'));
 assert(run('locationYield(23,"tenant")')>run('locationYield(22,"tenant")'));
 assert.equal(run('zoneOf(0).sizes.includes(2)'),false);
 assert.equal(run('zoneOf(0).sizes.includes(0)'),true);
-assert.equal(run('zoneOf(14).sizes.includes(2)'),false); // Retail permits small and medium, not large.
-assert.equal(run('zoneOf(14).sizes.includes(1)'),true);
+assert.equal(run('zoneOf(4).sizes.includes(2)'),false); // Retail permits small and medium, not large.
+assert.equal(run('zoneOf(4).sizes.includes(1)'),true);
 assert.equal(run('zoneOf(22).sizes.includes(2)'),true);
 assert.equal(run('zoneOf(22).sizes.includes(0)'),false);
 assert.equal(run('state.landDeck.length'),0);
