@@ -24,3 +24,5 @@ jobs:
         run: node tests/rework.cjs
       - name: V0.16 sixteen complete deterministic campaigns
         run: node tests/tournament-v016.cjs
+      - name: SVG manifest and safe vector asset validation
+        run: node tests/svg-assets.cjs
