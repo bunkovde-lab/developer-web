@@ -44,8 +44,8 @@ run('state.plots[0].owner=0;state.players[0].money=5000');
 const first=run('state.players[0].cards.find(c=>c.deck==="utilities").id');
 run('playStageCard(0,0,'+first+')');
 assert.equal(run('state.plots[0].project.stage'),1);
-assert.equal(run('state.stock.returnStage.length'),1);
-assert.equal(run('state.stock.stage.utilities.length'),0);
+assert.equal(run('state.stock.returnStage.length'),0,'No cooldown queue');
+assert.equal(run('state.stock.stage.utilities.length'),1,'Used card returned immediately');
 run('state.round+=4;state.turn=3;drawCard("utilities");dismissCard()');
 assert.equal(run('state.stock.returnStage.length'),0);
 assert.equal(run('state.stock.stage.utilities.length'),0,'Consumed card reenters circulation');
@@ -142,13 +142,10 @@ assert.equal(run('state.plots[0].investor.capital'),200);
 run('state.rolled=false;state.players[0].pos=31;roll()');
 assert.equal(run('(state.players[0].investments||[]).length'),0,'No recurring debt for new investor');
 
-run('newGame();state.rolled=true;state.turn=0;state.players[0].money=500;state.plots[0].owner=0;state.players[0].governmentCards.push({id:901,type:"land",version:2,terms:{premium:1.15}})');
-run("governmentAction(901,'finish',0)");
-assert.equal(run('state.players[0].money'),638);
-run('state.round+=900');
-assert.equal(run('state.players[0].money'),638);
-assert.equal(run('state.players[0].governmentCards.length'),0);
-console.log('EXTENDED CONTRACT TESTS PASSED: sale, swap, two actions, investor repayment, government completion');
+run('newGame();state.rolled=true;state.turn=0;');
+assert.equal(run('eventNames.includes("Госзаказ")'),false,'All government procurement spaces removed');
+assert.equal(run('HAND_CATEGORIES.some(x=>x[0]==="government")'),false);
+console.log('EXTENDED FINANCING TESTS PASSED: sale, swap, two actions, investor repayment, no gov procurement');
 
 
 vm.runInContext(fs.readFileSync('marketplace.js','utf8'),sandbox,{filename:'marketplace.js',timeout:4000});
@@ -183,8 +180,6 @@ assert.equal(run('state.plots[0].owner'),-1,'Investor-backed building must auto-
 assert.equal(run('state.plots[0].tenant'),null,'Investor-backed building cannot retain a tenant');
 assert.equal(run('state.players[0].money'),5188,'Sale settlement must return principal and profit share to investor');
 assert.equal(run('rentalIncomeFor(0)'),0);
-run('newGame();state.rolled=true;state.players[0].governmentCards.push({id:8706,type:"network",version:2,terms:{networkType:"gas",reward:85}});state.players[0].networkCards.push({id:8707,type:"gas"});');
-assert.equal(run('governmentAction(8706,"finish",8707)'),true);
-assert.equal(run('state.players[0].money'),835);
+run('newGame();state.rolled=true;state.players[0].networkCards.push({id:8707,type:"gas"});');
 assert.equal(run('state.players[0].governmentCards.length'),0);
-console.log('INVESTOR AUTOSALE PASSED: binding, cost/profit split, immediate disposal, municipal network procurement');
+console.log('INVESTOR AUTOSALE PASSED: binding, cost/profit split, immediate disposal, procurement removed');
