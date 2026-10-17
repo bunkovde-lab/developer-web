@@ -1,0 +1,60 @@
+/* Living City v0.18: progressive enhancement, no gameplay hit targets replaced. */
+.board{position:relative;isolation:isolate}
+.board .map-plot{position:relative;isolation:isolate;contain:paint}
+.board .map-plot>*:not(.scene-stage-art):not(.scene-network-pin){position:relative;z-index:1}
+.board .map-plot .plot-stage.scene-art-stage{height:clamp(21px,3.1vw,41px);width:clamp(21px,3.1vw,41px);display:flex;align-items:center;justify-content:center;overflow:visible;margin:0 auto}
+.scene-stage-art{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;display:block;box-shadow:0 5px 14px #04111b40;border-radius:5px}
+.board.zoom-map .plot-stage.scene-art-stage{width:clamp(41px,6vw,91px);height:clamp(41px,6vw,91px)}
+.board .map-plot[data-scene-owner]:not([data-scene-owner="-1"]){box-shadow:inset 0 0 0 1px var(--owner),0 4px 12px #010c1e7c;border-bottom:4px solid var(--owner)}
+.board .map-plot[data-scene-owner="-1"]{filter:saturate(.88)}
+.board .map-plot.scene-linked{border-right:3px solid #fae7a6}
+.board .map-plot.scene-winning{outline:3px solid #ffe3a0;outline-offset:-2px;z-index:3;box-shadow:0 0 23px #ffdd7b9c,inset 0 0 12px #ffffff22}
+.board .map-plot.scene-lease:after{content:"◆";position:absolute;top:3px;right:3px;font-size:9px;color:#7ff3c1;text-shadow:0 0 8px #30dfb3}
+.board .map-plot .scene-network-pin{position:absolute;top:2px;left:2px;width:clamp(9px,1.35vw,18px);height:clamp(9px,1.35vw,18px);z-index:2;pointer-events:none}
+.board .map-plot.scene-changed{border-color:#fce5b0}
+.board .map-plot .plot-id,.board .map-plot .plot-progress,.board .map-plot .plot-zone{z-index:2}
+.board .cell .track-icon.scene-art-track{display:flex;align-items:center;justify-content:center;min-height:clamp(15px,2.2vw,31px)}
+.scene-track-art{display:block;width:clamp(16px,2.75vw,36px);height:clamp(16px,2.75vw,36px);object-fit:cover;border-radius:4px;filter:drop-shadow(0 2px 3px #0007)}
+.board .cell.active .scene-track-art{outline:1px solid #ffe4a1}
+.scene-moving-token{position:absolute;width:clamp(12px,1.4vw,19px);height:clamp(12px,1.4vw,19px);border-radius:50%;border:2px solid #f6f8f6;box-shadow:0 0 0 4px #0b21388a,0 0 19px #ffe4a6;transform:translate(-50%,-50%);pointer-events:none;z-index:15;will-change:transform}
+#sceneNotices{position:fixed;z-index:1560;pointer-events:none;right:clamp(6px,2vw,25px);bottom:clamp(10px,3dvh,29px);width:min(330px,90vw);display:flex;flex-direction:column;align-items:stretch;gap:6px}
+.scene-toast{background:linear-gradient(120deg,#173548f0,#102335fa);border:1px solid #72aaac;box-shadow:0 6px 28px #0009;display:flex;align-items:center;gap:11px;padding:8px 12px;border-radius:10px;color:#f8edcb;font-size:clamp(11px,1.25vw,14px);line-height:1.3;min-height:45px}
+.scene-toast img{width:40px;height:40px;border-radius:6px;flex-shrink:0}
+.scene-toast.scene-build{border-color:#e6bc74}
+.scene-toast.scene-card{border-color:#8fbbd1}
+.scene-toast.scene-win{border-color:#ffdc8c;background:linear-gradient(120deg,#544225ed,#142e3b)}
+.scene-toast.scene-trade{border-color:#8dccb4}
+.scene-cash-delta{position:absolute;z-index:40;pointer-events:none;margin-left:10px;font-weight:800;font-size:14px;white-space:nowrap;text-shadow:0 2px 8px #000;will-change:transform,opacity}
+.scene-cash-delta.positive{color:#78f1bd}
+.scene-cash-delta.negative{color:#ff9aa7}
+.scene-dice-pair{display:inline-block;white-space:nowrap;margin-left:7px;color:#f7d18c;font-size:22px;line-height:1;vertical-align:middle;will-change:transform}
+.scene-controls{display:grid;grid-template-columns:1fr;gap:9px;padding:12px;margin-top:6px;grid-column:1/-1;border:1px solid #5e857d;background:linear-gradient(130deg,#112e41,#162b3c);border-radius:11px}
+.scene-controls strong{color:#f0dab0;letter-spacing:.02em;font-size:13px}
+.scene-controls small{color:#b7cdd5;font-size:11px}
+.scene-controls .scene-modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.scene-controls button{min-width:0!important;min-height:44px!important;padding:8px 5px!important;font-size:clamp(10px,1vw,13px)!important;text-align:center!important;line-height:1.2}
+.scene-controls button[aria-pressed="true"]{background:#836532!important;border-color:#f4d392!important;color:#fff7df!important}
+.scene-controls button.scene-skip{min-height:36px!important;border-color:#63889a!important;color:#dbeafa!important}
+.scene-volume{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#d1e0ec;font-size:12px}
+.scene-volume input[type=range]{width:min(70%,280px);min-height:34px;accent-color:#d9b46e;cursor:pointer}
+#handGroups .hand-card{position:relative;overflow:hidden}
+#handGroups .hand-card .scene-card-art{width:clamp(50px,21%,96px);max-height:125px;aspect-ratio:2/3;object-fit:contain;float:right;margin:0 0 6px 9px;border:1px solid #8d9eb0;border-radius:7px;box-shadow:0 3px 12px #020e237b}
+#handGroups .hand-card>strong{display:block;max-width:100%}
+@media(max-width:600px){
+ .board .map-plot .plot-stage.scene-art-stage{width:clamp(16px,5.5vw,26px);height:clamp(16px,5.5vw,26px)}
+ .board .cell .track-icon.scene-art-track{min-height:13px}
+ .scene-track-art{width:clamp(12px,3.2vw,20px);height:clamp(12px,3.2vw,20px)}
+ .scene-toast{padding:7px 9px}
+ #sceneNotices{bottom:10px;right:5px;width:min(270px,74vw)}
+ #handGroups .hand-card .scene-card-art{width:62px}
+ .board .map-plot.scene-linked{border-right-width:2px}
+}
+@media(orientation:landscape) and (max-height:560px){
+ #sceneNotices{bottom:3px;right:5px;max-width:245px}
+ .scene-toast{min-height:32px;padding:4px 6px;font-size:11px}
+ .scene-toast img{width:25px;height:25px}
+}
+@media(prefers-reduced-motion:reduce){
+ .scene-toast,.scene-cash-delta,.scene-moving-token,.scene-dice-pair{animation:none!important;transition:none!important}
+ .board .map-plot.scene-linked,.board .cell.active{animation:none!important}
+}
