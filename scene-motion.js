@@ -233,7 +233,7 @@ function paint(){
    });
   }
   const hand=document.querySelectorAll('#handGroups details[data-deck]');
-  if(typeof current==='function')hand.forEach(group=>{
+  if(typeof current==='function'&&current()&&!current().bot)hand.forEach(group=>{
    const deck=group.dataset.deck,items=typeof handItems==='function'?handItems(current(),deck):[];
    group.querySelectorAll('.hand-card').forEach((el,i)=>{
     const c=items[i],key=deck==='network'?'card.network.'+c?.type:deck==='government'?null:assetCard(c);
