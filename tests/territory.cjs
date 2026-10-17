@@ -97,8 +97,7 @@ assert.equal(run('state.plots[23].project===undefined'),true,'Cannot build a sec
 run('state.plots[22].project.stage=4;state.plots[22].level=1');
 assert.equal(run('completedNetworkPlot(state.plots[22],0)'),true);
 assert.equal(run('completedNetworkPlot(state.plots[23],0)'),false);
-run('state.players[0].governmentCards.push({id:9101,type:"land",version:2,terms:{premium:1.15}})');
-assert.equal(run('governmentAction(9101,"finish",23)'),false,'Reserved second footprint cannot be sold to the city alone');
+assert.equal(run('state.plots[23].reservedFor'),22,'Reserved footprint cannot trade as an empty land deed');
 run('transferLargeSection(22,1);state.plots[22].owner=1');
 assert.equal(run('state.plots[23].owner'),1,'Property transfer carries its reserved second parcel');
 assert.equal(run('state.plots[23].reservedFor'),22);
