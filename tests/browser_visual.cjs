@@ -52,7 +52,7 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
     assert(Math.abs(boardRect.y-cabinetRect.y)<12,'Board and cabinet must start at the same height');
    }
    assert.equal(await page.locator('#board .cell').count(),32,'Ring must have 32 named spaces');
-   assert.equal(await page.locator('#board .map-plot').count(),30,'Center must show 30 parcels');
+   assert.equal(await page.locator('#board .map-plot').count(),24,'Center must show 24 parcels');
    assert.equal(await page.locator('#board .cell[data-kind="network"]').count(),3);
    assert.match(await page.locator('#board .cell').nth(6).innerText(),/Инженерные сети/);
    assert.match(await page.locator('#board .map-plot').first().getAttribute('aria-label'),/Этап 2/);
@@ -82,7 +82,7 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.equal(await page.locator('#board .cell .track-icon').count(),32);
    assert.match(await page.locator('#board .cell').first().innerText(),/СТАРТ/);
    assert.doesNotMatch(await page.locator('#board .cell').first().innerText(),/\+60/);
-   assert.equal(await page.locator('#board .map-plot .plot-progress').count(),30);
+   assert.equal(await page.locator('#board .map-plot .plot-progress').count(),24);
    assert.equal(await page.locator('.hand-quick-item').count(),8,'Compact hand remains visible after rolling');
    assert.equal(await page.locator('.hand-quick-item[data-hand-type="utilities"]').count(),1);
    assert.equal(await page.locator('#handOverlay').isHidden(),true);
