@@ -140,6 +140,7 @@ function finalizeInvestorSale(lotIndex){
  const investorPayout=Math.min(salePrice,Math.round(investor.capital+profit*investor.share/100));
  const sellerPayout=Math.max(0,salePrice-investorPayout);
  p.money+=sellerPayout;
+ if(p.bot)p.saleRevenue=(Number(p.saleRevenue)||0)+sellerPayout;
  note('🏢 '+p.name+': инвестиционный проект «'+lot.name+'» введён и автоматически продан за '+salePrice+' тыс. Инвестору перечислено '+investorPayout+', девелоперу '+sellerPayout+' тыс. Аренда недоступна.');
  transferLargeSection(lotIndex,-1);lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;
  if(!p.bot){const overlay=$('plotCardOverlay');if(overlay)overlay.hidden=true;showResolvedCard('🏢 Инвестиционный объект продан','Здание продано автоматически в момент ввода в эксплуатацию. Сдать его в аренду нельзя.','Цена продажи: '+salePrice+' тыс. · инвестору: '+investorPayout+' тыс. · вам: '+sellerPayout+' тыс.');}
@@ -154,6 +155,7 @@ function playStageCard(lotIndex,size,cardId){
  returnStage(card.deck,card.index);
  if((lot.project?.stage||0)===before+1){
   lot.developmentSpent=(Number(lot.developmentSpent)||0)+Math.max(0,money-owner.money);
+  if(lot.project.stage===4&&owner.bot)owner.completedProjects=(Number(owner.completedProjects)||0)+1;
   if(lot.project.stage===4&&lot.investor)finalizeInvestorSale(lotIndex);
   state.econMetrics.stagesCompleted++;consumeAction();note('Израсходованная строительная карта №'+cardId+' сразу вернулась в общую колоду.');render();}
 }
@@ -531,7 +533,7 @@ function bankruptcyPlayer(i){
  (p.cards||[]).forEach(c=>returnStage(c.deck,c.index));
  (p.networkCards||[]).forEach(c=>returnNetwork(c.type));
  (p.marketCards||[]).forEach(returnMarketCard);
- p.cards=[];p.networkCards=[];p.marketCards=[];p.governmentCards=[];p.investments=[];p.money=120;p.pos=0;
+ p.cards=[];p.networkCards=[];p.marketCards=[];p.governmentCards=[];p.investments=[];p.money=120;p.pos=0;p.completedProjects=0;p.saleRevenue=0;
  note('⚠ '+p.name+' обанкротился, активы утрачены; новый стартовый капитал 120 тыс.');return true;
 }
 function roll(){
