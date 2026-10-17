@@ -14,7 +14,7 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto(url,{waitUntil:'networkidle'});
    await page.evaluate(()=>{
-    newGame();state.rolled=true;state.plots[0].owner=0;state.plots[0].project={size:0,stage:2};window.render();
+    newGame();if(typeof closeSessionMenu==='function')closeSessionMenu();const menu=document.getElementById('sessionOverlay');if(menu)menu.hidden=true;state.rolled=true;state.plots[0].owner=0;state.plots[0].project={size:0,stage:2};window.render();
    });
    assert.equal(await page.locator('#v10Hud').count(),1,'Progress dashboard must exist');
    assert.equal(await page.locator('#board .cell').count(),32,'Ring must have 32 named spaces');
