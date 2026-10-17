@@ -65,7 +65,7 @@ async function wait(){
    // Card images must be from current player's hand, never rival's hidden inventory.
    await page.locator('.hand-quick-item[data-hand-type="utilities"]').click();
    assert.equal(await page.locator('#handOverlay').isVisible(),true);
-   assert((await page.locator('#handOverlay .scene-card-art').count())>0,'art attached to player's actual cards');
+   assert((await page.locator('#handOverlay .scene-card-art').count())>0,"art attached to player's actual cards");
    await page.locator('#handClose').click();
    // Reloading stored game constructs a new game-state object, never re-emits old transactions.
    const saved=await page.evaluate(()=>{
