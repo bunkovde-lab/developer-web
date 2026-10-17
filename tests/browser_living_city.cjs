@@ -42,6 +42,15 @@ async function wait(){
    assert.match(await page.locator('.map-plot').first().locator('.scene-stage-art').getAttribute('src'),/stage-1\.svg$/);
    assert.equal(await page.locator('.map-plot').first().getAttribute('data-scene-owner'),'0');
    assert.equal(await page.locator('.map-plot').first().getAttribute('data-status'),'construction');
+   const obstructed=await page.evaluate(()=>{
+    const notices=Array.from(document.querySelectorAll('#sceneNotices .scene-toast'));
+    const controls=Array.from(document.querySelectorAll('.company-panel .actions button'));
+    return notices.some(n=>controls.some(b=>{
+      const a=n.getBoundingClientRect(),c=b.getBoundingClientRect();
+      return a.left<c.right&&a.right>c.left&&a.top<c.bottom&&a.bottom>c.top;
+    }));
+   });
+   assert.equal(obstructed,false,'Animation messages cannot cover financial or turn-action buttons');
    const one=await page.evaluate(()=>({money:state.players[0].money,dice:state.dice,position:state.players[0].pos}));
    const speed=await page.evaluate(()=>{DeveloperMotion.setMode('fast');const a=DeveloperMotion.status();DeveloperMotion.setMode('off');const b=DeveloperMotion.status();return {a,b};});
    assert.equal(speed.a.mode,'fast');
@@ -101,5 +110,18 @@ async function wait(){
     ' SVG=266; 24 lots; 32 ring; stages1-4; save/motion/accessibility; render off='+metrics.off+'ms, normal='+metrics.normal+'ms');
    await page.close();
   }
+  // Asset failures must degrade to the original fully playable HTML board.
+  const missing=await browser.newPage({viewport:{width:390,height:844}});
+  const jsErrors=[];missing.on('pageerror',e=>jsErrors.push(e.message));
+  await missing.route('**/assets/svg/manifest.json',r=>r.fulfill({status:404,body:'asset-missing'}));
+  await missing.goto(url,{waitUntil:'networkidle'});
+  await missing.evaluate(()=>{window.newGame();window.closeSessionMenu();window.render();});
+  assert.equal(await missing.locator('#board > .cell').count(),32);
+  assert.equal(await missing.locator('.map-plot').count(),24);
+  assert.equal(await missing.evaluate(()=>DeveloperMotion.status().assetsReady),false,'manifest missing fallback');
+  assert.equal(await missing.locator('.scene-stage-art').count(),0);
+  assert.deepEqual(jsErrors,[],'Fallback works without JS errors');
+  console.log('LIVING CITY FALLBACK PASSED: playable board without optional SVG manifest');
+  await missing.close();
  }finally{if(browser)await browser.close();server.kill();}
 })().catch(e=>{console.error(e.stack||e);process.exitCode=1});
