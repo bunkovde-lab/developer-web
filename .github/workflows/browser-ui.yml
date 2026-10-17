@@ -10,6 +10,8 @@ on:
       - 'auction-competition.js'
       - 'visual.js'
       - 'visual.css'
+      - 'scene-motion.js'
+      - 'scene-motion.css'
       - 'pace.js'
       - 'game-rework-v016.js'
       - 'assets/**'
@@ -17,6 +19,7 @@ on:
       - 'tests/browser_visual.cjs'
       - 'tests/browser_territory.cjs'
       - 'tests/browser_finance.cjs'
+      - 'tests/browser_living_city.cjs'
       - 'tests/browser_marketplace.cjs'
       - 'tests/browser_city_requests.cjs'
       - '.github/workflows/browser-ui.yml'
@@ -45,6 +48,8 @@ jobs:
         run: node tests/browser_territory.cjs
       - name: Financial integrity and save/load browser flow
         run: node tests/browser_finance.cjs
+      - name: Living city SVG, animation controls, accessibility and performance
+        run: node tests/browser_living_city.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
