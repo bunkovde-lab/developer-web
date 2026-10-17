@@ -127,14 +127,13 @@ const ZONE_LIBRARY={
 const ZONE_GRID=[
  'J1','J1','J1','J1','RET','RET',
  'J1','J1','J1','RET','RET','PK',
- 'J1','J1','RET','RET','PK','PK',
- 'J1','J1','RET','OD','OD','PK',
- 'J1','JK4','JK4','OD','UNIQUE','UNIQUE'
+ 'J1','J1','RET','PK','PK','OD',
+ 'J1','JK4','JK4','UNIQUE','UNIQUE','OD'
 ];
-const UNIQUE_NAMES={28:'Набережная · Премиум',29:'Транспортный узел'};
+const UNIQUE_NAMES={22:'Набережная · Премиум',23:'Транспортный узел'};
 const UNIQUE_BENEFITS={
- 28:{desc:'Престижная набережная: премия к цене продажи выше арендной.',sale:2.05,rent:1.78},
- 29:{desc:'Транспортный узел: премия к аренде выше цены продажи.',sale:1.78,rent:2.14}
+ 22:{desc:'Престижная набережная: премия к цене продажи выше арендной.',sale:2.05,rent:1.78},
+ 23:{desc:'Транспортный узел: премия к аренде выше цены продажи.',sale:1.78,rent:2.14}
 };
 function locationYield(index,kind){
  const site=UNIQUE_BENEFITS[index];
@@ -868,12 +867,12 @@ function renderHand(player){
 // Victory v0.5: exactly side-adjacent plots in the 6x5 board, never diagonals.
 const LOT_COLUMNS=6;
 function neighborsBySide(i){
- if(!Number.isInteger(i)||i<0||i>=30)return [];
+ if(!Number.isInteger(i)||i<0||i>=ZONE_GRID.length)return [];
  const row=Math.floor(i/LOT_COLUMNS),col=i%LOT_COLUMNS,neighbors=[];
  if(col>0)neighbors.push(i-1);
  if(col<LOT_COLUMNS-1)neighbors.push(i+1);
  if(row>0)neighbors.push(i-LOT_COLUMNS);
- if(row<4)neighbors.push(i+LOT_COLUMNS);
+ if(row<ZONE_GRID.length/LOT_COLUMNS-1)neighbors.push(i+LOT_COLUMNS);
  return neighbors;
 }
 function completedNetworkPlot(plot,owner){
@@ -917,7 +916,7 @@ let city='<div class="city city-map"><div class="city-title">🏙 ДЕВЕЛОП
  const status=Number.isInteger(x.reservedFor)?'Секция комплекса':!owner?'Свободен':built?(x.tenant?'Сдан в аренду':'Введён'):x.investor?'Инвестиционный проект':'В работе';
  const stageLabel=Number.isInteger(x.reservedFor)?'СЕКЦИЯ':owner?(built?'ГОТОВО':progress+'/4 ЭТАПОВ'):x.price+' тыс.';
  return '<button class="map-plot '+(x.level?'built ':'')+(selectedLot===i?'chosen ':'')+'" data-status="'+(Number.isInteger(x.reservedFor)?'reserved':!owner?'free':built?'completed':x.investor?'investor':'construction')+'" data-zone="'+x.zone+'" style="--zone:'+districtColors[d]+';--owner:'+(owner?colors[x.owner]:'#c1cecb')+'" onclick="inspectLot('+i+')" aria-label="'+x.name+', '+districtNames[d]+', '+(owner?'владелец '+owner.name+', этап '+progress+' из 4':status)+'" title="'+x.name+' · '+districtNames[d]+' · '+x.price+'"><span class="plot-id">'+(i+1)+'</span><span class="plot-stage">'+stage+'</span><span class="plot-zone">'+(owner?status:zoneOf(i).short)+'</span><span class="plot-progress">'+stageLabel+'</span><span class="plot-tactics">'+(tactics.own?'🔗'+tactics.own:'')+(tactics.blocking?' ⛨'+tactics.blocking:'')+'</span></button>'
- }).join('')+'</div><div class="map-key">● Ж1 (12) · Т (7) · ПК (4) · ОД (3) · Ж4 (2) · ★ Уникальные (2) &nbsp; 🔗 соседство &nbsp; ⛨ блокировка</div></div>';
+ }).join('')+'</div><div class="map-key">● Ж1 (10) · Т (5) · ПК (3) · ОД (2) · Ж4 (2) · ★ Особые (2) &nbsp; 🔗 соседство &nbsp; ⛨ блокировка</div></div>';
 $('board').innerHTML=ring+city;
 let info=selectedLot>=0&&selectedLot<state.plots.length?state.plots[selectedLot]:null;
 $('players').innerHTML=state.players.map((u,i)=>'<div><span style="color:'+colors[i]+'">●</span> <b>'+u.name+'</b> · '+professionName(u.profession)+': '+u.money+' 💰 · активы '+value(i)+'</div>').join('')+(info?'<hr><b>'+info.name+'</b> · '+info.price+' 💰 · '+(info.owner<0?'свободен':'владелец: '+state.players[info.owner].name)+' · стройка '+info.level+'/3':'');
@@ -1023,14 +1022,15 @@ function resumeSavedGame(){
   const raw=localStorage.getItem(STORAGE_KEY);
   if(!raw){state=null;showSessionMenu();return}
   const loaded=JSON.parse(raw);
-  if(!loaded||!Array.isArray(loaded.players)||!Array.isArray(loaded.plots)||!Array.isArray(loaded.logs)||!Number.isInteger(loaded.turn)||loaded.turn<0||loaded.turn>=loaded.players.length)throw Error('Invalid save');
+    if(loaded.plots.length!==ZONE_GRID.length){localStorage.setItem('developer-archive-30-lots',raw);throw Error('Сохранение старой карты '+loaded.plots.length+' участков архивировано. Для карты 24 участка начните новую партию.');}
+if(!loaded||!Array.isArray(loaded.players)||!Array.isArray(loaded.plots)||!Array.isArray(loaded.logs)||!Number.isInteger(loaded.turn)||loaded.turn<0||loaded.turn>=loaded.players.length)throw Error('Invalid save');
   state=loaded;
   $('count').value=String(state.players.length);
   render();
   state.players.forEach(p=>{if(!Array.isArray(p.cards))p.cards=[]});if(state.pendingCard&&!current().bot)showCard();if(state.constructionDeckChoice)showConstructionDeckChoice();
   if(state.auction&&!current().bot)showAuction();
   if(current().bot&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice)setTimeout(bot,450);
- }catch(e){const status=$('sessionStatus');if(status)status.textContent='⚠ Сохранение повреждено';showSessionMenu();}
+ }catch(e){const status=$('sessionStatus');if(status)status.textContent='⚠ '+(e.message||'Сохранение недоступно');showSessionMenu();}
 }
 function showSessionMenu(){updateLobby();const raw=localStorage.getItem(STORAGE_KEY);$('continueGame').disabled=!raw;$('sessionOverlay').hidden=false}
 function closeSessionMenu(){$('sessionOverlay').hidden=true}
