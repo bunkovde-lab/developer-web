@@ -53,6 +53,7 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.match(await page.locator('#board .cell').first().innerText(),/СТАРТ/);
    assert.doesNotMatch(await page.locator('#board .cell').first().innerText(),/\+60/);
    assert.equal(await page.locator('#board .map-plot .plot-progress').count(),30);
+   await page.evaluate(()=>{for(const el of document.querySelectorAll('.auction-overlay,.card-overlay,.plot-card-overlay'))el.hidden=true;});
    await page.screenshot({path:'ui-snapshots/developer-v010-'+viewport.width+'.png',fullPage:true});
    await page.locator('#v10Zoom').click();
    assert.equal(await page.locator('#board').evaluate(e=>e.classList.contains('zoom-map')),true);
