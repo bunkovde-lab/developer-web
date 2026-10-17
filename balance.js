@@ -101,7 +101,10 @@ function finalizeInvestorSale(lotIndex){
  if(!lot||lot.project?.stage!==4||!lot.investor)return false;
  const p=state.players[lot.owner],investor=lot.investor;
  const salePrice=marketBase(lot,'buyer');
- const profit=Math.max(0,salePrice-(Number(lot.price)||0)-(Number(lot.developmentSpent)||0));
+ const partner=lot.project?.pair;
+ const footprintPrice=Number(lot.price)||0;
+ const totalLand=footprintPrice+(Number.isInteger(partner)?Number(state.plots[partner]?.price)||0:0);
+ const profit=Math.max(0,salePrice-totalLand-(Number(lot.developmentSpent)||0));
  const investorPayout=Math.min(salePrice,Math.round(investor.capital+profit*investor.share/100));
  const sellerPayout=Math.max(0,salePrice-investorPayout);
  p.money+=sellerPayout;
@@ -397,7 +400,7 @@ function applyInvestorCard(cardId,plotIndex){
  consumeAction();render();return true;
 }
 function municipalTargets(c,owner){
- if(c.type==='land')return state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===owner&&!x.lot.project&&x.lot.level===0);
+ if(c.type==='land')return state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===owner&&!x.lot.project&&!Number.isInteger(x.lot.reservedFor)&&x.lot.level===0);
  if(c.type==='construction')return state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===owner&&x.lot.project?.stage===4&&x.lot.project.size===0&&!x.lot.tenant&&!x.lot.investor);
  if(c.type==='network')return (state.players[owner].networkCards||[]).filter(n=>n.type===c.terms?.networkType).map(n=>({networkCard:n,i:n.id}));
  return [];
@@ -454,7 +457,7 @@ function renderGovernmentContract(c,i){
 function checkGovernmentDeadlines(){ /* Отменены сроки, просрочки и штрафы муниципальных контрактов. */ }
 function bankruptcyPlayer(i){
  const p=state.players[i];if(p.money>=0)return false;
- for(const lot of state.plots)if(lot.owner===i){lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;}
+ for(const lot of state.plots)if(lot.owner===i){lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;delete lot.reservedFor;}
  // Retain turn and player identity, reset holdings, discard cards with cooldown.
  (p.cards||[]).forEach(c=>returnStage(c.deck,c.index));
  (p.networkCards||[]).forEach(c=>returnNetwork(c.type));
