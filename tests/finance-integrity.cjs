@@ -74,8 +74,14 @@ for(const owner of [0,1]){
 for(const owner of [0,1]){
  fresh(owner,'financier');
  run('state.players['+owner+'].marketCards.push({id:8801,type:"investor",card:{investment:200,share:20}})');
- if(owner===0)assert.equal(run('window.applyInvestorCard(8801,0)'),true);
- else run('bindInvestorToProject(state.players[1],1,state.players[1].marketCards.find(c=>c.id===8801),0)');
+ if(owner===0){
+  assert.equal(run('window.applyInvestorCard(8801,0)'),true);
+ }else{
+  // Exercise the actual AI decision path, never call an internal helper directly.
+  run('state.players[1].money=200;state.players[1].cards=[];state.players[1].pos=0;window.bot()');
+  assert.equal(run('state.players[1].money'),400,'Bot investment credited exactly once');
+  run('state.players[1].cards=[{id:8821,deck:"utilities",index:0},{id:8822,deck:"permits",index:0},{id:8823,deck:"construction",index:0},{id:8824,deck:"commissioning",index:0}];state.players[1].money=10200;');
+ }
  assert.equal(run('state.plots[0].investor.share'),10,'finance profession negotiated same share in both pathways');
  assert.equal(run('state.players['+owner+'].money'),10200);
  for(const deck of ['utilities','permits','construction'])runStage(owner,deck);
