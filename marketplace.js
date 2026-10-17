@@ -216,6 +216,7 @@ function closeTradeMarket(){$m("tradeOverlay").hidden=true;}
 function setupUI(){
  const overlay=$m("tradeOverlay");
  if(!overlay)return;
+ const trigger=$m("marketTradeBtn");if(trigger)trigger.onclick=openTradeMarket;
  overlay.innerHTML='<div class="mk-shell" role="document">'+
  '<header class="mk-header"><div><span class="mk-eyebrow">ДЕВЕЛОПЕР · КАРТОЧНАЯ БИРЖА</span><h2>🤝 Торговая площадка</h2><p>Карты игроков, переговоры, покупка и обмен в одном месте</p></div><button type="button" class="mk-close" onclick="closeTradeMarket()" aria-label="Закрыть биржу">✕</button></header>'+
  '<div id="marketStats" class="mk-stats"></div>'+
