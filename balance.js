@@ -351,7 +351,7 @@ function bot(){
  if(!state?.players?.[state.turn]?.bot||Number.isInteger(state.winnerIndex))return;
  if(!state.rolled)roll(); // Legacy roll already handles special cells and drawing
  if(state.pendingCard||state.auction||state.constructionDeckChoice){setTimeout(endTurn,350);return;}
- ensureEconomy();let aiActions=0; if(botBuyLand())aiActions++; if(aiActions<TWO_ACTIONS&&botTradeFromPeers())aiActions++; if(aiActions<TWO_ACTIONS&&botBuildAndConnect())aiActions++; if(aiActions<TWO_ACTIONS&&botBusiness())aiActions++; render();
+ ensureEconomy();let aiActions=0; if(botBuyLand())aiActions++; if(aiActions<TWO_ACTIONS&&botTradeFromPeers())aiActions++; if(aiActions<TWO_ACTIONS&&botBuildAndConnect())aiActions++; if(aiActions<TWO_ACTIONS&&botBusiness())aiActions++; if(aiActions<TWO_ACTIONS&&botBuildAndConnect())aiActions++; render();
  setTimeout(endTurn,350);
 }
 function settleInvestment(){
