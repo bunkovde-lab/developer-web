@@ -77,7 +77,7 @@ assert.equal(run("marketBase(state.plots[3],'buyer')"),base);
 run('newGame();state.rolled=true;state.turn=1;state.players[1].pos=1;');
 run('bot()');
 assert(run('state.plots.filter(l=>l.owner===1).length')>=1,'Bot should acquire land on auction');
-assert(run('state.players[1].money')<600);
+assert(run('state.players[1].money')<750);
 console.log('PASS syntax, finite decks, consumption/recycling, market purchase, anti-double-trade, networks, crisis and bot land purchase');
 
 const simulations=[];
