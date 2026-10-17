@@ -1,0 +1,27 @@
+name: Marketplace browser UI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'balance.js'
+      - 'marketplace.js'
+      - 'tests/browser_marketplace.cjs'
+      - '.github/workflows/browser-ui.yml'
+  pull_request:
+  workflow_dispatch:
+jobs:
+  browser-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium test runner
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Run mobile marketplace browser test
+        run: node tests/browser_marketplace.cjs
