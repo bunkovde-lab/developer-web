@@ -49,7 +49,7 @@ assert.equal(run('state.stock.stage.utilities.length'),0);
 run('state.round+=4;state.turn=3;drawCard("utilities");dismissCard()');
 assert.equal(run('state.stock.returnStage.length'),0);
 assert.equal(run('state.stock.stage.utilities.length'),0,'Consumed card reenters circulation');
-run('newGame();state.rolled=true;state.turn=0;');
+run('newGame();state.rolled=true;state.turn=0;state.players[0].pos=7;');
 run('state.players[1].cards.push({id:987,deck:"construction",index:0});state.players[1].money=600');
 run("document.getElementById('tradeMode').value='buy';renderTradeMarket()");
 assert.equal(run('Boolean(document.getElementById("tradeBotOffer").innerHTML.includes("Строительство"))'),true);
@@ -121,12 +121,12 @@ assert.equal(tournament.length,16);
 console.log('TOURNAMENT REPORT',JSON.stringify(summary));
 
 node('count').value='3';
-run('newGame();state.rolled=true;state.turn=0;state.players[0].cards.push({id:501,deck:"utilities",index:0});');
+run('newGame();state.rolled=true;state.turn=0;state.players[0].pos=7;state.players[0].cards.push({id:501,deck:"utilities",index:0});');
 run("document.getElementById('tradeMode').value='sell';renderTradeMarket();executeTradeMarket()");
 assert(run('state.players[1].cards.some(c=>c.id===501)'),'Human sale to bot must transfer the card');
 assert.equal(run('state.players[0].cards.some(c=>c.id===501)'),false);
 
-run('newGame();state.rolled=true;state.turn=0;state.players[0].cards.push({id:601,deck:"utilities",index:0});state.players[1].cards.push({id:602,deck:"construction",index:0});');
+run('newGame();state.rolled=true;state.turn=0;state.players[0].pos=7;state.players[0].cards.push({id:601,deck:"utilities",index:0});state.players[1].cards.push({id:602,deck:"construction",index:0});');
 run("document.getElementById('tradeMode').value='swap';renderTradeMarket();executeTradeMarket()");
 assert(run('state.players[0].cards.some(c=>c.id===602)'),'Swap must credit buyer inventory');
 assert(run('state.players[1].cards.some(c=>c.id===601)'),'Swap must credit counterparty inventory');
