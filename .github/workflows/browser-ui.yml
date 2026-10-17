@@ -12,6 +12,8 @@ on:
       - 'visual.css'
       - 'pace.js'
       - 'game-rework-v016.js'
+      - 'assets/**'
+      - 'tests/svg-assets.cjs'
       - 'tests/browser_visual.cjs'
       - 'tests/browser_territory.cjs'
       - 'tests/browser_marketplace.cjs'
