@@ -8,6 +8,26 @@ const GAME_V2 = {version:2,stageHandCap:8,networkHandCap:4,networkCopies:3,stage
 const OLD_NEW_GAME=window.newGame, OLD_ROLL=window.roll, OLD_END_TURN=window.endTurn, OLD_MARKET_BASE=window.marketBase, OLD_RESOLVE_SPECIAL=window.resolveSpecialCell, OLD_BEGIN_CONSTRUCTION=window.beginConstructionDeckChoice, OLD_APPLY_MARKET=window.applyMarketCard, OLD_PROPERTY_SALE=window.runPropertySale, OLD_SELL=window.sell;
 const STAGE_IDS=['utilities','permits','construction','commissioning'];
 function mixDeck(arr){for(let i=arr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+function migrateMunicipalOffers(){
+ if(!state?.players)return;
+ for(const p of state.players){
+  if(!Array.isArray(p.governmentCards))p.governmentCards=[];
+  for(const c of p.governmentCards){
+   if(!c||c.version===2)continue;
+   if(c.type==='investment'){
+    if(c.accepted&&Number.isFinite(c.terms?.invest)&&!c.migrationRefunded){
+     p.money+=c.terms.invest;c.migrationRefunded=true;
+     note('Госзаказ: '+p.name+' возвращён аванс '+c.terms.invest+' тыс. по старому инвестиционному контракту.');
+    }
+    const n=NETWORK_CARDS[(Number(c.id)||0)%NETWORK_CARDS.length];
+    c.type='network';c.terms={networkType:n.type,reward:Math.round(n.cost*1.3+20)};
+   }else if(c.type==='land')c.terms={premium:1.15};
+   else if(c.type==='construction')c.terms={size:0,premium:1.10};
+   else if(c.type!=='network')continue;
+   delete c.deadline;delete c.ready;delete c.accepted;c.accepted=true;c.version=2;
+  }
+ }
+}
 function ensureEconomy(){
  if(!state)return;
  if(!state.stock || !state.stock.v){
@@ -28,6 +48,7 @@ function ensureEconomy(){
   if(!Array.isArray(p.marketCards))p.marketCards=[];
   if(!Array.isArray(p.governmentCards))p.governmentCards=[];
  }
+ migrateMunicipalOffers();
  if(!Number.isInteger(state.nextCardId))state.nextCardId=Math.max(0,...state.players.flatMap(p=>[...p.cards,...p.networkCards,...p.marketCards,...p.governmentCards].map(c=>Number(c.id)||0)));
 }
 function refreshStock(){
@@ -75,6 +96,19 @@ function drawNetworkCard(){
  showResolvedCard('⚡ '+model.title,'Инженерная карта №'+id+' помещена в инвентарь.','Подключение '+model.cost+' тыс.; подходящее улучшение даёт +10% к базовой аренде и продаже.');
  render();
 }
+function finalizeInvestorSale(lotIndex){
+ const lot=state.plots[lotIndex];
+ if(!lot||lot.project?.stage!==4||!lot.investor)return false;
+ const p=state.players[lot.owner],investor=lot.investor;
+ const salePrice=marketBase(lot,'buyer');
+ const profit=Math.max(0,salePrice-(Number(lot.price)||0)-(Number(lot.developmentSpent)||0));
+ const investorPayout=Math.min(salePrice,Math.round(investor.capital+profit*investor.share/100));
+ const sellerPayout=Math.max(0,salePrice-investorPayout);
+ p.money+=sellerPayout;
+ note('🏢 '+p.name+': инвестиционный проект «'+lot.name+'» введён и автоматически продан за '+salePrice+' тыс. Инвестору перечислено '+investorPayout+', девелоперу '+sellerPayout+' тыс. Аренда недоступна.');
+ lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;lot.investor=null;lot.developmentSpent=0;
+ return true;
+}
 function playStageCard(lotIndex,size,cardId){
  if(!actionAllowed()){denyActions();return;}
  ensureEconomy();const owner=current(),card=owner.cards.find(c=>c.id===cardId),lot=state.plots[lotIndex],before=lot?.project?.stage||0;
@@ -82,7 +116,10 @@ function playStageCard(lotIndex,size,cardId){
  const money=owner.money;window._developerLegacyPlayStageCard(lotIndex,size,cardId);
  if(owner.cards.find(c=>c.id===cardId))return; // legacy rejected
  returnStage(card.deck,card.index);
- if((lot.project?.stage||0)===before+1){state.econMetrics.stagesCompleted++;consumeAction();note('Израсходованная строительная карта №'+cardId+' будет вновь доступна через '+GAME_V2.stageCooldown+' раунда.');render();}
+ if((lot.project?.stage||0)===before+1){
+  lot.developmentSpent=(Number(lot.developmentSpent)||0)+Math.max(0,money-owner.money);
+  if(lot.project.stage===4&&lot.investor)finalizeInvestorSale(lotIndex);
+  state.econMetrics.stagesCompleted++;consumeAction();note('Израсходованная строительная карта №'+cardId+' будет вновь доступна через '+GAME_V2.stageCooldown+' раунда.');render();}
 }
 function applyNetworkCard(lotIndex,cardId){
  if(!actionAllowed()){denyActions();return false;}
@@ -140,7 +177,7 @@ function consumeAction(){
  state.actionsUsed=(state.actionsUsed||0)+1;
 }
 function denyActions(){alert('Два основных действия за ход уже использованы либо есть незавершённое событие.');}
-function dealAllowed(){return !!state&&state.rolled&&!current().bot&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice&&!Number.isInteger(state.winnerIndex)&&actionAllowed();}
+function dealAllowed(){return !!state&&state.rolled&&!current().bot&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice&&['Рынок','Инженерные сети','Сделка'].includes(eventNames[current().pos])&&!Number.isInteger(state.winnerIndex)&&actionAllowed();}
 function openTradeMarket(){
  if(!dealAllowed()){alert('Переговоры доступны в ваш ход после броска кубика, если нет незавершённого события.');return;}
  ensureEconomy();renderTradeMarket();$('tradeOverlay').hidden=false;
@@ -258,33 +295,18 @@ function beginConstructionDeckChoice(){
  selectConstructionDeck(desired||STAGE_IDS[Math.floor(Math.random()*STAGE_IDS.length)]);
 }
 function botGovernmentContracts(p,lots){
- const valid=(p.governmentCards||[]).filter(x=>x&&x.terms);
- for(const c of valid){
-  // AI must preserve the four-building cluster; speculative land/building deliveries are human-only.
-  if(c.type!=='investment')continue;
-  if(c.accepted&&state.round>c.deadline)continue;
-  if(!c.accepted){
-   if(c.type==='investment'&&p.money>=350){p.money-=c.terms.invest;c.accepted=true;c.ready=state.round+6;note('🤖 '+p.name+' инвестировал '+c.terms.invest+' тыс. в госконтракт');return true;}
-   const acceptable=c.type==='construction'?lots.some(x=>x.lot.project?.stage===4&&x.lot.project.size===0):
-    c.type==='land'?lots.some(x=>!x.lot.project&&x.lot.price<=170):false;
-   if(acceptable){c.accepted=true;note('🤖 '+p.name+' принял госконтракт №'+c.id);return true;}
-   continue;
-  }
-  if(c.type==='investment'&&state.round>=c.ready){
-   p.money+=c.terms.reward;p.governmentCards=p.governmentCards.filter(x=>x!==c);state.econMetrics.govCompleted++;
-   note('🤖 '+p.name+' завершил государственную инвестицию: +'+c.terms.reward);return true;
-  }
-  if(c.type==='construction'){
-   const x=lots.find(x=>x.lot.project?.stage===4&&x.lot.project.size===0);
-   if(!x)continue;const price=c.terms.reward;
-   x.lot.owner=-1;x.lot.level=0;x.lot.project=null;x.lot.tenant=null;p.money+=price;
-   p.governmentCards=p.governmentCards.filter(y=>y!==c);note('🤖 '+p.name+' передал здание по госзаказу за '+price);return true;
+ // Municipal orders are optional. AI only fulfills spare network contracts and non-strategic vacant lots.
+ const owner=state.turn;
+ for(const c of (p.governmentCards||[])){
+  const options=municipalTargets(c,owner);
+  if(!options.length)continue;
+  if(c.type==='network'){
+   const spare=options.find(x=>!botNeedCard(owner,{kind:'network',type:x.networkCard.type}));
+   if(spare&&fulfillMunicipal(c,owner,spare.i))return true;
   }
   if(c.type==='land'){
-   const x=lots.find(x=>!x.lot.project&&x.lot.price<=170);
-   if(!x)continue;const price=Math.min(c.terms.reward,Math.round(x.lot.price*1.15));
-   x.lot.owner=-1;p.money+=price;p.governmentCards=p.governmentCards.filter(y=>y!==c);
-   note('🤖 '+p.name+' передал участок по госзаказу за '+price);return true;
+   const spare=options.find(x=>!neighborsBySide(x.i).some(j=>state.plots[j].owner===owner)&&lots.length>4);
+   if(spare&&fulfillMunicipal(c,owner,spare.i))return true;
   }
  }
  return false;
@@ -293,11 +315,13 @@ function botBusiness(){
  const p=current(),playerIndex=state.turn;if(!p.bot)return;
  const lots=state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===playerIndex);
  for(const {lot,i} of lots){
-  if(lot.project?.stage===4&&!lot.tenant){const ti=p.marketCards.findIndex(c=>c.type==='tenant');if(ti>=0){const c=p.marketCards.splice(ti,1)[0];lot.tenant={percent:c.card.percent,cardId:c.id};lot.tenant.income=tenantIncomeForLot(lot);note('🤖 '+p.name+' заселил арендатора на '+lot.name+'.');return true;}}
+  if(lot.project?.stage===4&&!lot.tenant&&!lot.investor){const ti=p.marketCards.findIndex(c=>c.type==='tenant');if(ti>=0){const c=p.marketCards.splice(ti,1)[0];lot.tenant={percent:c.card.percent,cardId:c.id};lot.tenant.income=tenantIncomeForLot(lot);note('🤖 '+p.name+' заселил арендатора на '+lot.name+'.');return true;}}
  }
  if(botGovernmentContracts(p,lots))return true;
- if(p.money<250&&lots.some(x=>x.lot.project?.stage!==4)){
-  const ii=p.marketCards.findIndex(c=>c.type==='investor');if(ii>=0){const c=p.marketCards.splice(ii,1)[0];p.money+=c.card.investment;if(!p.investments)p.investments=[];p.investments.push({principal:c.card.investment,unpaid:Math.round(c.card.investment*1.25),share:c.card.share});note('🤖 '+p.name+' привлёк инвестора: '+c.card.investment+' тыс.');return true;}
+ if(p.money<230){
+  const investor=p.marketCards.find(c=>c.type==='investor');
+  const lot=lots.find(x=>x.lot.project?.stage!==4&&!x.lot.investor&&lots.filter(o=>o.lot.project?.stage===4).length<3);
+  if(investor&&lot&&bindInvestorToProject(p,playerIndex,investor,lot.i))return true;
  }
  return false;
 }
@@ -319,69 +343,84 @@ function settleInvestment(){
  if(withheld.length)note(player.name+' выплатил инвесторам '+withheld.reduce((a,b)=>a+b,0)+' тыс. из арендных поступлений.');
 }
 function resolveSpecialCell(){
- const p=current(),oldGov=(p.governmentCards||[]).length,wasCrisis=state.crisis?.until;
  OLD_RESOLVE_SPECIAL();
- if(eventNames[p.pos]==='Госзаказ'){
-  const cards=p.governmentCards||[];if(cards.length>oldGov){const c=cards.at(-1);c.deadline=state.round+16;c.terms.penalty=60;if(c.type==='investment')c.terms.reward=145;}
- }
- if(eventNames[p.pos]==='Кризис')note('Кризис активен до раунда '+state.crisis.until+': рыночные базовые цены и аренда ×'+state.crisis.percent+'%.');
+ if(eventNames[current().pos]==='Кризис'&&state.crisis)note('Влияние на рынок: '+state.crisis.percent+'% (временный коэффициент кризиса).');
+}
+function bindInvestorToProject(player,playerIndex,card,lotIndex){
+ const lot=state.plots[lotIndex];
+ if(!lot||lot.owner!==playerIndex||lot.project?.stage===4||lot.investor)return false;
+ const amount=Number(card.card?.investment),share=Number(card.card?.share);
+ if(!Number.isFinite(amount)||amount<=0||!Number.isFinite(share)||share<0||share>100)return false;
+ lot.investor={capital:amount,share,cardId:card.id};
+ player.money+=amount;
+ player.marketCards=player.marketCards.filter(c=>c.id!==card.id);
+ note('💼 '+player.name+' привлёк '+amount+' тыс. к '+lot.name+'. Договор инвестора: продажа сразу после ввода; инвестор получит капитал и '+share+'% положительной прибыли.');
+ return true;
 }
 function applyInvestorCard(cardId,plotIndex){
  if(!state||current().bot||!actionAllowed()){denyActions();return false;}
- const p=current(),ix=p.marketCards.findIndex(c=>c.id===cardId),c=p.marketCards[ix],lot=state.plots[plotIndex];
- if(!c||c.type!=='investor'||!lot||lot.owner!==state.turn||lot.project?.stage===4){alert('Нужен собственный участок с незавершённым строительством.');return false;}
- if(!Number.isFinite(c.card?.investment)||!Number.isFinite(c.card?.share))return false;
- p.money+=c.card.investment;
- if(!p.investments)p.investments=[];
- p.investments.push({principal:c.card.investment,unpaid:Math.round(c.card.investment*1.25),share:c.card.share,lot:plotIndex});
- p.marketCards.splice(ix,1);consumeAction();note(p.name+' привлёк инвестора: +'+c.card.investment+' тыс., обязательство '+Math.round(c.card.investment*1.25)+' тыс., удержание '+c.card.share+'% арендных поступлений.');render();return true;
-}
-function governmentAction(id,action){
- if(!state||current().bot||!actionAllowed()){denyActions();return false;}
- const p=current(),cards=p.governmentCards||[],ix=cards.findIndex(c=>c.id===id),c=cards[ix];
- if(!c)return false;
- if(action==='reject'&&!c.accepted){cards.splice(ix,1);consumeAction();note('Госзаказ №'+id+' отклонён.');render();return true;}
- if(action==='accept'&&!c.accepted){
-  if(c.type==='investment'){
-   const cost=c.terms?.invest||120;if(p.money<cost){alert('Недостаточно средств для инвестиционного госзаказа.');return false;}
-   p.money-=cost;c.ready=state.round+6;
-  }
-  c.accepted=true;consumeAction();note('Госзаказ №'+id+' принят. Срок: раунд '+c.deadline);render();return true;
+ const p=current(),c=(p.marketCards||[]).find(c=>c.id===cardId&&c.type==='investor');
+ if(!c||!bindInvestorToProject(p,state.turn,c,plotIndex)){
+  alert('Выберите собственный незавершённый проект без действующего инвестора.');return false;
  }
- if(action==='finish'&&c.accepted){
-  if(c.type==='investment'){if(state.round<(c.ready||0)){alert('Вознаграждение выплачивается начиная с раунда '+c.ready);return false;}}
-  if(c.type==='land'){
-   const lot=state.plots.find(x=>x.owner===state.turn&&!x.project);
-   if(!lot){alert('Для сдачи нужен свободный от строительства участок в вашей собственности.');return false;}
-   state.lastGovernmentLandPrice=lot.price;lot.owner=-1;lot.level=0;
-  }
-  if(c.type==='construction'){
-   const lot=state.plots.find(x=>x.owner===state.turn&&x.project?.stage===4&&x.project.size===0);
-   if(!lot){alert('Для сдачи нужен собственный введённый малый объект.');return false;}
-   lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;
-  }
-  const reward=c.type==='land'?Math.min(c.terms?.reward||0,Math.round(state.lastGovernmentLandPrice*1.15)):(c.terms?.reward||0);p.money+=reward;cards.splice(ix,1);consumeAction();
-  note('Госзаказ №'+id+' выполнен: +'+reward+' тыс.');render();return true;
+ consumeAction();render();return true;
+}
+function municipalTargets(c,owner){
+ if(c.type==='land')return state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===owner&&!x.lot.project&&x.lot.level===0);
+ if(c.type==='construction')return state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===owner&&x.lot.project?.stage===4&&x.lot.project.size===0&&!x.lot.tenant&&!x.lot.investor);
+ if(c.type==='network')return (state.players[owner].networkCards||[]).filter(n=>n.type===c.terms?.networkType).map(n=>({networkCard:n,i:n.id}));
+ return [];
+}
+function fulfillMunicipal(c,owner,target){
+ const p=state.players[owner],options=municipalTargets(c,owner);
+ const found=options.find(x=>String(x.i)===String(target))||(target==null?options[0]:null);
+ if(!found)return false;
+ let payout=0;
+ if(c.type==='network'){
+  payout=Number(c.terms.reward)||0;
+  p.networkCards=p.networkCards.filter(n=>n.id!==found.i);
+  returnNetwork(found.networkCard.type);
+ }else if(c.type==='land'){
+  payout=Math.round(found.lot.price*1.15);
+  found.lot.owner=-1;found.lot.level=0;
+ }else if(c.type==='construction'){
+  payout=Math.round(marketBase(found.lot,'buyer')*1.10);
+  found.lot.owner=-1;found.lot.level=0;found.lot.project=null;found.lot.tenant=null;found.lot.investor=null;
+ }
+ if(!payout||!Number.isFinite(payout))return false;
+ p.money+=payout;p.governmentCards=p.governmentCards.filter(x=>x.id!==c.id);
+ if(state.econMetrics)state.econMetrics.govCompleted++;
+ note('🏛 '+p.name+' исполнил муниципальный заказ №'+c.id+' за '+payout+' тыс. Без отсчёта сроков и штрафов.');
+ return true;
+}
+function governmentAction(id,action,target){
+ if(!state||current().bot||!actionAllowed()){denyActions();return false;}
+ ensureEconomy();
+ const p=current(),cards=p.governmentCards||[],c=cards.find(x=>x.id===id);
+ if(!c)return false;
+ if(action==='reject'){p.governmentCards=cards.filter(x=>x!==c);note('🏛 '+p.name+' отказался от муниципального предложения №'+id+' без штрафа.');render();return true;}
+ if(action==='accept'){note('🏛 Заказ уже доступен: ничего принимать и ждать не нужно.');render();return true;}
+ if(action==='finish'){
+  if(!fulfillMunicipal(c,state.turn,target)){alert('У вас нет объекта или карты для выполнения этого заказа.');return false;}
+  consumeAction();render();return true;
  }
  return false;
 }
 function renderGovernmentContract(c,i){
- let html=window._developerLegacyGovCard(c,i);
- const controls=c.accepted?'<button onclick="governmentAction('+c.id+',\'finish\')">Выполнить условия</button>':
-  '<button onclick="governmentAction('+c.id+',\'accept\')">Принять контракт</button><button onclick="governmentAction('+c.id+',\'reject\')">Отказаться</button>';
- html=html.replace('Кнопки принятия и выполнения пока не реализованы.','Действия по контракту доступны ниже.');
- return html.replace('</div></details>',controls+'</div></details>');
+ const label=c.type==='land'?'Городской выкуп участка':c.type==='construction'?'Муниципальная покупка здания':'Поставка инженерной сети';
+ const options=municipalTargets(c,state.turn);
+ const detail=c.type==='land'?'Выберите свой свободный участок. Город заплатит 115% его базовой стоимости.':
+  c.type==='construction'?'Передайте готовый малый объект без арендатора. Выручка — 110% рыночной стоимости.':
+  'Поставьте одну карту «'+(NETWORK_CARDS.find(n=>n.type===c.terms?.networkType)?.title||'Инженерная сеть')+'». Вознаграждение: '+c.terms?.reward+' тыс.';
+ const choices=options.map(x=>'<option value="'+x.i+'">'+(x.lot?x.lot.name+' — '+(c.type==='land'?Math.round(x.lot.price*1.15):Math.round(marketBase(x.lot,'buyer')*1.1))+' тыс.':'Карта №'+x.i+' — '+c.terms.reward+' тыс.')+'</option>').join('');
+ return '<details class="hand-card contract-detail"><summary><strong>🏛 №'+c.id+' · '+label+'</strong><small>Без срока · без штрафа · Подробнее ▾</small></summary>'+
+ '<div class="contract-body"><p>'+detail+'</p>'+
+ (options.length?'<label>Подходящий актив<select id="municipal-'+c.id+'">'+choices+'</select></label>'+
+ '<button type="button" onclick="governmentAction('+c.id+',\'finish\',Number(document.getElementById(\'municipal-'+c.id+'\').value))">Исполнить заказ</button>':'<p class="muted">Нужного актива пока нет. Заказ можно оставить до готовности.</p>')+
+ '<button type="button" onclick="governmentAction('+c.id+',\'reject\')">Отклонить без штрафа</button>'+
+ '</div></details>';
 }
-function checkGovernmentDeadlines(){
- for(const p of state.players){
-  if(!Array.isArray(p.governmentCards))continue;
-  for(let i=p.governmentCards.length-1;i>=0;i--){
-   const c=p.governmentCards[i];if(!c.accepted||state.round<=c.deadline)continue;
-   const penalty=c.terms?.penalty||60;
-   p.money-=penalty;p.governmentCards.splice(i,1);note('Госзаказ №'+c.id+' просрочен: '+p.name+' −'+penalty+' тыс.');
-  }
- }
-}
+function checkGovernmentDeadlines(){ /* Отменены сроки, просрочки и штрафы муниципальных контрактов. */ }
 function bankruptcyPlayer(i){
  const p=state.players[i];if(p.money>=0)return false;
  for(const lot of state.plots)if(lot.owner===i){lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;}
@@ -394,7 +433,7 @@ function bankruptcyPlayer(i){
 function roll(){
  if(!state)return;ensureEconomy();const pre=current(),i=state.turn,oldPos=pre.pos;
  OLD_ROLL();if(!state.rolled)return; // in case blocked
- if(oldPos+(Number(state.dice)||0)>=32)settleInvestment();
+ if(oldPos+(Number(state.dice)||0)>=32)settleInvestment(); // Only legacy unbound investment debts; new projects settle on sale.
  bankruptcyPlayer(i);
  render();
 }
@@ -438,7 +477,7 @@ function sell(){
 function ensureMarketActions(){
  if(!state)return;
  // Investor controls are rendered directly by the main inventory view.
- const b=$('marketTradeBtn');if(b)b.disabled=!state; // Browsing is always allowed; transactions are checked at confirmation.
+ const b=$('marketTradeBtn');if(b)b.disabled=!state||!state.rolled||current().bot||!['Рынок','Инженерные сети','Сделка'].includes(eventNames[current().pos])||!dealAllowed();
  const actions=$('actionsLeft');if(actions)actions.textContent=(state.actionKey===turnActionKey()?Math.max(0,TWO_ACTIONS-(state.actionsUsed||0)):TWO_ACTIONS);
 }
 const OLD_RENDER=window.render;
