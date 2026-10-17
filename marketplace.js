@@ -214,7 +214,7 @@ function marketCommit(){
 }
 function openTradeMarket(){
  if(!state||!scopeNow()||!tradeAllowed())return;
- if(ui.cell!==state.players[state.turn].pos){ui.remote=null;ui.mine=null;ui.category="all";ui.cell=state.players[state.turn].pos;}
+ if(ui.cell!==state.players[state.turn].pos){ui.remote=null;ui.mine=null;ui.category="all";ui.mode="buy";ui.quoteDirty=false;ui.cell=state.players[state.turn].pos;}
  if(ui.session!==state){Object.assign(ui,{mode:"buy",owner:"all",category:"all",query:"",remote:null,mine:null,buyer:1,feedback:"",quoteDirty:false,session:state});}
  if(!$m("marketListings"))setupUI();
  $m("tradeOverlay").hidden=false;ui.feedback="";ui.quoteDirty=false;
