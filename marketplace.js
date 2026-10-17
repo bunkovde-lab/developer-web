@@ -11,40 +11,43 @@ const ui={mode:"buy",owner:"all",category:"all",query:"",remote:null,mine:null,b
 const MARKET_SCOPE={
  'Рынок':{title:'Рынок · покупатели, арендаторы, инвесторы',families:['investor','tenant','buyer']},
  'Инженерные сети':{title:'Инженерные сети · подключения',families:['network']},
- 'Сделка':{title:'Сделка · строительные карты',families:['utilities','permits','construction','commissioning']}
+ 'Сделка':{title:'Сделка · строительные карты',families:['utilities','permits','construction','commissioning','land']}
 };
 function scopeNow(){return state&&state.players[state.turn]&&MARKET_SCOPE[eventNames[state.players[state.turn].pos]];}
 function tradeInScope(c){return !!c&&!!scopeNow()?.families.includes(category(c));}
 
-const KIND_NAMES={utilities:"Проектирование",permits:"Разрешения",construction:"Строительство",commissioning:"Ввод в эксплуатацию",network:"Инженерные сети",investor:"Инвестор",tenant:"Арендатор",buyer:"Покупатель"};
+const KIND_NAMES={utilities:"Проектирование",permits:"Разрешения",construction:"Строительство",commissioning:"Ввод в эксплуатацию",land:"Участки",network:"Инженерные сети",investor:"Инвестор",tenant:"Арендатор",buyer:"Покупатель"};
 function cardsOf(p){
  return [...(p.cards||[]).map(c=>({...c,kind:"stage",family:c.deck})),
          ...(p.networkCards||[]).map(c=>({...c,kind:"network",family:"network"})),
-         ...(p.marketCards||[]).map(c=>({...c,kind:"market",family:c.type}))];
+         ...(p.marketCards||[]).map(c=>({...c,kind:"market",family:c.type})),...state.plots.map((lot,index)=>({lot,index})).filter(x=>x.lot.owner===state.players.indexOf(p)&&!x.lot.project&&!Number.isInteger(x.lot.reservedFor)).map(x=>({id:"lot-"+x.index,kind:"land",family:"land",plotIndex:x.index}))];
 }
 function findCard(owner,id){return cardsOf(state.players[owner]||{}).find(c=>String(c.id)===String(id));}
-function cardModel(c){return c.kind==="stage"?BALANCED_DECKS[c.deck]?.[c.index]:c.kind==="network"?NETWORK_CARDS.find(n=>n.type===c.type):c.card;}
+function cardModel(c){if(c.kind==="land")return state.plots[c.plotIndex];return c.kind==="stage"?BALANCED_DECKS[c.deck]?.[c.index]:c.kind==="network"?NETWORK_CARDS.find(n=>n.type===c.type):c.card;}
 function category(c){return c.family;}
-function title(c){const model=cardModel(c);if(c.kind==="stage")return model?.title||KIND_NAMES[c.family];if(c.kind==="network")return model?.title||KIND_NAMES.network;return KIND_NAMES[c.family]||"Рыночное предложение";}
+function title(c){if(c.kind==="land")return "Участок №"+(c.plotIndex+1)+" · "+state.plots[c.plotIndex].name;const model=cardModel(c);if(c.kind==="stage")return model?.title||KIND_NAMES[c.family];if(c.kind==="network")return model?.title||KIND_NAMES.network;return KIND_NAMES[c.family]||"Рыночное предложение";}
 function detail(c){
  const m=cardModel(c)||{};
+ if(c.kind==="land")return "Зона "+zoneOf(c.plotIndex).short+" · цена "+m.price+" тыс. · без строительства";
  if(c.kind==="stage")return "Работы: малый "+(m.costs?.[0]??"—")+" / средний "+(m.costs?.[1]??"—")+" / крупный "+(m.costs?.[2]??"—")+" тыс.";
  if(c.kind==="network")return "Подключение: "+m.cost+" тыс. • +10% к цене и базовой аренде подходящего объекта";
  if(c.family==="investor")return "Инвестиции: "+m.investment+" тыс. • доля: "+m.share+"%";
  return (c.family==="tenant"?"Аренда":"Покупка")+": "+m.percent+"% от стоимости объекта";
 }
-function icon(c){return c.family==="utilities"?"📐":c.family==="permits"?"📑":c.family==="construction"?"🏗":c.family==="commissioning"?"🏢":c.family==="network"?"⚡":c.family==="investor"?"💼":c.family==="tenant"?"🏬":"🏷";}
+function icon(c){return c.kind==="land"?"🗺️":c.family==="utilities"?"📐":c.family==="permits"?"📑":c.family==="construction"?"🏗":c.family==="commissioning"?"🏢":c.family==="network"?"⚡":c.family==="investor"?"💼":c.family==="tenant"?"🏬":"🏷";}
 function format(n){return new Intl.NumberFormat("ru-RU").format(Math.round(n))+" тыс.";}
 function round5(n){return Math.max(5,Math.round(n/5)*5);}
 function scarcity(c){if(!state.stock)return false;if(c.kind==="stage")return !state.stock.stage?.[c.deck]?.length;if(c.kind==="network")return !state.stock.network?.length;return false;}
 function basePrice(c){
  const m=cardModel(c)||{};
+ if(c.kind==="land")return m.price;
  if(c.kind==="stage")return Math.max(24,Math.round((m.costs?.[0]||50)*.75+25));
  if(c.kind==="network")return 25+(m.cost||40);
  if(c.family==="investor")return 35+Math.round((m.investment||150)*.2);
  return 40+Math.round((m.percent||100)*.55);
 }
 function ownerNeeds(owner,c){
+ if(c.kind==="land")return territoryAnalysis(c.plotIndex,owner).own>0||territoryAnalysis(c.plotIndex,owner).blocking>=2;
  const holdings=state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===owner);
  if(c.kind==="stage")return holdings.some(x=>x.lot.project?.stage!==4&&nextStageDeck(x.lot.project)===c.deck);
  if(c.kind==="network")return holdings.some(x=>x.lot.project?.stage===4&&requiredNetworkTypes(x.i,x.lot.project.size).includes(c.type)&&!connectedNetworksFor(x.lot).includes(c.type));
@@ -66,7 +69,7 @@ function playerOptions(){
 }
 function cardMarkup(c,owner,selected,local){
  const price=local?null:askFor(owner,c),wanted=ownerNeeds(owner,c),categoryName=KIND_NAMES[category(c)]||"Карта";
- return '<button type="button" class="mk-card'+(selected?" mk-selected":"")+'" data-kind="'+html(category(c))+'" onclick="'+(local?"marketSelectMine("+c.id+")":"marketSelectRemote("+owner+","+c.id+")")+'" aria-pressed="'+(selected?"true":"false")+'">'+
+ return '<button type="button" class="mk-card'+(selected?" mk-selected":"")+'" data-kind="'+html(category(c))+'" onclick="'+(local?"marketSelectMine("+JSON.stringify(c.id)+")":"marketSelectRemote("+owner+","+JSON.stringify(c.id)+")")+'" aria-pressed="'+(selected?"true":"false")+'">'+
  '<span class="mk-card-type">'+icon(c)+' '+html(categoryName)+' <span>#'+html(c.id)+'</span></span>'+
  '<strong>'+html(title(c))+'</strong><small>'+html(detail(c))+'</small>'+
  '<span class="mk-card-foot">'+(local?'<b>Моя карта</b>':'<b>'+html(format(price))+'</b>')+
@@ -150,8 +153,8 @@ function renderTradeMarket(){
 }
 function cardInventorySummary(i){const p=state.players[i];return cardsOf(p).length+" карт · "+format(p.money);}
 function marketSetMode(mode){if(!["buy","sell","swap"].includes(mode))return;ui.mode=mode;ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
-function marketSelectRemote(owner,id){if(!tradeInScope(findCard(Number(owner),id)))return;ui.remote={owner:Number(owner),id:Number(id)};ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
-function marketSelectMine(id){if(!tradeInScope(findCard(0,id)))return;ui.mine=Number(id);ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
+function marketSelectRemote(owner,id){if(!tradeInScope(findCard(Number(owner),id)))return;ui.remote={owner:Number(owner),id:String(id)};ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
+function marketSelectMine(id){if(!tradeInScope(findCard(0,id)))return;ui.mine=String(id);ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
 function marketSetBuyer(id){ui.buyer=Number(id);ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
 function marketSetFilter(){
  const owner=$m("marketOwner"),category=$m("marketCategory"),query=$m("marketSearch");
@@ -159,10 +162,12 @@ function marketSetFilter(){
 }
 function marketSetPrice(){ui.quoteDirty=true;ui.feedback="";renderTradeMarket();}
 function transferRemove(player,c){
+ if(c.kind==="land"){const lot=state.plots[c.plotIndex];if(lot.owner!==state.players.indexOf(player)||lot.project||Number.isInteger(lot.reservedFor))return false;lot.owner=-1;return true;}
  const a=c.kind==="stage"?player.cards:c.kind==="network"?player.networkCards:player.marketCards;
  const i=a.findIndex(x=>x.id===c.id);if(i<0)return false;a.splice(i,1);return true;
 }
 function transferAdd(player,c){
+ if(c.kind==="land"){state.plots[c.plotIndex].owner=state.players.indexOf(player);return;}
  const a=c.kind==="stage"?player.cards:c.kind==="network"?player.networkCards:player.marketCards;
  if(c.kind==="stage")a.push({id:c.id,deck:c.deck,index:c.index});
  else if(c.kind==="network")a.push({id:c.id,type:c.type});
