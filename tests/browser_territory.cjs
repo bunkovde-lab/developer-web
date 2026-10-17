@@ -55,7 +55,7 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.equal(await page.evaluate(()=>state.auction?.humanBidder),0);
    assert.equal(await page.locator('#auctionOverlay').isVisible(),true);
    await page.locator('#auctionBid').fill('550');
-   await page.getByRole('button',{name:'Повысить цену'}).last().click();
+   await page.getByRole('button',{name:'🔒 Подать ставку'}).last().click();
    assert.equal(await page.evaluate(()=>state.plots[0].owner),0,'Human must be able to win a bot-hosted land auction');
    assert.equal(await page.evaluate(()=>state.players[0].money),2450,'Human bidder pays her bid, not current bot');
    assert.equal(await page.evaluate(()=>state.auctionHistory.at(-1).winner),0,'Auction result must record a real contest');
