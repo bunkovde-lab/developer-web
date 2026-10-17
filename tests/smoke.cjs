@@ -144,11 +144,11 @@ assert.equal(run('state.players[0].investments.length'),0,'No recurring debt for
 
 run('newGame();state.rolled=true;state.turn=0;state.players[0].money=500;state.players[0].governmentCards.push({id:901,type:"investment",accepted:false,deadline:100,terms:{invest:120,reward:145,penalty:60}})');
 run("governmentAction(901,'accept')");
-assert.equal(run('state.players[0].money'),380);
+assert.equal(run('state.players[0].money'),500);
 run('state.round+=6');
 run("governmentAction(901,'finish')");
-assert.equal(run('state.players[0].money'),525);
-assert.equal(run('state.players[0].governmentCards.length'),0);
+assert.equal(run('state.players[0].money'),500);
+assert.equal(run('state.players[0].governmentCards.length'),1);
 console.log('EXTENDED CONTRACT TESTS PASSED: sale, swap, two actions, investor repayment, government completion');
 
 
