@@ -717,9 +717,9 @@ function renderHand(player){
    }
 
    if(type==='investor'){
-    const targets=state.plots.map((lot,j)=>({lot,j})).filter(x=>x.lot.owner===state.turn&&x.lot.project?.stage!==4);
+    const targets=state.plots.map((lot,j)=>({lot,j})).filter(x=>x.lot.owner===state.turn&&x.lot.project?.stage!==4&&!x.lot.investor);
     const controls=targets.length?'<label class="market-apply-label">Незавершённый проект<select id="investor-plot-'+c.id+'">'+targets.map(t=>'<option value="'+t.j+'">'+t.lot.name+'</option>').join('')+'</select></label><button type="button" onclick="applyInvestorCard('+c.id+',Number($(\'investor-plot-'+c.id+'\').value))">Привлечь инвестора</button>':'<small>Для инвестора нужен свой незавершённый проект</small>';
-    return '<article class="hand-card"><strong>Инвестор №'+c.id+'</strong><small>'+handCardDetails(c,type)+'</small>'+controls+'</article>';
+    return '<article class="hand-card"><strong>Инвестор №'+c.id+'</strong><small>'+handCardDetails(c,type)+' · Здание автоматически продаётся сразу при вводе; сдать его в аренду нельзя.</small>'+controls+'</article>';
    }
    const model=(BALANCED_DECKS[type]||eventDecks[type]||[])[c.index],title=type==='government'?'Госконтракт №'+(c.id||i+1):['investor','tenant','buyer'].includes(type)?label.replace(/^[^ ]+ /,'')+' №'+(c.id||i+1):model?.title||'Карта '+(i+1);
    return '<article class="hand-card"><strong>'+title+'</strong><small>'+handCardDetails(c,type)+'</small></article>';
@@ -857,7 +857,7 @@ function inspectLot(i){
   const buttons=playable.map(card=>'<button onclick="playStageCard('+i+','+size+','+card.id+')">Разыграть: '+(BALANCED_DECKS[card.deck]||eventDecks[card.deck])[card.index].title+' · '+(BALANCED_DECKS[card.deck]?.[card.index]?.costs?.[size]??stageCost(card.deck,size))+' тыс.</button>').join('');
   return '<article class="pc-project"><strong>'+p.name+'</strong><p>'+p.desc+'</p><p>Участков: '+p.land+' · '+requirements+' Статус: '+p.license+'</p>'+
    '<p><b>Этапы оплачиваются при розыгрыше соответствующих карт.</b></p><p>Проектирование → Разрешения → Строительство → Ввод в эксплуатацию.</p>'+
-   '<p>'+(chosen?'Текущий этап: '+(stage<4?nextStageLabel(project):'объект введён в эксплуатацию'):project?'На участке выбран другой проект.':x.owner!==state.turn?'Для розыгрыша нужно владеть участком.':'Для запуска нужна карта «Проектирование».')+'</p>'+buttons+'</article>';
+   '<p>'+(chosen?'Текущий этап: '+(stage<4?nextStageLabel(project):'объект введён в эксплуатацию'):project?'На участке выбран другой проект.':x.owner!==state.turn?'Для розыгрыша нужно владеть участком.':'Для запуска нужна карта «Проектирование».')+'</p>'+(x.investor?'<p class="muted"><b>💼 Инвестор: '+x.investor.capital+' тыс., доля '+x.investor.share+'% прибыли.</b> После ввода здание будет автоматически продано. Аренда недоступна.</p>':'')+buttons+'</article>';
  }).join('');
  $('plotCardOverlay').hidden=false;
 }
