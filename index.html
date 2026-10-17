@@ -4,6 +4,47 @@
 
 /* Right-side company cabinet: no horizontal top toolbar. */
 .wrap{max-width:1440px}.layout{grid-template-columns:minmax(0,1fr) 330px;gap:14px}.game-field{min-width:0}.company-panel{display:flex;flex-direction:column;gap:10px;position:sticky;top:10px}.company-panel .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:8px 0}.company-panel .pill{min-width:0;font-size:12px}.company-panel .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0 0}.company-panel .actions button,.company-panel select{font-size:12px;padding:9px 5px;min-width:0}.company-panel .actions label{grid-column:1/-1}.company-panel .panel{padding:11px}.company-panel h3{color:#ffdc92;margin:0 0 6px}.company-panel #log{max-height:180px}@media(max-width:760px){.wrap{overflow-x:auto}.layout{grid-template-columns:minmax(430px,1fr) 260px;width:max(100%,706px)}.company-panel{position:static}.board{width:100%}.company-panel .actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Compact responsive board: fit entire board without horizontal scrolling. */
+html,body{max-width:100%;overflow-x:hidden}
+header{padding:7px 10px}header h1{font-size:clamp(15px,2.5vw,22px)}header small{font-size:10px}
+.wrap{width:100%;max-width:1400px;margin:0 auto;padding:6px}
+.layout{width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(115px,29vw,330px);gap:6px;align-items:start}
+.game-field{min-width:0;display:flex;flex-direction:column;align-items:center}
+.board{width:min(100%,calc(100dvh - 85px));max-width:100%;min-width:0;aspect-ratio:1/1;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));padding:clamp(1px,.5vw,5px);gap:clamp(1px,.25vw,3px);border-width:clamp(2px,.6vw,7px);border-radius:8px}
+.cell{min-height:0;padding:1px;border-width:1px;border-radius:2px;font-size:clamp(4px,.7vw,9px)}
+.cell b{font-size:clamp(4px,.7vw,9px);line-height:1.05;overflow-wrap:anywhere}
+.cell span{font-size:clamp(4px,.65vw,9px)}
+.city{padding:clamp(1px,.4vw,5px);gap:2px;border-width:1px}
+.city-title{font-size:clamp(6px,1.3vw,15px);letter-spacing:0}
+.districts{gap:clamp(1px,.35vw,5px)}
+.district{padding:1px;border-radius:3px;gap:1px;min-width:0}
+.district strong{font-size:clamp(5px,.85vw,10px);line-height:1.05}
+.lots{gap:1px}
+.lot{font-size:clamp(5px,.8vw,10px);line-height:1;overflow:hidden}
+.token{width:clamp(4px,1vw,10px);height:clamp(4px,1vw,10px)}
+.company-panel{min-width:0;position:static;gap:5px}
+.company-panel .panel{padding:clamp(3px,.65vw,10px);border-radius:5px}
+.company-panel h3{font-size:clamp(10px,1.2vw,15px);margin:0 0 4px}
+.company-panel .stats{gap:3px;margin:4px 0}
+.company-panel .pill{padding:clamp(3px,.5vw,8px);font-size:clamp(8px,.9vw,12px);border-radius:4px}
+.company-panel .actions{gap:3px;margin-top:4px}
+.company-panel .actions button,.company-panel select{padding:clamp(4px,.55vw,9px) 2px;font-size:clamp(8px,.9vw,12px);border-radius:4px;overflow-wrap:anywhere}
+#players{font-size:clamp(8px,1vw,13px);line-height:1.35;overflow-wrap:anywhere}
+.company-panel .muted,.company-panel #log{font-size:clamp(8px,.95vw,12px)}
+.scene-tip{margin:3px 0;font-size:clamp(8px,.9vw,11px);text-align:center}
+@media(max-width:760px){
+ .wrap{padding:3px}
+ .layout{width:100%;grid-template-columns:minmax(0,1fr) clamp(110px,31vw,230px);gap:4px}
+ .board{width:min(100%,calc(100dvh - 64px));grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr))}
+ .cell{min-height:0}.cell b{font-size:clamp(4px,1.05vw,7px)}.cell span{font-size:clamp(4px,1vw,7px)}
+ .city-title{font-size:clamp(6px,1.4vw,11px)}.district strong{font-size:clamp(5px,1.05vw,8px)}.lot{font-size:clamp(5px,1.1vw,8px)}
+ .company-panel .actions{grid-template-columns:1fr}
+ .company-panel .actions label{grid-column:1}
+ .company-panel .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .company-panel .muted{display:none}
+}
+
 </style></head>
 <body><header><h1>🏙️ ДЕВЕЛОПЕР</h1><small>HTML · отдельная тестовая ветка · локальная игра с ботами</small></header><main class="wrap">
 <div class="layout"><div class="game-field"><div class="board" id="board"></div><p class="scene-tip">Внешняя дорожка — ход фишек; внутренние кварталы — участки. Нажмите на участок, чтобы увидеть его статус.</p></div><aside class="cols company-panel" aria-label="Кабинет компании и управление"><section class="panel"><h3>Игровой кабинет</h3><div class="stats"><div class="pill">Раунд: <b id="round">1</b></div><div class="pill">Ход: <b id="who">—</b></div><div class="pill">Капитал: <b id="money">—</b></div><div class="pill">Бросок: <b id="dice">—</b></div></div><div class="actions"><label class="pill">Участники <select id="count"><option>3</option><option>4</option><option>5</option><option>6</option></select></label><button onclick="newGame()">Новая партия</button><button onclick="roll()" id="roll">🎲 Бросить кубик</button><button onclick="buy()" id="buy">Купить участок</button><button onclick="build()" id="build">🏗️ Построить</button><button onclick="loan()" id="loan">Кредит +300</button><button onclick="sell()" id="sell">Продать объект</button><button onclick="endTurn()" id="end">Завершить ход</button><button onclick="save()">Сохранить</button><button onclick="load()">Загрузить</button></div></section><section class="panel"><h3>Кабинет компании</h3><div id="players"></div><p class="muted">Покупка земли, строительство, кредиты и доходы от аренды — упрощённая модель для тестирования интерфейса.</p></section><section class="panel"><h3>События партии</h3><div id="log"></div></section></aside></div>
