@@ -108,6 +108,7 @@ header{padding:7px 10px}header h1{font-size:clamp(15px,2.5vw,22px)}header small{
 .plot-card-overlay[hidden]{display:none!important}.plot-card-overlay{position:fixed;inset:0;z-index:1250;background:#030915d9;display:grid;place-items:center;padding:10px}.plot-card{width:min(96vw,820px);max-height:94dvh;overflow:auto;border:2px solid #d7ac60;border-radius:15px;background:linear-gradient(140deg,#17354b,#091d2e);padding:16px;color:#ecf2f4;box-shadow:0 20px 70px #000b}.plot-card h2{margin:2px 0 7px;color:#ffe0a2}.plot-card .pc-top{display:flex;justify-content:space-between;gap:10px}.plot-card .pc-sub{font-size:13px;color:#c5d8de;margin:4px 0 13px}.plot-card .pc-projects{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.plot-card .pc-project{background:#203a50;border:1px solid #6b8aa0;border-radius:10px;padding:12px;min-width:0}.plot-card .pc-project strong{color:#f9d89e}.plot-card .pc-project p{font-size:12px;line-height:1.4}.plot-card .pc-project ul{padding-left:17px;font-size:12px;line-height:1.55}.plot-card .pc-project button{width:100%;font-size:12px}.plot-card .pc-foot{font-size:11px;color:#b5cdd8;margin-top:10px}@media(max-width:690px){.plot-card .pc-projects{grid-template-columns:1fr}.plot-card{width:min(96vw,460px)}}
 .construction-deck-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.construction-deck-choices button{min-height:75px;white-space:normal}@media(max-width:420px){.construction-deck-choices{grid-template-columns:1fr}}#cardEffect{white-space:pre-line;text-align:left;line-height:1.6}.inventory-card{padding:6px 8px;border:1px solid #496481;border-radius:8px;margin:5px 0;font-size:12px}.pc-project button{margin:5px 0;white-space:normal}
 .hand-section{margin-top:14px}.hand-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;align-items:center}.hand-heading h3{margin:3px 0 10px}.hand-heading span{font-size:12px;color:#c2d3ea}.hand-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hand-category{border:1px solid #476282;border-radius:10px;background:#142840;min-width:0;overflow:hidden}.hand-category summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:11px;font-size:13px;font-weight:700;list-style:none}.hand-category summary::-webkit-details-marker{display:none}.hand-category summary:after{content:'⌄';color:#b9d0f0}.hand-category[open] summary:after{content:'⌃'}.hand-count{display:inline-block;min-width:24px;text-align:center;background:#36547a;color:#fff;border-radius:99px;padding:2px 7px}.hand-stack{padding:0 10px 10px;display:grid;gap:7px}.hand-card{background:#253c5c;border:1px solid #56739b;border-radius:9px;padding:10px;font-size:12px;overflow-wrap:anywhere}.hand-card strong{display:block;font-size:13px;margin-bottom:5px}.hand-card small{display:block;color:#d4e1f1;line-height:1.45}.hand-empty{color:#93a8c5;font-size:12px;margin:0}.hand-card button{margin-top:8px;width:100%;padding:9px;font-size:12px}@media(min-width:650px){.hand-groups{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.contract-detail{padding:0}.contract-detail summary{display:block;cursor:pointer;padding:10px;list-style:none}.contract-detail summary::-webkit-details-marker{display:none}.contract-detail summary strong{margin-bottom:5px}.contract-detail summary small{margin:0}.contract-body{padding:0 10px 10px}.contract-body p{margin:7px 0;line-height:1.45}.contract-detail[open]{border-color:#e0b568}
 </style></head>
 <body><header><h1>🏙️ ДЕВЕЛОПЕР</h1><small>HTML · v0.6.0 · автосохранение и меню партии</small></header><main class="wrap">
 <div class="session-menu"><button onclick="showSessionMenu()">☰ Меню партии</button><span class="session-status" id="sessionStatus">Загрузка…</span><span class="share-note">Сетевая игра: пока не подключена</span></div><div class="layout"><div class="game-field"><div class="board" id="board"></div><p class="scene-tip">Внешняя дорожка — ход фишек; внутренние кварталы — участки. Нажмите на участок, чтобы увидеть его статус.</p><section class="panel hand-section" aria-label="Карты текущего игрока"><div class="hand-heading"><h3>🎴 Мои карты на руках</h3><span id="handOwner"></span></div><div class="hand-groups" id="handGroups"></div></section></div><aside class="cols company-panel" aria-label="Кабинет компании и управление"><section class="panel"><h3>Игровой кабинет</h3><div class="stats"><div class="pill">Раунд: <b id="round">1</b></div><div class="pill">Ход: <b id="who">—</b></div><div class="pill">Капитал: <b id="money">—</b></div><div class="pill">Бросок: <b id="dice">—</b></div></div><div class="actions"><label class="pill">Участники <select id="count"><option>3</option><option>4</option><option>5</option><option>6</option></select></label><button onclick="requestNewGame()">Новая партия</button><button onclick="roll()" id="roll">🎲 Бросить кубик</button><button onclick="buy()" id="buy">Аукцион (только клетка)</button><button onclick="build()" id="build">🏗️ Построить</button><button onclick="loan()" id="loan">Кредит +300</button><button onclick="sell()" id="sell">Продать объект</button><button onclick="endTurn()" id="end">Завершить ход</button><button onclick="save()">Сохранить</button><button onclick="load()">Загрузить</button></div></section><section class="panel"><h3>Кабинет компании</h3><div id="players"></div><p class="muted">Карты по категориям находятся под игровым полем.</p><p class="muted">Покупка земли, строительство, кредиты и доходы от аренды — упрощённая модель для тестирования интерфейса.</p></section><section class="panel"><h3>События партии</h3><div id="log"></div></section></aside></div>
@@ -263,10 +264,12 @@ function resolveSpecialCell(){
  }
  if(cell==='Госзаказ'){
   if(!p.governmentCards)p.governmentCards=[];
-  const c={id:state.nextCardId=(state.nextCardId||0)+1,type:randomPick(['investment','construction','land']),deadline:state.round+8,accepted:false};
+  const type=randomPick(['investment','construction','land']),seq=(state.nextCardId=(state.nextCardId||0)+1);
+  const base={investment:{invest:120,reward:180},construction:{buildSize:'Малый объект',reward:470},land:{reward:240}}[type];
+  const c={id:seq,type,deadline:state.round+8,accepted:false,terms:{...base,penalty:75,experimental:true}};
   p.governmentCards.push(c);
   note('Госзаказ: '+p.name+' получил предложение '+c.type+'. Принятие и исполнение ещё в разработке.');
-  showResolvedCard('🏛️ Государственный заказ','Предложение добавлено в раздел «Госзаказы». Принятие и исполнение в разработке.','Тип: '+c.type+' · предполагаемый срок: '+c.deadline+'-й раунд');
+  showResolvedCard('🏛️ Государственный заказ','Предложение сохранено в категории «Госзаказы». Раскройте карточку под полем, чтобы увидеть её условия.','Срок: '+c.deadline+'-й раунд. Это тестовое предложение; принятие и исполнение пока не подключены.');
  }
 }
 
@@ -354,6 +357,21 @@ function handCardDetails(c,type){
  if(['investor','tenant','buyer'].includes(type)){const d=c.card||{};return type==='investor'?'Вклад: '+d.investment+' тыс. · Доля прибыли: '+d.share+'%':'Предложение: '+d.percent+'% базовой '+(type==='tenant'?'аренды':'цены продажи');}
  const card=(BALANCED_DECKS[type]||eventDecks[type]||[])[c.index];return card?.costs?'Стоимость этапа · малый: '+card.costs[0]+' / средний: '+card.costs[1]+' / крупный: '+card.costs[2]+' тыс.':'Карта этапа';
 }
+
+function renderGovernmentContract(c,i){
+ const kind=({'investment':'Инвестиционный','construction':'Строительный','land':'Выкуп участка'}[c.type]||c.type);
+ const t=c.terms||{},legacy=!c.terms,deadline=Number.isFinite(c.deadline)?'До '+c.deadline+'-го раунда':'Срок не указан';
+ let task='';
+ if(c.type==='investment')task='Внести '+(t.invest??'—')+' тыс. в государственный проект; выплата '+(t.reward??'—')+' тыс. после выполнения.';
+ else if(c.type==='construction')task='Построить и передать муниципалитету объект: '+(t.buildSize||'масштаб не указан')+'. Вознаграждение '+(t.reward??'—')+' тыс.';
+ else if(c.type==='land')task='Передать муниципалитету подходящий земельный участок. Выплата '+(t.reward??'—')+' тыс. (конкретный участок ещё не определён).';
+ else task='Тип предложения не определён.';
+ const warning=legacy?'Получено до обновления: подробные финансовые условия в сохранённой карте отсутствуют.':'Тестовые суммы, ещё не утверждены балансом.';
+ return '<details class="hand-card contract-detail"><summary><strong>Госконтракт №'+(c.id||i+1)+' · '+kind+'</strong><small>'+deadline+' · '+(c.accepted?'Принят':'Ожидает принятия')+' · Подробнее ▾</small></summary>'+
+ '<div class="contract-body"><p><b>Задача:</b> '+task+'</p><p><b>Крайний срок:</b> '+deadline+'</p><p><b>Штраф за невыполнение:</b> '+(t.penalty??'не указан')+' тыс.</p><p class="muted">'+warning+'</p>'+
+ '<p class="muted">Отказ от предложения до принятия — без штрафа. После принятия контракт обязателен. Кнопки принятия и выполнения пока не реализованы.</p></div></details>';
+}
+
 function renderHand(player){
  $('handOwner').textContent=player.name+' · карта компании';
  const cards=(player.cards||[]),market=(player.marketCards||[]),gov=(player.governmentCards||[]);
@@ -361,6 +379,7 @@ function renderHand(player){
  $('handGroups').innerHTML=HAND_CATEGORIES.map(([type,label])=>{
   const items=type==='government'?gov:type==='investor'||type==='tenant'||type==='buyer'?market.filter(c=>c.type===type):cards.filter(c=>c.deck===type);
   const html=items.map((c,i)=>{
+   if(type==='government')return renderGovernmentContract(c,i);
    const model=(BALANCED_DECKS[type]||eventDecks[type]||[])[c.index],title=type==='government'?'Госконтракт №'+(c.id||i+1):['investor','tenant','buyer'].includes(type)?label.replace(/^[^ ]+ /,'')+' №'+(c.id||i+1):model?.title||'Карта '+(i+1);
    return '<article class="hand-card"><strong>'+title+'</strong><small>'+handCardDetails(c,type)+'</small></article>';
   }).join('')||'<p class="hand-empty">Нет карт</p>';
