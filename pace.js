@@ -28,7 +28,8 @@ function stageDemand(playerIndex){
 }
 function seedNewGame(){
  if(!state||state.paceVersion)return;
- ensureEconomy();
+ // The base game already prepares its finite-card economy.
+
  state.paceVersion=PACE.version;state.speedTurnCount=0;state.speedStartKit=[];
  for(let i=0;i<state.players.length;i++){
   const p=state.players[i];p.money=PACE.startCapital;
@@ -50,7 +51,8 @@ function selectConstructionDeck(deck){
  const before=state?.constructionDeckChoice&&state.constructionDeckChoice.playerIndex===state.turn?state.turn:null;
  baseChoice(deck);
  if(before===null||!state?.paceVersion||!stageIds.includes(deck))return;
- ensureEconomy();const player=state.players[before],priority=stageDemand(before);
+ // The base game already prepares its finite-card economy.
+const player=state.players[before],priority=stageDemand(before);
  let extra=0;
  for(let i=1;i<PACE.constructionDraws;i++){
   if(player.cards.length>=8)break;
