@@ -254,7 +254,7 @@ const eventDecks={
  {title:'Награда за проект',text:'Компания получила премию за развитие района.',effect:'Премия: +160',delta:160}]
 };
 // Cards are drawn only on cells with implemented decks; other new cell types await their own mechanics.
-const cardCellDeck={"3":"market","5":"city","13":"market","17":"city","21":"market","26":"city","31":"city"};
+const cardCellDeck={}; // special cells now resolve through the experimental economic event system
 const deckNames={market:'Рынок',finance:'Финансы и инвесторы',construction:'Строительство',city:'Городские события',permits:'Разрешения',utilities:'Инженерные сети',commissioning:'Ввод в эксплуатацию'};
 let pendingCard=null;
 function beginConstructionDeckChoice(){if(!state?.rolled)return;state.constructionDeckChoice={playerIndex:state.turn};if(current().bot){const ids=['permits','utilities','construction','commissioning'];selectConstructionDeck(ids[Math.floor(Math.random()*ids.length)]);}else showConstructionDeckChoice();}
