@@ -12,7 +12,7 @@ const FIELD_ICONS={
 const STAGE_ICONS=['▫','📐','📑','🏗','🏢'];
 const STAGE_TITLES=['Под проект','Проект','Разрешения','Строится','Введён'];
 let previousRender={pos:null,dice:null,round:null,money:null,winner:null,logCount:0};
-let muted=localStorage.getItem('developer-v10-sound')==='off',audio=null,lastBoardMessage='';
+let muted=localStorage.getItem('developer-v10-sound')==='off',audio=null,lastBoardMessage='',zoomOpen=false;
 const $v=id=>document.getElementById(id);
 function createHud(){
  if($v('v10Hud'))return;
@@ -21,10 +21,11 @@ function createHud(){
  '<div class="hud-block"><span>🎯</span><div><small>Цель победы</small><br><b id="v10Goal">4 соседних объекта</b></div></div>'+
  '<div class="hud-block hud-progress"><div><small>Макс. прогресс</small><br><b id="v10Progress">0 из 4</b></div><div class="hud-progress-bar"><span id="v10ProgressFill" style="width:0%"></span></div></div>'+
  '<div class="hud-block"><span class="hud-phase" id="v10Phase">Ход игрока</span></div>'+
- '<button id="v10Sound" type="button" aria-label="Включить или отключить звуки игры" aria-pressed="false"></button>';
+ '<button id="v10Zoom" type="button" aria-label="Увеличить центральную карту участков">🔎 Увеличить город</button><button id="v10Sound" type="button" aria-label="Включить или отключить звуки игры" aria-pressed="false"></button>';
  const menu=document.querySelector('.session-menu');
  if(menu)menu.insertAdjacentElement('afterend',hud);
  else document.querySelector('main')?.prepend(hud);
+ $v('v10Zoom').addEventListener('click',()=>toggleZoom());
  $v('v10Sound').addEventListener('click',()=>{
   muted=!muted;localStorage.setItem('developer-v10-sound',muted?'off':'on');
   updateSoundButton();if(!muted)play('confirm');
@@ -62,6 +63,7 @@ function play(kind){
   else soundNote(ctx,{freq:420,dur:.08,type:'sine',vol:.022,slide:70});
  }catch{/* Sound is a nonessential enhancement: failures must not block gameplay. */}
 }
+function toggleZoom(next){zoomOpen=typeof next==='boolean'?next:!zoomOpen;const board=$v('board');if(board)board.classList.toggle('zoom-map',zoomOpen);if(zoomOpen){const city=board?.querySelector('.city-map');if(city&&!$v('v10ZoomClose')){const x=document.createElement('button');x.type='button';x.id='v10ZoomClose';x.textContent='✕ Закрыть город';x.onclick=()=>toggleZoom(false);city.prepend(x);}}const control=$v('v10Zoom');if(control){control.textContent=zoomOpen?'✕ Свернуть город':'🔎 Увеличить город';control.setAttribute('aria-expanded',String(zoomOpen));}}
 function prettyTrack(){
  const cells=document.querySelectorAll('#board>.cell');
  for(let i=0;i<cells.length;i++){
@@ -104,6 +106,7 @@ function decoratePlots(){
  }
  const cap=document.querySelector('.city-title');
  if(cap)cap.textContent='ДЕВЕЛОПЕР · ПЛАН ГОРОДА';
+ if(zoomOpen)toggleZoom(true);
 }
 function maxCluster(){
  let best=0;for(let i=0;i<state.players.length;i++){
@@ -139,6 +142,8 @@ function visualRender(){
 }
 const original=window.render;
 window.render=function(){original();visualRender();};
+window.v10ToggleZoom=toggleZoom;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&zoomOpen)toggleZoom(false);});
 document.addEventListener('pointerdown',e=>{
  const btn=e.target.closest('button');if(!btn||btn.disabled||btn.id==='v10Sound')return;
  if(btn.id==='roll'){play('dice');return;}
