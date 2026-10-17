@@ -45,6 +45,28 @@ header{padding:7px 10px}header h1{font-size:clamp(15px,2.5vw,22px)}header small{
  .company-panel .muted{display:none}
 }
 
+
+/* Landscape tablet: a wide board instead of the former square. 
+   Keep the 9x9 perimeter indexing and game logic unchanged. */
+@media (orientation:landscape) and (min-width:700px){
+ .wrap{max-width:none;padding:5px 8px}
+ .layout{grid-template-columns:minmax(0,1fr) clamp(220px,25vw,350px);gap:8px}
+ .game-field{align-items:stretch}
+ .board{
+   box-sizing:border-box;
+   width:min(100%,calc((100dvh - 85px)*1.56));
+   max-width:100%;
+   aspect-ratio:1.56 / 1;
+   grid-template-columns:repeat(9,minmax(0,1fr));
+   grid-template-rows:repeat(9,minmax(0,1fr));
+   margin:0 auto;
+ }
+ .cell b{font-size:clamp(8px,.95vw,12px)}
+ .cell span{font-size:clamp(7px,.8vw,10px)}
+ .city-title{font-size:clamp(12px,1.6vw,19px)}
+ .district strong{font-size:clamp(9px,1vw,12px)}
+ .lot{font-size:clamp(9px,1vw,13px)}
+}
 </style></head>
 <body><header><h1>🏙️ ДЕВЕЛОПЕР</h1><small>HTML · отдельная тестовая ветка · локальная игра с ботами</small></header><main class="wrap">
 <div class="layout"><div class="game-field"><div class="board" id="board"></div><p class="scene-tip">Внешняя дорожка — ход фишек; внутренние кварталы — участки. Нажмите на участок, чтобы увидеть его статус.</p></div><aside class="cols company-panel" aria-label="Кабинет компании и управление"><section class="panel"><h3>Игровой кабинет</h3><div class="stats"><div class="pill">Раунд: <b id="round">1</b></div><div class="pill">Ход: <b id="who">—</b></div><div class="pill">Капитал: <b id="money">—</b></div><div class="pill">Бросок: <b id="dice">—</b></div></div><div class="actions"><label class="pill">Участники <select id="count"><option>3</option><option>4</option><option>5</option><option>6</option></select></label><button onclick="newGame()">Новая партия</button><button onclick="roll()" id="roll">🎲 Бросить кубик</button><button onclick="buy()" id="buy">Купить участок</button><button onclick="build()" id="build">🏗️ Построить</button><button onclick="loan()" id="loan">Кредит +300</button><button onclick="sell()" id="sell">Продать объект</button><button onclick="endTurn()" id="end">Завершить ход</button><button onclick="save()">Сохранить</button><button onclick="load()">Загрузить</button></div></section><section class="panel"><h3>Кабинет компании</h3><div id="players"></div><p class="muted">Покупка земли, строительство, кредиты и доходы от аренды — упрощённая модель для тестирования интерфейса.</p></section><section class="panel"><h3>События партии</h3><div id="log"></div></section></aside></div>
