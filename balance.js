@@ -323,8 +323,9 @@ function botLandDeal(){
   const seller=neighborsBySide(o.index).filter(j=>state.plots[j].owner===o.lot.owner).length;
   const price=Math.round(o.lot.price*(1.23+ours*.09));
   const sellerHoldings=state.plots.filter(l=>l.owner===o.lot.owner).length;
-  return {...o,ours,seller,price,sellerHoldings,priority:ours*130-seller*120-o.lot.price*.08};
- }).filter(o=>o.ours>=2&&o.seller<=1&&o.sellerHoldings>=2&&buyer.money>=o.price+100).sort((a,b)=>b.priority-a.priority||a.price-b.price);
+  const defended=neighborsBySide(o.index).filter(j=>state.plots[j].owner===o.lot.owner&&state.plots[j].project?.stage===4).length;
+  return {...o,ours,seller,price,sellerHoldings,defended,priority:ours*160-seller*85-o.lot.price*.05};
+ }).filter(o=>o.ours>=2&&o.seller<=2&&o.defended<2&&o.sellerHoldings>=2&&(o.ours>o.seller||o.ours>=3)&&buyer.money>=o.price+35).sort((a,b)=>b.priority-a.priority||a.price-b.price);
  const chosen=ranked[0];if(!chosen)return false;
  const sellerIndex=chosen.lot.owner,seller=state.players[sellerIndex];
  chosen.lot.owner=buyerIndex;buyer.money-=chosen.price;seller.money+=chosen.price;
