@@ -6,6 +6,9 @@ on:
       - 'index.html'
       - 'balance.js'
       - 'marketplace.js'
+      - 'pace.js'
+      - 'visual.js'
+      - 'visual.css'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
