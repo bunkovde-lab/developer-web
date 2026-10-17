@@ -16,7 +16,16 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    await page.evaluate(()=>{
     newGame();if(typeof closeSessionMenu==='function')closeSessionMenu();const menu=document.getElementById('sessionOverlay');if(menu)menu.hidden=true;state.rolled=true;state.plots[0].owner=0;state.plots[0].project={size:0,stage:2};window.render();
    });
-   assert.equal(await page.locator('#v10Hud').count(),1,'Progress dashboard must exist');
+   assert.equal(await page.locator('#v10Hud').count(),0,'Upper progress bar must be removed');
+   assert.equal(await page.locator('.company-panel').getByRole('button',{name:'Новая партия'}).count(),0,'New game is not a main action');
+   assert.equal(await page.locator('#sessionOpen').isVisible(),true,'The menu is in the site header');
+   assert.equal(await page.locator('#sessionOverlay').isHidden(),true);
+   assert.equal(await page.evaluate(()=>state.plots.every(l=>l.owner===-1)),false,'Fixture assigns one parcel only');
+   if(viewport.width>760){
+    const boardRect=await page.locator('#board').boundingBox();
+    const cabinetRect=await page.locator('.company-panel').boundingBox();
+    assert(Math.abs(boardRect.y-cabinetRect.y)<12,'Board and cabinet must start at the same height');
+   }
    assert.equal(await page.locator('#board .cell').count(),32,'Ring must have 32 named spaces');
    assert.equal(await page.locator('#board .map-plot').count(),30,'Center must show 30 parcels');
    assert.equal(await page.locator('#board .cell[data-kind="network"]').count(),3);
@@ -24,11 +33,26 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.match(await page.locator('#board .map-plot').first().getAttribute('aria-label'),/Этап 2/);
    assert.equal(await page.locator('#board .map-plot').first().locator('.plot-progress').count(),1);
    assert(Number(await page.locator('#roll').evaluate(e=>getComputedStyle(e).minHeight.replace('px','')))>=48);
+   await page.locator('#sessionOpen').click();
+   assert.equal(await page.locator('#sessionOverlay').isVisible(),true);
+   assert.equal(await page.locator('#sessionOverlay').getByRole('button',{name:/Новая партия/}).count(),1);
    const sound=page.locator('#v10Sound');
    await sound.click();
    assert.equal(await page.evaluate(()=>localStorage.getItem('developer-v10-sound')),'off');
    await sound.click();
    assert.equal(await page.evaluate(()=>localStorage.getItem('developer-v10-sound')),'on');
+   await page.locator('#continueGame').click();
+   // A real dice move must never recreate the legacy coin-on-START or dice-only visual map.
+   await page.evaluate(()=>{
+      state.rolled=false;state.pendingCard=null;state.auction=null;state.constructionDeckChoice=null;
+      state.players[0].pos=0;window.roll();
+   });
+   assert.equal(await page.locator('#board .cell').count(),32);
+   assert.equal(await page.locator('#board .cell[data-kind="network"]').count(),3);
+   assert.equal(await page.locator('#board .cell .track-icon').count(),32);
+   assert.match(await page.locator('#board .cell').first().innerText(),/СТАРТ/);
+   assert.doesNotMatch(await page.locator('#board .cell').first().innerText(),/\+60/);
+   assert.equal(await page.locator('#board .map-plot .plot-progress').count(),30);
    await page.screenshot({path:'ui-snapshots/developer-v010-'+viewport.width+'.png',fullPage:true});
    await page.locator('#v10Zoom').click();
    assert.equal(await page.locator('#board').evaluate(e=>e.classList.contains('zoom-map')),true);
