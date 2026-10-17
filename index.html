@@ -257,10 +257,10 @@ function showCard(){
  const priceField={permits:'permit',utilities:'utility',construction:'construction',commissioning:'commission'}[pending.deck];
  if(priceField){
   const costs=projectCatalog.map(p=>priceField==='construction'?p.steps*p.stepCost:p[priceField]);
-  $('cardEffect').textContent='Стоимость этапа по сложности объекта (предварительные сметы):\\n'+
-   ['Малый объект','Средний объект','Крупный объект'].map((label,i)=>label+': '+costs[i]+' у.е.').join('\\n')+
-   '\\nСтоимость показана для сравнения, не списывается автоматически. Масштаб игровых денег ещё требует согласования.'+
-   (pending.deck==='construction'?'\\nТекущий случайный финансовый эффект этой колоды: '+card.effect:'');
+  $('cardEffect').textContent='Стоимость этапа по сложности объекта (предварительные сметы):\n'+
+   ['Малый объект','Средний объект','Крупный объект'].map((label,i)=>label+': '+costs[i]+' у.е.').join('\n')+
+   '\nСтоимость показана для сравнения, не списывается автоматически. Масштаб игровых денег ещё требует согласования.'+
+   (pending.deck==='construction'?'\nТекущий случайный финансовый эффект этой колоды: '+card.effect:'');
  }else $('cardEffect').textContent=card.effect;
  $('cardOverlay').hidden=false;
 }
