@@ -33,19 +33,19 @@ vm.runInContext(fs.readFileSync('pace.js','utf8'),sandbox,{filename:'pace.js',ti
 run('newGame()');
 assert.equal(run('state.paceVersion'),1);
 assert.equal(run('state.players.length'),6);
-assert.equal(run('state.plots.filter(l=>l.owner>=0).length'),12);
-assert.equal(run('state.speedStartKit.length'),12);
+assert.equal(run('state.plots.filter(l=>l.owner>=0).length'),0,'All land must be free at the beginning');
+assert.equal(run('state.speedStartKit.length'),0,'No gifted, auto-purchased or reserved starter parcels');
 assert.equal(run('state.players.every(p=>p.cards.length===4)'),true);
 assert.equal(run('state.stock.stage.utilities.length'),6);
 assert.equal(run('state.stock.stage.permits.length'),6);
 assert.equal(run('state.stock.stage.construction.length'),6);
 assert.equal(run('state.stock.stage.commissioning.length'),6);
-assert.equal(run('state.players.every(p=>p.money>900)'),true);
+assert.equal(run('state.players.every(p=>p.money===1650)'),true,'No capital charged for imaginary starter lots');
 run('state.rolled=true;state.constructionDeckChoice={playerIndex:0};selectConstructionDeck("commissioning");');
 assert.equal(run('state.players[0].cards.length'),8,'Six-player construction picks up to hand cap eight including the starter cards');
 assert.equal(run('state.players.reduce((sum,p)=>sum+p.cards.length,0)'),28);
 assert.equal(run('state.stock.stage.commissioning.length'),5);
-console.log('PACE START PASSED: finite stage stock, paid starter plots, bounded construction draft');
+console.log('START RULE PASSED: zero owned land, no reserved lots, finite initial cards and construction limit');
 
 const results=[];
 for(const players of [3,4,5,6]){
