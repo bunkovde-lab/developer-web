@@ -79,4 +79,17 @@ run('newGame();state.rolled=true;state.players[0].pos=7;state.players[0].money=1
 assert.equal(run('state.plots[23].reservedFor'),22);
 run('openTradeMarket();marketSetMode("sell");');
 assert.equal(run('marketplaceGetOffers().some(o=>o.card.id==="lot-23")'),false,'Reserved partner land never listed as tradable');
+
+run('newGame();state.rolled=true;state.players[0].pos=3;');
+assert.equal(run('state.stock.market.length'),30,'Market starts with thirty physical investor, tenant and buyer cards');
+run('window.resolveSpecialCell()');
+assert.equal(run('state.stock.market.length'),29,'One market card removed from common physical supply');
+assert.equal(run('state.players[0].marketCards.length'),1);
+const marketId=run('state.players[0].marketCards[0].id');
+const marketType=run('state.players[0].marketCards[0].type');
+run('state.pendingCard=null;state.plots[0].owner=0;state.players[0].money=10000;');
+if(marketType==='investor')run('state.plots[0].project={size:0,stage:1};applyInvestorCard('+marketId+',0)');
+else run('state.plots[0].level=1;state.plots[0].project={size:0,stage:4};applyMarketCard('+marketId+',0)');
+assert.equal(run('state.players[0].marketCards.length'),0,'Played market card consumed');
+assert.equal(run('state.stock.market.length'),30,'Market card returned immediately after using it');
 console.log('CITY REQUEST TESTS PASSED: unlimited hand, immediate reuse, city payment and refusal, no government cards, land-for-card exchange and protected paired lot');
