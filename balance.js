@@ -5,7 +5,7 @@
 (function () {
 "use strict";
 const GAME_V2 = {version:2,stageHandCap:8,networkHandCap:4,networkCopies:3,stageCooldown:4,networkCooldown:4};
-const OLD_NEW_GAME=window.newGame, OLD_ROLL=window.roll, OLD_END_TURN=window.endTurn, OLD_MARKET_BASE=window.marketBase, OLD_RESOLVE_SPECIAL=window.resolveSpecialCell;
+const OLD_NEW_GAME=window.newGame, OLD_ROLL=window.roll, OLD_END_TURN=window.endTurn, OLD_MARKET_BASE=window.marketBase, OLD_RESOLVE_SPECIAL=window.resolveSpecialCell, OLD_BEGIN_CONSTRUCTION=window.beginConstructionDeckChoice;
 const STAGE_IDS=['utilities','permits','construction','commissioning'];
 function mixDeck(arr){for(let i=arr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 function ensureEconomy(){
@@ -225,11 +225,30 @@ function botTradeFromPeers(){
  }
  return false;
 }
+function beginConstructionDeckChoice(){
+ const p=current();
+ if(!p?.bot)return OLD_BEGIN_CONSTRUCTION();
+ const projects=state.plots.filter(l=>l.owner===state.turn&&l.project?.stage!==4).sort((a,b)=>(b.project?.stage||0)-(a.project?.stage||0));
+ const priorities=[...projects.map(l=>nextStageDeck(l.project)),...STAGE_IDS];
+ const desired=priorities.find(d=>d&&!p.cards.some(c=>c.deck===d)&&(!state.stock||state.stock.stage[d]?.length));
+ state.constructionDeckChoice={playerIndex:state.turn};
+ selectConstructionDeck(desired||STAGE_IDS[Math.floor(Math.random()*STAGE_IDS.length)]);
+}
+function botBusiness(){
+ const p=current(),playerIndex=state.turn;if(!p.bot)return;
+ const lots=state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===playerIndex);
+ for(const {lot,i} of lots){
+  if(lot.project?.stage===4&&!lot.tenant){const ti=p.marketCards.findIndex(c=>c.type==='tenant');if(ti>=0){const c=p.marketCards.splice(ti,1)[0];lot.tenant={percent:c.card.percent,cardId:c.id};lot.tenant.income=tenantIncomeForLot(lot);note('🤖 '+p.name+' заселил арендатора на '+lot.name+'.');}}
+ }
+ if(p.money<250&&lots.some(x=>x.lot.project?.stage!==4)){
+  const ii=p.marketCards.findIndex(c=>c.type==='investor');if(ii>=0){const c=p.marketCards.splice(ii,1)[0];p.money+=c.card.investment;if(!p.investments)p.investments=[];p.investments.push({principal:c.card.investment,unpaid:Math.round(c.card.investment*1.25),share:c.card.share});note('🤖 '+p.name+' привлёк инвестора: '+c.card.investment+' тыс.');}
+ }
+}
 function bot(){
  if(!state?.players?.[state.turn]?.bot||Number.isInteger(state.winnerIndex))return;
  if(!state.rolled)roll(); // Legacy roll already handles special cells and drawing
  if(state.pendingCard||state.auction||state.constructionDeckChoice){setTimeout(endTurn,350);return;}
- ensureEconomy();botBuyLand();botTradeFromPeers();botBuildAndConnect();render();
+ ensureEconomy();botBuyLand();botTradeFromPeers();botBuildAndConnect();botBusiness();render();
  setTimeout(endTurn,350);
 }
 function settleInvestment(){
@@ -293,7 +312,7 @@ function renderGovernmentContract(c,i){
  let html=window._developerLegacyGovCard(c,i);
  const controls=c.accepted?'<button onclick="governmentAction('+c.id+',\'finish\')">Выполнить условия</button>':
   '<button onclick="governmentAction('+c.id+',\'accept\')">Принять контракт</button><button onclick="governmentAction('+c.id+',\'reject\')">Отказаться</button>';
- html=html.replace(/<p class="muted">Кнопки принятия и выполнения пока не реализованы.<\/p>/,'');
+ html=html.replace('Кнопки принятия и выполнения пока не реализованы.','Действия по контракту доступны ниже.');
  return html.replace('</div></details>',controls+'</div></details>');
 }
 function checkGovernmentDeadlines(){
@@ -360,7 +379,7 @@ function render(){
 }
 window._developerLegacyDrawCard=window.drawCard;window._developerLegacyPlayStageCard=window.playStageCard;
 window._developerLegacyApplyNetworkCard=window.applyNetworkCard;window._developerLegacyGovCard=window.renderGovernmentContract;
-Object.assign(window,{newGame,drawCard,drawNetworkCard,playStageCard,applyNetworkCard,marketBase,openTradeMarket,closeTradeMarket,renderTradeMarket,executeTradeMarket,bot,resolveSpecialCell,applyInvestorCard,governmentAction,renderGovernmentContract,roll,endTurn,render});
+Object.assign(window,{newGame,drawCard,drawNetworkCard,playStageCard,applyNetworkCard,marketBase,openTradeMarket,closeTradeMarket,renderTradeMarket,executeTradeMarket,bot,beginConstructionDeckChoice,resolveSpecialCell,applyInvestorCard,governmentAction,renderGovernmentContract,roll,endTurn,render});
 addTradeUi();
 if(state){ensureEconomy();render();}
 })();
