@@ -1,0 +1,884 @@
+{
+  "version": 1,
+  "sourceCommit": "2067a3724f36682cbecf3c531858a214eeaf74df",
+  "plots": [
+    {
+      "index": 0,
+      "zone": "J1",
+      "key": "lot.01",
+      "title": "ИЖС · участок 1"
+    },
+    {
+      "index": 1,
+      "zone": "J1",
+      "key": "lot.02",
+      "title": "ИЖС · участок 2"
+    },
+    {
+      "index": 2,
+      "zone": "J1",
+      "key": "lot.03",
+      "title": "ИЖС · участок 3"
+    },
+    {
+      "index": 3,
+      "zone": "RET",
+      "key": "lot.04",
+      "title": "Торговля · участок 4"
+    },
+    {
+      "index": 4,
+      "zone": "RET",
+      "key": "lot.05",
+      "title": "Торговля · участок 5"
+    },
+    {
+      "index": 5,
+      "zone": "RET",
+      "key": "lot.06",
+      "title": "Торговля · участок 6"
+    },
+    {
+      "index": 6,
+      "zone": "J1",
+      "key": "lot.07",
+      "title": "ИЖС · участок 7"
+    },
+    {
+      "index": 7,
+      "zone": "J1",
+      "key": "lot.08",
+      "title": "ИЖС · участок 8"
+    },
+    {
+      "index": 8,
+      "zone": "J1",
+      "key": "lot.09",
+      "title": "ИЖС · участок 9"
+    },
+    {
+      "index": 9,
+      "zone": "RET",
+      "key": "lot.10",
+      "title": "Торговля · участок 10"
+    },
+    {
+      "index": 10,
+      "zone": "RET",
+      "key": "lot.11",
+      "title": "Торговля · участок 11"
+    },
+    {
+      "index": 11,
+      "zone": "PK",
+      "key": "lot.12",
+      "title": "Производство · участок 12"
+    },
+    {
+      "index": 12,
+      "zone": "J1",
+      "key": "lot.13",
+      "title": "ИЖС · участок 13"
+    },
+    {
+      "index": 13,
+      "zone": "J1",
+      "key": "lot.14",
+      "title": "ИЖС · участок 14"
+    },
+    {
+      "index": 14,
+      "zone": "J1",
+      "key": "lot.15",
+      "title": "ИЖС · участок 15"
+    },
+    {
+      "index": 15,
+      "zone": "OD",
+      "key": "lot.16",
+      "title": "Деловой центр · участок 16"
+    },
+    {
+      "index": 16,
+      "zone": "PK",
+      "key": "lot.17",
+      "title": "Производство · участок 17"
+    },
+    {
+      "index": 17,
+      "zone": "PK",
+      "key": "lot.18",
+      "title": "Производство · участок 18"
+    },
+    {
+      "index": 18,
+      "zone": "J1",
+      "key": "lot.19",
+      "title": "ИЖС · участок 19"
+    },
+    {
+      "index": 19,
+      "zone": "JK4",
+      "key": "lot.20",
+      "title": "Многоэтажная жилая · участок 20"
+    },
+    {
+      "index": 20,
+      "zone": "JK4",
+      "key": "lot.21",
+      "title": "Многоэтажная жилая · участок 21"
+    },
+    {
+      "index": 21,
+      "zone": "OD",
+      "key": "lot.22",
+      "title": "Деловой центр · участок 22"
+    },
+    {
+      "index": 22,
+      "zone": "UNIQUE",
+      "key": "lot.23",
+      "title": "Особая территория · участок 23"
+    },
+    {
+      "index": 23,
+      "zone": "UNIQUE",
+      "key": "lot.24",
+      "title": "Особая территория · участок 24"
+    }
+  ],
+  "track": [
+    {
+      "index": 0,
+      "name": "СТАРТ",
+      "category": "start",
+      "key": "track.01"
+    },
+    {
+      "index": 1,
+      "name": "Аукцион",
+      "category": "auction",
+      "key": "track.02"
+    },
+    {
+      "index": 2,
+      "name": "Работа",
+      "category": "work",
+      "key": "track.03"
+    },
+    {
+      "index": 3,
+      "name": "Рынок",
+      "category": "market",
+      "key": "track.04"
+    },
+    {
+      "index": 4,
+      "name": "Строительство",
+      "category": "build",
+      "key": "track.05"
+    },
+    {
+      "index": 5,
+      "name": "События",
+      "category": "event",
+      "key": "track.06"
+    },
+    {
+      "index": 6,
+      "name": "Инженерные сети",
+      "category": "network",
+      "key": "track.07"
+    },
+    {
+      "index": 7,
+      "name": "Сделка",
+      "category": "deal",
+      "key": "track.08"
+    },
+    {
+      "index": 8,
+      "name": "Налоговая проверка",
+      "category": "audit",
+      "key": "track.09"
+    },
+    {
+      "index": 9,
+      "name": "Аукцион",
+      "category": "auction",
+      "key": "track.10"
+    },
+    {
+      "index": 10,
+      "name": "Работа",
+      "category": "work",
+      "key": "track.11"
+    },
+    {
+      "index": 11,
+      "name": "Кризис",
+      "category": "crisis",
+      "key": "track.12"
+    },
+    {
+      "index": 12,
+      "name": "Работа",
+      "category": "work",
+      "key": "track.13"
+    },
+    {
+      "index": 13,
+      "name": "Рынок",
+      "category": "market",
+      "key": "track.14"
+    },
+    {
+      "index": 14,
+      "name": "Инженерные сети",
+      "category": "network",
+      "key": "track.15"
+    },
+    {
+      "index": 15,
+      "name": "Строительство",
+      "category": "build",
+      "key": "track.16"
+    },
+    {
+      "index": 16,
+      "name": "Сделка",
+      "category": "deal",
+      "key": "track.17"
+    },
+    {
+      "index": 17,
+      "name": "События",
+      "category": "event",
+      "key": "track.18"
+    },
+    {
+      "index": 18,
+      "name": "Аукцион",
+      "category": "auction",
+      "key": "track.19"
+    },
+    {
+      "index": 19,
+      "name": "Работа",
+      "category": "work",
+      "key": "track.20"
+    },
+    {
+      "index": 20,
+      "name": "Кризис",
+      "category": "crisis",
+      "key": "track.21"
+    },
+    {
+      "index": 21,
+      "name": "Рынок",
+      "category": "market",
+      "key": "track.22"
+    },
+    {
+      "index": 22,
+      "name": "Строительство",
+      "category": "build",
+      "key": "track.23"
+    },
+    {
+      "index": 23,
+      "name": "Инженерные сети",
+      "category": "network",
+      "key": "track.24"
+    },
+    {
+      "index": 24,
+      "name": "Аукцион",
+      "category": "auction",
+      "key": "track.25"
+    },
+    {
+      "index": 25,
+      "name": "Сделка",
+      "category": "deal",
+      "key": "track.26"
+    },
+    {
+      "index": 26,
+      "name": "События",
+      "category": "event",
+      "key": "track.27"
+    },
+    {
+      "index": 27,
+      "name": "Сделка",
+      "category": "deal",
+      "key": "track.28"
+    },
+    {
+      "index": 28,
+      "name": "Работа",
+      "category": "work",
+      "key": "track.29"
+    },
+    {
+      "index": 29,
+      "name": "Строительство",
+      "category": "build",
+      "key": "track.30"
+    },
+    {
+      "index": 30,
+      "name": "Биржа недвижимости",
+      "category": "exchange",
+      "key": "track.31"
+    },
+    {
+      "index": 31,
+      "name": "События",
+      "category": "event",
+      "key": "track.32"
+    }
+  ],
+  "cards": {
+    "utilities": [
+      {
+        "index": 0,
+        "title": "Типовой эскизный проект",
+        "key": "card.utilities.01"
+      },
+      {
+        "index": 1,
+        "title": "Геодезическая съёмка",
+        "key": "card.utilities.02"
+      },
+      {
+        "index": 2,
+        "title": "Архитектурная концепция",
+        "key": "card.utilities.03"
+      },
+      {
+        "index": 3,
+        "title": "Проектирование сложного рельефа",
+        "key": "card.utilities.04"
+      },
+      {
+        "index": 4,
+        "title": "Генеральный план территории",
+        "key": "card.utilities.05"
+      },
+      {
+        "index": 5,
+        "title": "Проект реконструкции",
+        "key": "card.utilities.06"
+      },
+      {
+        "index": 6,
+        "title": "Планировочное решение",
+        "key": "card.utilities.07"
+      },
+      {
+        "index": 7,
+        "title": "Конструктивные разделы",
+        "key": "card.utilities.08"
+      },
+      {
+        "index": 8,
+        "title": "Инженерные разделы проекта",
+        "key": "card.utilities.09"
+      },
+      {
+        "index": 9,
+        "title": "Комплексная проектная документация",
+        "key": "card.utilities.10"
+      },
+      {
+        "index": 10,
+        "title": "Сметная документация",
+        "key": "card.utilities.11"
+      },
+      {
+        "index": 11,
+        "title": "Ускоренная разработка проекта",
+        "key": "card.utilities.12"
+      }
+    ],
+    "permits": [
+      {
+        "index": 0,
+        "title": "Стандартный пакет",
+        "key": "card.permits.01"
+      },
+      {
+        "index": 1,
+        "title": "Сложная экспертиза",
+        "key": "card.permits.02"
+      },
+      {
+        "index": 2,
+        "title": "Зелёный стандарт",
+        "key": "card.permits.03"
+      },
+      {
+        "index": 3,
+        "title": "Ускоренное согласование",
+        "key": "card.permits.04"
+      },
+      {
+        "index": 4,
+        "title": "Комплексная документация",
+        "key": "card.permits.05"
+      },
+      {
+        "index": 5,
+        "title": "Повторная экспертиза",
+        "key": "card.permits.06"
+      },
+      {
+        "index": 6,
+        "title": "Архитектурный регламент",
+        "key": "card.permits.07"
+      },
+      {
+        "index": 7,
+        "title": "Технический надзор",
+        "key": "card.permits.08"
+      },
+      {
+        "index": 8,
+        "title": "Экологическая оценка",
+        "key": "card.permits.09"
+      },
+      {
+        "index": 9,
+        "title": "Проектирование в центре",
+        "key": "card.permits.10"
+      },
+      {
+        "index": 10,
+        "title": "Пакет согласований",
+        "key": "card.permits.11"
+      },
+      {
+        "index": 11,
+        "title": "Градостроительная комиссия",
+        "key": "card.permits.12"
+      }
+    ],
+    "construction": [
+      {
+        "index": 0,
+        "title": "Генеральный подряд",
+        "key": "card.construction.01"
+      },
+      {
+        "index": 1,
+        "title": "Дорогие материалы",
+        "key": "card.construction.02"
+      },
+      {
+        "index": 2,
+        "title": "Заводская модульная сборка",
+        "key": "card.construction.03"
+      },
+      {
+        "index": 3,
+        "title": "Сложный фундамент",
+        "key": "card.construction.04"
+      },
+      {
+        "index": 4,
+        "title": "Ресурсосберегающая технология",
+        "key": "card.construction.05"
+      },
+      {
+        "index": 5,
+        "title": "Премиальная отделка",
+        "key": "card.construction.06"
+      },
+      {
+        "index": 6,
+        "title": "Ускоренный подряд",
+        "key": "card.construction.07"
+      },
+      {
+        "index": 7,
+        "title": "Массовое домостроение",
+        "key": "card.construction.08"
+      },
+      {
+        "index": 8,
+        "title": "Высотные работы",
+        "key": "card.construction.09"
+      },
+      {
+        "index": 9,
+        "title": "Нестандартная архитектура",
+        "key": "card.construction.10"
+      },
+      {
+        "index": 10,
+        "title": "Региональный подряд",
+        "key": "card.construction.11"
+      },
+      {
+        "index": 11,
+        "title": "Сложная логистика",
+        "key": "card.construction.12"
+      }
+    ],
+    "commissioning": [
+      {
+        "index": 0,
+        "title": "Стандартная приёмка",
+        "key": "card.commissioning.01"
+      },
+      {
+        "index": 1,
+        "title": "Дополнительная инспекция",
+        "key": "card.commissioning.02"
+      },
+      {
+        "index": 2,
+        "title": "Пожарная сертификация",
+        "key": "card.commissioning.03"
+      },
+      {
+        "index": 3,
+        "title": "Ускоренный ввод",
+        "key": "card.commissioning.04"
+      },
+      {
+        "index": 4,
+        "title": "Испытание коммуникаций",
+        "key": "card.commissioning.05"
+      },
+      {
+        "index": 5,
+        "title": "Повторная комиссия",
+        "key": "card.commissioning.06"
+      },
+      {
+        "index": 6,
+        "title": "Энергопаспорт",
+        "key": "card.commissioning.07"
+      },
+      {
+        "index": 7,
+        "title": "Документы на собственность",
+        "key": "card.commissioning.08"
+      },
+      {
+        "index": 8,
+        "title": "Стресс-тест здания",
+        "key": "card.commissioning.09"
+      },
+      {
+        "index": 9,
+        "title": "Техническая инвентаризация",
+        "key": "card.commissioning.10"
+      },
+      {
+        "index": 10,
+        "title": "Комплексное освидетельствование",
+        "key": "card.commissioning.11"
+      },
+      {
+        "index": 11,
+        "title": "Финальная госкомиссия",
+        "key": "card.commissioning.12"
+      }
+    ],
+    "network": [
+      {
+        "index": 0,
+        "key": "card.network.water",
+        "title": "Водоснабжение"
+      },
+      {
+        "index": 1,
+        "key": "card.network.gas",
+        "title": "Газоснабжение"
+      },
+      {
+        "index": 2,
+        "key": "card.network.electricity",
+        "title": "Электроснабжение"
+      },
+      {
+        "index": 3,
+        "key": "card.network.sewerage",
+        "title": "Водоотведение"
+      },
+      {
+        "index": 4,
+        "key": "card.network.district-heating",
+        "title": "Центральное теплоснабжение"
+      }
+    ],
+    "investor": [
+      {
+        "index": 0,
+        "key": "card.investor.01"
+      },
+      {
+        "index": 1,
+        "key": "card.investor.02"
+      },
+      {
+        "index": 2,
+        "key": "card.investor.03"
+      },
+      {
+        "index": 3,
+        "key": "card.investor.04"
+      },
+      {
+        "index": 4,
+        "key": "card.investor.05"
+      },
+      {
+        "index": 5,
+        "key": "card.investor.06"
+      },
+      {
+        "index": 6,
+        "key": "card.investor.07"
+      },
+      {
+        "index": 7,
+        "key": "card.investor.08"
+      },
+      {
+        "index": 8,
+        "key": "card.investor.09"
+      },
+      {
+        "index": 9,
+        "key": "card.investor.10"
+      }
+    ],
+    "tenant": [
+      {
+        "index": 0,
+        "key": "card.tenant.01"
+      },
+      {
+        "index": 1,
+        "key": "card.tenant.02"
+      },
+      {
+        "index": 2,
+        "key": "card.tenant.03"
+      },
+      {
+        "index": 3,
+        "key": "card.tenant.04"
+      },
+      {
+        "index": 4,
+        "key": "card.tenant.05"
+      },
+      {
+        "index": 5,
+        "key": "card.tenant.06"
+      },
+      {
+        "index": 6,
+        "key": "card.tenant.07"
+      },
+      {
+        "index": 7,
+        "key": "card.tenant.08"
+      },
+      {
+        "index": 8,
+        "key": "card.tenant.09"
+      },
+      {
+        "index": 9,
+        "key": "card.tenant.10"
+      }
+    ],
+    "buyer": [
+      {
+        "index": 0,
+        "key": "card.buyer.01"
+      },
+      {
+        "index": 1,
+        "key": "card.buyer.02"
+      },
+      {
+        "index": 2,
+        "key": "card.buyer.03"
+      },
+      {
+        "index": 3,
+        "key": "card.buyer.04"
+      },
+      {
+        "index": 4,
+        "key": "card.buyer.05"
+      },
+      {
+        "index": 5,
+        "key": "card.buyer.06"
+      },
+      {
+        "index": 6,
+        "key": "card.buyer.07"
+      },
+      {
+        "index": 7,
+        "key": "card.buyer.08"
+      },
+      {
+        "index": 8,
+        "key": "card.buyer.09"
+      },
+      {
+        "index": 9,
+        "key": "card.buyer.10"
+      }
+    ],
+    "job": [
+      {
+        "index": 0,
+        "key": "card.job.01"
+      },
+      {
+        "index": 1,
+        "key": "card.job.02"
+      },
+      {
+        "index": 2,
+        "key": "card.job.03"
+      },
+      {
+        "index": 3,
+        "key": "card.job.04"
+      },
+      {
+        "index": 4,
+        "key": "card.job.05"
+      },
+      {
+        "index": 5,
+        "key": "card.job.06"
+      },
+      {
+        "index": 6,
+        "key": "card.job.07"
+      },
+      {
+        "index": 7,
+        "key": "card.job.08"
+      }
+    ],
+    "tax": [
+      {
+        "index": 0,
+        "key": "card.tax.01"
+      },
+      {
+        "index": 1,
+        "key": "card.tax.02"
+      },
+      {
+        "index": 2,
+        "key": "card.tax.03"
+      },
+      {
+        "index": 3,
+        "key": "card.tax.04"
+      },
+      {
+        "index": 4,
+        "key": "card.tax.05"
+      },
+      {
+        "index": 5,
+        "key": "card.tax.06"
+      },
+      {
+        "index": 6,
+        "key": "card.tax.07"
+      },
+      {
+        "index": 7,
+        "key": "card.tax.08"
+      }
+    ],
+    "individual": [
+      {
+        "index": 0,
+        "key": "card.individual.01"
+      },
+      {
+        "index": 1,
+        "key": "card.individual.02"
+      },
+      {
+        "index": 2,
+        "key": "card.individual.03"
+      },
+      {
+        "index": 3,
+        "key": "card.individual.04"
+      },
+      {
+        "index": 4,
+        "key": "card.individual.05"
+      },
+      {
+        "index": 5,
+        "key": "card.individual.06"
+      },
+      {
+        "index": 6,
+        "key": "card.individual.07"
+      },
+      {
+        "index": 7,
+        "key": "card.individual.08"
+      }
+    ],
+    "crisis": [
+      {
+        "index": 0,
+        "key": "card.crisis.01"
+      },
+      {
+        "index": 1,
+        "key": "card.crisis.02"
+      },
+      {
+        "index": 2,
+        "key": "card.crisis.03"
+      },
+      {
+        "index": 3,
+        "key": "card.crisis.04"
+      },
+      {
+        "index": 4,
+        "key": "card.crisis.05"
+      },
+      {
+        "index": 5,
+        "key": "card.crisis.06"
+      },
+      {
+        "index": 6,
+        "key": "card.crisis.07"
+      },
+      {
+        "index": 7,
+        "key": "card.crisis.08"
+      }
+    ]
+  },
+  "description": "Art semantic mapping; no game-rule or monetary parameters"
+}
