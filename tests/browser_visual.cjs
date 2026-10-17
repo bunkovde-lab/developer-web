@@ -9,7 +9,7 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
  try{
   await wait();browser=await chromium.launch({headless:true});
   fs.mkdirSync('ui-snapshots',{recursive:true});
-  for(const viewport of [{width:390,height:844},{width:1366,height:900}]){
+  for(const viewport of [{width:390,height:844},{width:768,height:1024},{width:1024,height:768},{width:1366,height:900}]){
    const page=await browser.newPage({viewport,deviceScaleFactor:1});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto(url,{waitUntil:'networkidle'});
@@ -18,7 +18,31 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    });
    assert.equal(await page.locator('#v10Hud').count(),0,'Upper progress bar must be removed');
    assert.equal(await page.locator('.company-panel').getByRole('button',{name:'Новая партия'}).count(),0,'New game is not a main action');
-   assert.equal(await page.locator('#sessionOpen').isVisible(),true,'The menu is in the site header');
+   assert.equal(await page.locator('body>header #sessionOpen').count(),0,'No menu button in header');
+   assert.equal(await page.locator('.cabinet-main #sessionOpen').isVisible(),true,'The menu is inside the game cabinet');
+   assert.equal(await page.locator('.hand-dock').isVisible(),true,'Card icon bar must be above game field');
+   assert.equal(await page.locator('.hand-quick-item').count(),9,'All nine card categories visible as compact icons');
+   assert.equal(await page.locator('.hand-quick-item').filter({hasText:'3'}).count()>=1,true,'Opening deck has cards');
+   const top=await page.locator('.hand-dock').boundingBox();
+   const field=await page.locator('#board').boundingBox();
+   const cabinet=await page.locator('.cabinet-main').boundingBox();
+   assert(top.y+top.height<=field.y+4,'Card bar must precede board');
+   assert(top.y+top.height<=cabinet.y+4,'Card bar must precede cabinet');
+   await page.locator('.hand-quick-item[data-hand-type="utilities"]').click();
+   assert.equal(await page.locator('#handOverlay').isVisible(),true,'Card category opens on demand');
+   assert.equal(await page.locator('#handOverlay .hand-category:not([hidden])').count(),1,'Only chosen deck expanded');
+   assert.equal(await page.locator('#handOverlay .hand-card').filter({visible:true}).count()>0,true,'Selected deck shows real cards');
+   await page.locator('#handClose').click();
+   assert.equal(await page.locator('#handOverlay').isHidden(),true);
+   if(viewport.width>=1024){
+     const rects=await page.evaluate(()=>({
+      field:document.getElementById('board').getBoundingClientRect().bottom,
+      cabinet:document.querySelector('.cabinet-main').getBoundingClientRect().bottom,
+      height:innerHeight
+     }));
+     assert(rects.field<=rects.height+20,'Main board must fit standard landscape viewport');
+     assert(rects.cabinet<=rects.height+20,'Main cabinet must fit standard landscape viewport');
+   }
    assert.equal(await page.locator('#sessionOverlay').isHidden(),true);
    assert.equal(await page.evaluate(()=>state.plots.every(l=>l.owner===-1)),false,'Fixture assigns one parcel only');
    if(viewport.width>760){
@@ -53,6 +77,9 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.match(await page.locator('#board .cell').first().innerText(),/СТАРТ/);
    assert.doesNotMatch(await page.locator('#board .cell').first().innerText(),/\+60/);
    assert.equal(await page.locator('#board .map-plot .plot-progress').count(),30);
+   assert.equal(await page.locator('.hand-quick-item').count(),9,'Compact hand remains visible after rolling');
+   assert.equal(await page.locator('.hand-quick-item[data-hand-type="utilities"]').count(),1);
+   assert.equal(await page.locator('#handOverlay').isHidden(),true);
    await page.evaluate(()=>{for(const el of document.querySelectorAll('.auction-overlay,.card-overlay,.plot-card-overlay'))el.hidden=true;});
    await page.screenshot({path:'ui-snapshots/developer-v010-'+viewport.width+'.png',fullPage:true});
    await page.locator('#v10Zoom').click();
