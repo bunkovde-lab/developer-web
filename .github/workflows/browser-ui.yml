@@ -16,6 +16,7 @@ on:
       - 'tests/svg-assets.cjs'
       - 'tests/browser_visual.cjs'
       - 'tests/browser_territory.cjs'
+      - 'tests/browser_finance.cjs'
       - 'tests/browser_marketplace.cjs'
       - 'tests/browser_city_requests.cjs'
       - '.github/workflows/browser-ui.yml'
