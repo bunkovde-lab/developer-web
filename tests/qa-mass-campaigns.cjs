@@ -55,7 +55,7 @@ console.log('START RULE PASSED: zero owned land, no reserved lots, finite initia
 
 
 /*
- * QA mass game BASELINE. Runs the CURRENT JavaScript engine, not the
+ * QA mass game BASELINE v0.17.0. Runs the CURRENT JavaScript engine, not the
  * independent Python financial approximation.
  * Only real bots are used: there is no synthetic rental/flipper bot profile.
  * Browser/audio rendering and real human negotiations are out of scope.
@@ -104,5 +104,5 @@ const sizeReports=[3,4,5,6].map(n=>{
    networkStockouts:rows.reduce((s,x)=>s+x.networkStockouts,0)};
 });
 const allTurns=raw.map(x=>x.completedTurns);
-const summary={kind:"actual-engine-vm",commit:process.env.GITHUB_SHA||"local",rules:"main HTML v0.16.1",games:raw.length,seeds:"202610180+player_count*100000+trial",complete:raw.length,meanTurns:Number(mean(allTurns).toFixed(2)),medianTurns:median(allTurns),byPlayerCount:sizeReports,limitations:["all bots use the same existing AI, no human strategy archetypes", "headless Node VM; no full Chromium interaction", "real human time, deal negotiation, exact cumulative rent/sales split not measured"]};
+const summary={kind:"actual-engine-vm",commit:process.env.GITHUB_SHA||"local",rules:"HTML v0.17.0 baseline 34dfaadc1cf5ffd79f6e0360634bf18dab71e59b",games:raw.length,seeds:"202610180+player_count*100000+trial",complete:raw.length,meanTurns:Number(mean(allTurns).toFixed(2)),medianTurns:median(allTurns),byPlayerCount:sizeReports,limitations:["all bots use the same existing AI, no human strategy archetypes", "headless Node VM; no full Chromium interaction", "real human time, deal negotiation, exact cumulative rent/sales split not measured"]};
 console.log('QA_BASELINE_SUMMARY '+JSON.stringify(summary));
