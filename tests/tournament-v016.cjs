@@ -13,6 +13,8 @@ class El {
  get innerHTML(){return this._innerHTML;}
  setAttribute(){}
  appendChild(x){this.children.push(x);}
+ remove(){}
+ addEventListener(){}
  insertBefore(x){this.children.push(x);}
  insertAdjacentHTML(_place,s){this._innerHTML+=s;}
  querySelector(){return new El();}
