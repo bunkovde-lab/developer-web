@@ -11,6 +11,8 @@ on:
       - 'pace.js'
       - 'visual.js'
       - 'visual.css'
+      - 'scene-motion.js'
+      - 'scene-motion.css'
       - 'game-rework-v016.js'
       - 'assets/**'
       - '.github/workflows/pages.yml'
