@@ -202,6 +202,7 @@ function marketCommit(){
 }
 function openTradeMarket(){
  if(!state)return;
+ if(ui.session!==state){Object.assign(ui,{mode:"buy",owner:"all",category:"all",query:"",remote:null,mine:null,buyer:1,feedback:"",quoteDirty:false,session:state});}
  if(!$m("marketListings"))setupUI();
  $m("tradeOverlay").hidden=false;ui.feedback="";ui.quoteDirty=false;
  const owner=$m("marketOwner");
