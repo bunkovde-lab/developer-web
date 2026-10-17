@@ -14,5 +14,7 @@ jobs:
           node-version: '22'
       - name: Game mechanics and syntax smoke tests
         run: node tests/smoke.cjs
+      - name: Spatial map, explicit land auction and development rules
+        run: node tests/territory.cjs
       - name: Accelerated game pacing benchmark
         run: node tests/pace.cjs
