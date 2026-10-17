@@ -58,6 +58,26 @@ async function waitServer(){for(let i=0;i<50;i++){try{await new Promise((resolve
   await page.locator('#marketMineList .mk-card').filter({hasText:'7104'}).click();
   await page.locator('#marketConfirm').click();
   assert.equal(await page.evaluate(()=>state.players[1].cards.some(c=>c.id===7104)),true);
+  // New turn on Engineering Networks: no other category can be bought.
+  await page.evaluate(()=>{closeTradeMarket();state.round++;state.actionKey=null;state.tradeMarker=null;state.players[0].pos=6;window.render();});
+  await page.locator('#marketTradeBtn').click();
+  assert.equal(await page.locator('#marketListings .mk-card').count(),1);
+  assert.match(await page.locator('#marketListings').innerText(),/Газ/);
+  await page.locator('#marketListings .mk-card').first().click();
+  await page.locator('#marketConfirm').click();
+  assert.equal(await page.evaluate(()=>state.players[0].networkCards.some(c=>c.id===7102)),true);
+  // New turn on Market: only investor, tenant and buyer offers.
+  await page.evaluate(()=>{closeTradeMarket();state.round++;state.actionKey=null;state.tradeMarker=null;state.players[0].pos=3;window.render();});
+  await page.locator('#marketTradeBtn').click();
+  assert.equal(await page.locator('#marketListings .mk-card').count(),1);
+  assert.match(await page.locator('#marketListings').innerText(),/Арендатор/);
+  await page.locator('#marketListings .mk-card').first().click();
+  await page.locator('#marketConfirm').click();
+  assert.equal(await page.evaluate(()=>state.players[0].marketCards.some(c=>c.id===7103)),true);
+  // The same button is unavailable from an unrelated board cell.
+  await page.evaluate(()=>{closeTradeMarket();state.players[0].pos=2;window.render();});
+  assert.equal(await page.locator('#marketTradeBtn').isDisabled(),true);
+  await page.evaluate(()=>{state.players[0].pos=3;window.render();openTradeMarket();});
   // Verify responsive modal fits viewport width at 390px.
   const dims=await page.evaluate(()=>{
     const box=document.querySelector('#tradeOverlay .mk-shell').getBoundingClientRect();
