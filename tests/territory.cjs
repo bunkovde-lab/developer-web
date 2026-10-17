@@ -112,7 +112,8 @@ assert(run('territoryAnalysis(10,0).blocking')>=3,'Strategic auction should flag
 assert(run('territoryAnalysis(7,1).own')>=1);
 run('newGame();state.players.forEach(p=>p.bot=true);state.turn=2;state.rolled=true;state.players[2].pos=7;state.players[2].money=2000;state.plots[2].owner=2;state.plots[9].owner=2;state.plots[3].owner=1;state.plots[20].owner=1;');
 const moneyBefore=run('state.players[1].money');
-assert.equal(run('botTradeFromPeers()'),true,'Bot should negotiate for vacant land that completes a chain');
+run('bot()'); // exercise the public bot turn; botTradeFromPeers is intentionally private
+assert.equal(run('state.plots[3].owner'),2,'Bot should negotiate for vacant land that completes a chain');
 assert.equal(run('state.plots[3].owner'),2,'Purchased undeveloped title transfers without auction');
 assert(run('state.players[1].money')>moneyBefore,'Selling bot receives actual compensation');
 assert.equal(run('state.econMetrics.botLandTrades'),1,'Record distinct strategic land transaction');
