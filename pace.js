@@ -4,7 +4,7 @@
  */
 (function(){
 "use strict";
-const PACE={version:1,startCapital:1250,largeTableCapital:1650,sixPlayerCapital:1650,starterPlots:[0,5,12,17,24,29],clusterPairs:[[0,1],[4,5],[12,13],[16,17],[24,25],[28,29]],starterStages:['utilities','permits','construction'],constructionDraws:3,largeTableConstructionDraws:4,workMultiplier:1};
+const PACE={version:1,startCapital:1250,largeTableCapital:1650,sixPlayerCapital:1650,starterStages:['utilities','permits','construction'],constructionDraws:3,largeTableConstructionDraws:4,workMultiplier:1};
 const stageIds=['utilities','permits','construction','commissioning'];
 const baseNewGame=window.newGame,baseChoice=window.selectConstructionDeck;
 function takeFromStock(deck){
@@ -34,22 +34,12 @@ function seedNewGame(){
  const largerTable=state.players.length>=5;
  for(let i=0;i<state.players.length;i++){
   const p=state.players[i];p.money=state.players.length===6?PACE.sixPlayerCapital:largerTable?PACE.largeTableCapital:PACE.startCapital;
-  const parcels=largerTable?PACE.clusterPairs[i]:[PACE.starterPlots[i]];
-  const acquired=[];
-  for(const plotIndex of parcels){
-   const plot=state.plots[plotIndex];
-   if(plot&&plot.owner<0){
-    const landCost=Math.round(plot.price*.92);
-    p.money-=landCost;plot.owner=i;
-    state.speedStartKit.push({owner:i,lot:plotIndex,price:landCost});
-    acquired.push(plotIndex+1);
-    if(Array.isArray(state.landDeck))state.landDeck=state.landDeck.filter(n=>n!==plotIndex);
-   }
-  }
+  // Players always begin without land. Auction cells remain the sole acquisition path.
+  // No reserved, gifted, discounted or auto-purchased plots at game creation.
   let items=0;for(const deck of (state.players.length===6?[...PACE.starterStages,'commissioning']:PACE.starterStages))if(grantCard(i,deck))items++;
-  note('⚡ '+p.name+': стартовые участки '+acquired.join(', ')+', карты '+items+'. Оплачено по кадастровой оценке, участки не бесплатны.');
+  note('⚡ '+p.name+': на старте нет участков; '+items+' карты находятся в руке. Земля — только через аукцион.');
  }
- note('⚡ Ускоренная партия v0.10: стартовый капитал '+(state.players.length===6?PACE.sixPlayerCapital:largerTable?PACE.largeTableCapital:PACE.startCapital)+' тыс., '+(largerTable?2:1)+' участка по цене; 3 карты за попадание на «Строительство». Торговля и лимиты колод сохранены.');
+ note('⚡ На старте никто не владеет участками. Земля приобретается на аукционах. Ускоренная раздача карт остаётся тестовой настройкой.');
  render();
 }
 function newGame(){baseNewGame();seedNewGame();}
