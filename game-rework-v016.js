@@ -22,33 +22,9 @@ window.checkVictory=function(){
  }
  return -1;
 };
-const oldStage=window.playStageCard;
-window.playStageCard=function(lotIndex,size,cardId){
- if(!live())return oldStage(lotIndex,size,cardId);
- records();
- const lot=state.plots[lotIndex],p=current(),card=(p.cards||[]).find(c=>c.id===cardId);
- if(!lot||!card)return oldStage(lotIndex,size,cardId);
- const beforeStage=lot.project?.stage||0,beforeOwner=lot.owner,beforeMoney=p.money,investor=!!lot.investor;
- oldStage(lotIndex,size,cardId);
- const spent=!(p.cards||[]).some(c=>c.id===cardId);
- const progressed=lot.project?.stage===beforeStage+1;
- const investorSold=beforeStage===3&&investor&&beforeOwner===state.turn&&lot.owner===-1;
- if(!spent||(!progressed&&!investorSold))return;
- if(beforeStage===3){p.completedProjects++;if(investorSold)p.saleRevenue+=Math.max(0,p.money-beforeMoney);}
- const discount=card.deck==='construction'&&p.profession==='foreman'?.14:
-  card.deck==='utilities'&&p.profession==='designer'?.18:
-  card.deck==='permits'&&p.profession==='permits'?.18:
-  card.deck==='commissioning'&&p.profession==='lawyer'?.09:0;
- if(discount){const cost=Number(BALANCED_DECKS[card.deck]?.[card.index]?.costs?.[size])||0;const saved=Math.round(cost*discount);p.money+=saved;note('🎓 '+professionName(p.profession)+': экономия '+format(saved));}
- render();
-};
-const oldInvestor=window.applyInvestorCard;
-window.applyInvestorCard=function(id,index){
- const lot=state?.plots?.[index],was=lot&&!lot.investor,prof=live()?current().profession:null;
- const result=oldInvestor(id,index);
- if(result&&was&&prof==='financier'&&lot.investor){lot.investor.share=Math.max(5,lot.investor.share-10);note('🎓 Финансист: доля инвестора снижена на 10 п. п.');render();}
- return result;
-};
+// Stage completion, discounts and investor settlement are performed exactly once
+// in balance.js, which is the shared execution path for humans and AI.
+// Do not add compensating credits or project completions in this UI layer.
 const oldApplyMarket=window.applyMarketCard;
 window.applyMarketCard=function(cardId,lotIndex){
  const p=live()?current():null,before=p?.money||0,owned=state?.plots?.[lotIndex]?.owner===state?.turn;
@@ -239,9 +215,23 @@ function finalValue(i){
   while(queue.length){const j=queue.shift();count++;for(const n of neighborsBySide(j))if(finished.has(n)&&!seen.has(n)){seen.add(n);queue.push(n);}}
   maxConnected=Math.max(maxConnected,count);
  }
- return Math.round(p.money+assets+rental*5+(Number(p.completedProjects)||0)*80+
-    (Number(p.saleRevenue)||0)*.07+maxConnected*125);
+ // Cash raised from investors is a financing liability, never free equity.
+ // Contracts are settled at commissioning; older save files may also have unpaid instalments.
+ const projectClaims=state.plots.filter(l=>l.owner===i&&l.investor)
+  .reduce((sum,l)=>sum+Math.max(0,Number(l.investor?.capital)||0),0);
+ const legacyDebt=(p.investments||[]).reduce((sum,inv)=>sum+Math.max(0,Number(inv?.unpaid)||0),0);
+ const gross=p.money+assets+rental*5+(Number(p.completedProjects)||0)*80+
+   (Number(p.saleRevenue)||0)*.07+maxConnected*125;
+ return Math.round(gross-projectClaims-legacyDebt);
 }
+window.developerCompanyBalance=function(i){
+ if(!live()||!Number.isInteger(i)||!state.players[i])return null;
+ const investorClaims=state.plots.filter(l=>l.owner===i&&l.investor)
+  .reduce((sum,l)=>sum+Math.max(0,Number(l.investor.capital)||0),0);
+ const legacyDebt=(state.players[i].investments||[])
+  .reduce((sum,l)=>sum+Math.max(0,Number(l.unpaid)||0),0);
+ return {score:finalValue(i),investorClaims,legacyDebt,totalDebt:investorClaims+legacyDebt};
+};
 function finalizeCampaign(){
  if(!live()||Number.isInteger(state.winnerIndex))return;
  const standings=state.players.map((p,i)=>({i,score:finalValue(i)})).sort((a,b)=>b.score-a.score||a.i-b.i);

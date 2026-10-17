@@ -180,10 +180,20 @@ run('closeTradeMarket();newGame();state.rolled=true;state.plots[0].owner=0;state
 assert.equal(run('applyInvestorCard(8701,0)'),true);
 assert.equal(run('state.plots[0].investor.capital'),200);
 run('state.players[0].cards.push({id:8702,deck:"utilities",index:0},{id:8703,deck:"permits",index:0},{id:8704,deck:"construction",index:0},{id:8705,deck:"commissioning",index:0});');
-for(const id of [8702,8703,8704,8705]){run('state.round++;state.actionKey=null;state.actionsUsed=0;playStageCard(0,0,'+id+')');}
+for(const id of [8702,8703,8704]){run('state.round++;state.actionKey=null;state.actionsUsed=0;playStageCard(0,0,'+id+')');}
+const investorPrice=run('marketBase(state.plots[0],"buyer")');
+const investorLand=run('state.plots[0].price');
+const investorSpent=run('state.plots[0].developmentSpent');
+const finalStageCost=run('BALANCED_DECKS.commissioning[0].costs[0]');
+const finalDiscount=run('state.players[0].profession==="lawyer"?Math.round(BALANCED_DECKS.commissioning[0].costs[0]*.09):0');
+const partnerShare=run('state.plots[0].investor.share');
+const partnerClaim=Math.min(investorPrice,Math.round(200+Math.max(0,investorPrice-investorLand-investorSpent-finalStageCost+finalDiscount)*partnerShare/100));
+const saleCompanyNet=Math.max(0,investorPrice-partnerClaim);
+const cashBeforeFinalStage=run('state.players[0].money');
+run('state.round++;state.actionKey=null;state.actionsUsed=0;playStageCard(0,0,8705)');
 assert.equal(run('state.plots[0].owner'),-1,'Investor-backed building must auto-sell upon commissioning');
 assert.equal(run('state.plots[0].tenant'),null,'Investor-backed building cannot retain a tenant');
-assert.equal(run('state.players[0].money'),5188,'Sale settlement must return principal and profit share to investor');
+assert.equal(run('state.players[0].money'),cashBeforeFinalStage-finalStageCost+finalDiscount+saleCompanyNet,'Exact investor waterfall including professional discounts');
 assert.equal(run('rentalIncomeFor(0)'),0);
 run('newGame();state.rolled=true;state.players[0].networkCards.push({id:8707,type:"gas"});');
 assert.equal(run('state.players[0].governmentCards.length'),0);

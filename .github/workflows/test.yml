@@ -26,3 +26,5 @@ jobs:
         run: node tests/tournament-v016.cjs
       - name: SVG manifest and safe vector asset validation
         run: node tests/svg-assets.cjs
+      - name: Finance integrity and persistent save roundtrip
+        run: node tests/finance-integrity.cjs
