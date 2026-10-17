@@ -173,3 +173,18 @@ assert(run('state.players[0].marketCards.some(c=>c.id===1561)'));
 run('closeTradeMarket();state.players[0].pos=2;openTradeMarket()');
 assert.equal(run('marketCommit()'),false,'Trading forbidden on Work square');
 console.log('MARKETPLACE RULES PASSED: card types strictly scoped to landing squares');
+
+run('closeTradeMarket();newGame();state.rolled=true;state.plots[0].owner=0;state.players[0].money=5000;state.players[0].marketCards.push({id:8701,type:"investor",card:{investment:200,share:20}});');
+assert.equal(run('applyInvestorCard(8701,0)'),true);
+assert.equal(run('state.plots[0].investor.capital'),200);
+run('state.players[0].cards.push({id:8702,deck:"utilities",index:0},{id:8703,deck:"permits",index:0},{id:8704,deck:"construction",index:0},{id:8705,deck:"commissioning",index:0});');
+for(const id of [8702,8703,8704,8705]){run('state.round++;state.actionKey=null;state.actionsUsed=0;playStageCard(0,0,'+id+')');}
+assert.equal(run('state.plots[0].owner'),-1,'Investor-backed building must auto-sell upon commissioning');
+assert.equal(run('state.plots[0].tenant'),null,'Investor-backed building cannot retain a tenant');
+assert.equal(run('state.players[0].money'),5188,'Sale settlement must return principal and profit share to investor');
+assert.equal(run('rentalIncomeFor(0)'),0);
+run('newGame();state.rolled=true;state.players[0].governmentCards.push({id:8706,type:"network",version:2,terms:{networkType:"gas",reward:85}});state.players[0].networkCards.push({id:8707,type:"gas"});');
+assert.equal(run('governmentAction(8706,"finish",8707)'),true);
+assert.equal(run('state.players[0].money'),835);
+assert.equal(run('state.players[0].governmentCards.length'),0);
+console.log('INVESTOR AUTOSALE PASSED: binding, cost/profit split, immediate disposal, municipal network procurement');
