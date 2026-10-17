@@ -151,3 +151,103 @@ header>small{font-size:12px;white-space:nowrap}
  #sessionOverlay .lobby-buttons{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+
+/* v0.12: cards-first compact toolbar; the field and primary company actions stay in viewport. */
+body>header{min-height:48px;padding-block:7px}
+body>header h1{font-size:clamp(18px,1.7vw,25px)}
+body>header>small{font-size:11px}
+.hand-dock{display:flex;align-items:center;gap:12px;min-width:0;min-height:66px;margin:0 0 9px;padding:7px 12px;border:1px solid #587d85;border-radius:13px;background:linear-gradient(110deg,#1f4454,#182f47);box-shadow:0 5px 21px #0003}
+.hand-dock-title{display:flex;flex-direction:column;flex:0 0 126px;gap:3px;min-width:0;color:#fde1a4}
+.hand-dock-title strong{font-size:14px;white-space:nowrap}
+.hand-dock-title #handOwner{font-size:10px;color:#b5c9d7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hand-quick{display:flex;flex:1 1 auto;align-items:center;min-width:0;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#55788b transparent;padding:2px 0}
+.hand-quick-item{position:relative;flex:1 0 48px;max-width:96px;min-height:48px;height:49px;padding:5px 6px!important;border:1px solid #4d728a;border-radius:10px;background:#27495e;color:#f2f8ff;display:flex;align-items:center;justify-content:center;gap:7px}
+.hand-quick-item:hover{border-color:#f2c77c;background:#386276}
+.hand-quick-item.selected{border-color:#ffe0a5;box-shadow:inset 0 0 0 1px #ffe0a5}
+.hand-quick-item.empty{opacity:.6}
+.hand-quick-icon{font-size:24px;line-height:1}
+.hand-quick-count{font-size:12px;font-weight:850;min-width:16px;text-align:center;color:#ffe3a4}
+.hand-quick-item.empty .hand-quick-count{color:#a8bac5}
+.hand-overlay[hidden]{display:none!important}
+.hand-overlay{z-index:1900!important;padding:12px;align-items:center;justify-content:center}
+.hand-dialog{width:min(840px,96vw);max-height:88dvh;overflow:auto;background:linear-gradient(145deg,#28475b,#102337);border:2px solid #ba985e;box-shadow:0 20px 90px #000c;border-radius:17px;padding:clamp(14px,2vw,22px);color:#f2f7ff}
+.hand-dialog-head{display:flex;justify-content:space-between;gap:12px;align-items:start;margin:0 0 15px}
+.hand-dialog-head h2{margin:0;font-size:clamp(19px,2vw,25px);color:#fbe0aa}
+.hand-dialog-head p{font-size:12px;color:#bfd3e4;margin:5px 0}
+.hand-dialog-head button{min-width:48px;min-height:48px;padding:8px 13px;background:#294860;color:#fff;border:1px solid #668399}
+.hand-dialog .hand-groups{display:block}
+.hand-dialog .hand-category{border:none;background:transparent;overflow:visible}
+.hand-dialog .hand-category[hidden]{display:none!important}
+.hand-dialog .hand-category summary{display:none}
+.hand-dialog .hand-stack{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.hand-dialog .hand-card{min-width:0;padding:15px;box-shadow:0 4px 16px #0002}
+.hand-dialog .hand-card button,.hand-dialog .hand-card select{width:100%;min-height:48px}
+.hand-dialog .hand-empty{padding:20px;text-align:center;color:#d2dce8}
+.layout{gap:clamp(9px,1vw,16px);grid-template-columns:minmax(0,1fr) minmax(290px,.39fr);align-items:start}
+.board{width:min(100%,calc((100dvh - 162px) * 1.19));aspect-ratio:1.19/1;max-height:calc(100dvh - 160px);justify-self:center}
+.company-panel{align-self:start}
+.cabinet-main{padding:12px!important}
+.cabinet-heading{display:flex;justify-content:space-between;align-items:center;gap:9px;margin-bottom:8px}
+.cabinet-heading h3{margin:0!important}
+.cabinet-menu-button{min-height:48px;font-size:14px;white-space:nowrap;padding:9px 14px;color:#f4ddaa;background:#2a4d63;border:1px solid #7290a2}
+.cabinet-menu-button:hover{background:#41677a}
+.cabinet-main .stats{gap:5px;margin:5px 0 10px}
+.cabinet-main .pill{padding:7px 9px;font-size:11px}
+.cabinet-main .pill b{font-size:14px}
+.cabinet-main .actions{gap:7px;margin:8px 0 0}
+.cabinet-main .actions button{min-height:48px!important;padding:9px 10px;font-size:12px;line-height:1.18}
+.cabinet-main .actions #roll{min-height:54px!important;font-size:17px}
+.cabinet-main .actions #end{min-height:51px!important}
+.cabinet-main .actions #marketTradeBtn{min-height:48px!important}
+.board-zoom-action{min-height:44px;padding:8px 16px;margin:4px 0 0}
+.scene-tip{display:none}
+.secondary-panels{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 0;align-items:start}
+.secondary-panels .panel{min-width:0}
+#log{max-height:220px}
+@media(max-width:1040px) and (min-width:761px){
+ .layout{grid-template-columns:minmax(0,1fr) minmax(255px,.41fr)}
+ .board{aspect-ratio:1.14/1;width:min(100%,calc((100dvh - 165px)*1.14))}
+ .hand-dock-title{flex-basis:100px}
+ .hand-dock-title strong{font-size:12px}
+ .hand-quick{gap:4px}
+ .hand-quick-item{flex-basis:47px;padding:4px!important}
+ .hand-quick-icon{font-size:21px}
+ .cabinet-main .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cabinet-main .actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cabinet-main .actions button{font-size:11px}
+}
+@media(max-width:760px){
+ .hand-dock{min-height:64px;padding:6px 8px;gap:7px;margin-bottom:7px}
+ .hand-dock-title{flex:0 0 76px}
+ .hand-dock-title strong{font-size:11px;white-space:normal;line-height:1.2}
+ .hand-dock-title #handOwner{font-size:9px}
+ .hand-quick{gap:5px}
+ .hand-quick-item{flex:0 0 48px;max-width:none}
+ .layout{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+ .game-field{width:100%}
+ .board{aspect-ratio:1.13/1;width:100%;max-height:none}
+ .company-panel{width:100%}
+ .cabinet-main .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+ .cabinet-main .pill{padding:5px 6px;min-height:39px;font-size:10px}
+ .cabinet-main .pill b{font-size:13px}
+ .cabinet-main .actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+ .cabinet-main .actions button{min-height:45px!important}
+ .cabinet-heading{margin-bottom:6px}
+ .cabinet-main{padding:8px!important}
+ .cabinet-menu-button{min-height:44px}
+ .board-zoom-action{min-height:40px;max-width:230px;font-size:12px}
+ .secondary-panels{grid-template-columns:1fr}
+}
+@media(max-width:420px){
+ body>header{min-height:45px;padding:5px 10px}
+ .hand-quick-item{height:48px}
+ .hand-dialog{max-height:92dvh}
+ .hand-dialog .hand-stack{grid-template-columns:1fr}
+ .cabinet-main .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(min-width:761px) and (max-height:800px){
+ .board{width:min(100%,calc((100dvh - 143px)*1.19))}
+ .cabinet-main .actions{gap:5px}
+ .cabinet-main .stats{gap:4px}
+}
