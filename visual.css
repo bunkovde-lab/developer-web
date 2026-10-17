@@ -298,3 +298,43 @@ body>header>small{font-size:11px}
 .pc-buy-land button{background:#e4b56e;color:#1e3042;min-height:50px}
 @media(max-width:780px){.land-browse{grid-template-columns:repeat(2,minmax(0,1fr))}.land-option{min-height:109px;padding:9px!important}.board .plot-tactics{font-size:clamp(6px,1.65vw,10px)}}
 @media(max-width:440px){.land-browse{grid-template-columns:1fr;max-height:50dvh}.land-option{min-height:95px}.land-select-box{padding:11px!important}.land-selection-actions{flex-direction:column}.board .plot-tactics{font-size:7px}}
+
+
+/* v0.15: real 24-lot city, auction selection based on exact four-by-six map. */
+.city-map .city-lots,.board .city-lots{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr))}
+.board.zoom-map .city-lots{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(4,minmax(58px,1fr))}
+@media(max-width:600px){.board.zoom-map .city-lots{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(8,minmax(65px,1fr))}}
+.land-select-box{width:min(990px,97vw)!important;max-height:96dvh!important;display:flex;flex-direction:column;overflow:hidden!important}
+.land-select-box>.pc-top{flex:0 0 auto}.land-select-box>p{flex:0 0 auto;margin:4px 0}
+.land-select-box .land-selection-actions{flex:0 0 auto}
+.auction-city-map{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;background:radial-gradient(ellipse,#1e4a52,#122c42);border:2px solid #a68e6a;border-radius:14px;padding:clamp(6px,1vw,12px);box-shadow:inset 0 0 40px #0004}
+.auction-city-map-title{text-align:center;font-size:clamp(12px,1.3vw,16px);letter-spacing:.12em;font-weight:800;color:#f5d99b;margin:2px 0 9px}
+.land-browse{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-template-rows:repeat(4,minmax(64px,1fr))!important;gap:clamp(3px,.6vw,8px)!important;min-height:0;max-height:none!important;height:100%;overflow:auto!important;padding:2px!important}
+.land-option{min-width:0!important;max-width:none!important;min-height:0!important;height:100%;display:flex;justify-content:center;gap:clamp(2px,.6vh,6px);border:2px solid var(--land-zone)!important;border-bottom:4px solid var(--land-owner)!important;background:linear-gradient(150deg,color-mix(in srgb,var(--land-zone) 55%,#102937),#173049)!important;border-radius:10px!important;padding:clamp(3px,.7vw,9px)!important}
+.land-option-top{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center}
+.land-option-top b{font-size:clamp(10px,.95vw,15px);white-space:nowrap}
+.land-option-top strong{font-size:clamp(9px,.87vw,14px);white-space:normal;overflow-wrap:anywhere}
+.land-option .land-zone{font-size:clamp(8px,.77vw,12px);line-height:1.15;text-align:center}
+.land-option .land-tactics{font-size:clamp(9px,.8vw,12px);font-weight:850;color:#ffe4ad;text-align:center;white-space:nowrap}
+.land-option.occupied{background:linear-gradient(145deg,#384653,#263348)!important;opacity:.68;filter:grayscale(.18)}
+.land-option.selected{outline:3px solid #ffe2a1!important;outline-offset:-3px;box-shadow:0 0 22px #ffdd8a88,inset 0 0 0 2px #f3c87c!important}
+.land-selection-info{color:#fff2c9!important;font-size:clamp(11px,1.1vw,14px)!important;margin:7px 0!important;min-height:32px}
+.construction-deck-choices button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:78px}
+.construction-deck-choices button .deck-count-info{display:block;font-size:clamp(11px,1.05vw,14px);font-weight:650;color:#e5edfa;line-height:1.3}
+.construction-deck-choices button:disabled{opacity:.48}
+@media(max-width:640px){
+ .land-select-box{width:100vw!important;height:100dvh!important;max-height:100dvh!important;padding:7px!important;border-radius:0!important}
+ .land-select-box .pc-top h2{font-size:17px}
+ .land-select-box>p{font-size:11px;line-height:1.3}
+ .auction-city-map{padding:5px;border-radius:8px}
+ .auction-city-map-title{font-size:11px;margin:2px 0 4px}
+ .land-browse{gap:3px!important;grid-template-rows:repeat(4,minmax(65px,1fr))!important}
+ .land-option{border-radius:5px!important;min-height:64px!important;gap:2px;padding:2px!important}
+ .land-option-top b{font-size:clamp(8px,2.4vw,12px)}
+ .land-option-top strong{font-size:clamp(7px,2.0vw,10px)}
+ .land-option .land-zone{font-size:clamp(7px,1.9vw,9px)}
+ .land-option .land-tactics{font-size:clamp(7px,1.9vw,10px)}
+ .land-selection-actions{flex-direction:row!important}
+ .land-selection-actions button{min-height:48px}
+ .land-selection-info{font-size:11px!important}
+}
