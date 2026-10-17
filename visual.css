@@ -112,4 +112,42 @@ select,input{min-height:48px}
 .board.zoom-map .map-key{display:block;font-size:13px}
 #v10ZoomClose{align-self:flex-end;min-height:50px;background:#e8b875;color:#183146;border:1px solid #ffe0a6;border-radius:10px}
 @media(max-width:600px){.board.zoom-map .city-lots{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(10,minmax(63px,1fr));overflow:auto}.board.zoom-map .city-map{inset:0!important;width:100vw!important;height:100dvh!important;border-radius:0;padding:10px!important}.board.zoom-map .map-plot{min-height:63px}.board.zoom-map .plot-zone{display:block}.board.zoom-map .plot-stage{font-size:29px}.board.zoom-map .plot-id{font-size:10px}}
+
+/* v0.11 visual hierarchy: game board and active cabinet are the first content,
+   occasional settings (new game, sound and storage) are in the menu. */
+header{display:flex;align-items:center;gap:12px;min-height:68px}
+header h1{flex-shrink:0}
+header>small{font-size:12px;white-space:nowrap}
+.header-menu-button{margin-left:auto;flex:0 0 auto;min-height:48px;background:#29475c;color:#f6e0b4;border:1px solid #587b96;padding:11px 21px;box-shadow:inset 0 1px 0 #ffffff1a}
+.header-menu-button:hover{background:#365b72}
+.wrap{padding-top:clamp(7px,1vw,16px)}
+.layout{margin-top:0!important;align-items:start}
+.game-field{align-items:stretch}
+.board{margin-top:0!important}
+.company-panel{margin-top:0!important}
+.actions>select[hidden]{display:none!important}
+.board-zoom-action{align-self:flex-end;min-height:48px;min-width:170px;background:#235060;border:1px solid #508e90;color:#d8fbf3;padding:9px 18px;margin:3px 0 0;box-shadow:0 5px 20px #0002}
+.board-zoom-action:hover{background:#2b6474}
+.menu-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0 8px;border-top:1px solid #48657e;padding-top:14px}
+.menu-options button{min-height:52px;background:#253f57;color:#ecf6fc;border:1px solid #5c7b92}
+.menu-options #v10Sound{grid-column:1/-1;min-height:55px;background:#315d52;color:#effff8;border-color:#64b69d;text-align:center}
+#sessionOverlay .auction-box{width:min(96vw,510px)}
+#sessionOverlay .lobby-buttons{display:grid;grid-template-columns:1fr 1fr}
+#sessionOverlay .lobby-buttons button{min-height:54px}
+#sessionOverlay .session-status{color:#badbd0}
+#sessionOverlay .profession-choice{min-height:62px}
+@media(max-width:760px){
+ header{padding:10px 11px;gap:8px;min-height:62px}
+ header>small{display:none}
+ .header-menu-button{margin-left:auto;min-width:88px;font-size:15px}
+ .wrap{padding:5px 8px}
+ .game-field{gap:3px}
+ .layout{gap:9px}
+ .board-zoom-action{margin:3px 0 1px;align-self:center;width:100%;max-width:350px}
+}
+@media(max-width:420px){
+ header h1{font-size:20px}
+ .header-menu-button{padding:10px 12px}
+ #sessionOverlay .lobby-buttons{grid-template-columns:1fr}
+}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
