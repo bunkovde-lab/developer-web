@@ -81,7 +81,7 @@ function decoratePlots(){
   const el=nodes[i],lot=state.plots[i];if(!lot)continue;
   const stage=lot.project?.stage||0,built=stage===4,owned=lot.owner>=0;
   const icon=el.querySelector('.plot-stage');
-  if(icon)icon.textContent=Number.isInteger(lot.reservedFor)?'▣':!owned?'◇':STAGE_ICONS[stage]||'🏢';
+  if(icon)icon.textContent=Number.isInteger(lot.reservedFor)?'▣':!owned?(ZONE_GRID[i]==='UNIQUE'?'★':'◇'):STAGE_ICONS[stage]||'🏢';
   const label=el.querySelector('.plot-zone');
   if(label)label.textContent=Number.isInteger(lot.reservedFor)?'Секция комплекса':!owned?zoneOf(i).short:sectorLabel(lot,lot.owner);
   el.dataset.status=Number.isInteger(lot.reservedFor)?'reserved':!owned?'free':built?'completed':lot.investor?'investor':'construction';el.dataset.zone=ZONE_GRID[i];
