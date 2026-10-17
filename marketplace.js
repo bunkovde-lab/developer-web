@@ -171,7 +171,7 @@ function transferAdd(player,c){
  const a=c.kind==="stage"?player.cards:c.kind==="network"?player.networkCards:player.marketCards;
  if(c.kind==="stage")a.push({id:c.id,deck:c.deck,index:c.index});
  else if(c.kind==="network")a.push({id:c.id,type:c.type});
- else a.push({id:c.id,type:c.type,card:c.card});
+ else a.push({id:c.id,type:c.type,card:c.card,modelIndex:c.modelIndex});
 }
 function tradeRecord(mode,description){
  if(!Array.isArray(state.marketTransactions))state.marketTransactions=[];
