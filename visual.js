@@ -81,21 +81,23 @@ function decoratePlots(){
   const el=nodes[i],lot=state.plots[i];if(!lot)continue;
   const stage=lot.project?.stage||0,built=stage===4,owned=lot.owner>=0;
   const icon=el.querySelector('.plot-stage');
-  if(icon)icon.textContent=!owned?'◇':STAGE_ICONS[stage]||'🏢';
+  if(icon)icon.textContent=Number.isInteger(lot.reservedFor)?'▣':!owned?'◇':STAGE_ICONS[stage]||'🏢';
   const label=el.querySelector('.plot-zone');
-  if(label)label.textContent=sectorLabel(lot,lot.owner);
-  el.dataset.status=!owned?'free':built?'completed':lot.investor?'investor':'construction';
+  if(label)label.textContent=Number.isInteger(lot.reservedFor)?'Секция комплекса':!owned?zoneOf(i).short:sectorLabel(lot,lot.owner);
+  el.dataset.status=Number.isInteger(lot.reservedFor)?'reserved':!owned?'free':built?'completed':lot.investor?'investor':'construction';el.dataset.zone=ZONE_GRID[i];
   const steps=el.querySelector('.plot-progress')||document.createElement('span');steps.className='plot-progress';
-  steps.textContent=owned?(built?'ГОТОВО':stage+'/4 ЭТАПОВ'):lot.price+' тыс.';
+  steps.textContent=Number.isInteger(lot.reservedFor)?'СЕКЦИЯ':owned?(built?'ГОТОВО':stage+'/4 ЭТАПОВ'):lot.price+' тыс.';
   if(!steps.isConnected)el.appendChild(steps);
   if(owned){
    const hint=el.querySelector('.plot-hint')||document.createElement('small');hint.className='plot-hint';
-   hint.textContent=built?(lot.tenant?'Аренда '+tenantIncomeForLot(lot)+' тыс.':'Продажа '+marketBase(lot,'buyer')+' тыс.'):(STAGE_TITLES[stage]||'Стройка');
+   hint.textContent=Number.isInteger(lot.reservedFor)?'Часть здания на №'+(lot.reservedFor+1):built?(lot.tenant?'Аренда '+tenantIncomeForLot(lot)+' тыс.':'Продажа '+marketBase(lot,'buyer')+' тыс.'):(STAGE_TITLES[stage]||'Стройка');
    if(!hint.isConnected)el.appendChild(hint);
   }
-  let context='Участок '+(i+1)+'. '+(owned?'Владелец '+state.players[lot.owner]?.name+'. ':'Свободный участок. ')+
+  let context='Участок '+(i+1)+', зона '+zoneOf(i).title+', '+lot.price+' тыс. '+(owned?'Владелец '+state.players[lot.owner]?.name+'. ':'Свободный участок. ')+
    (built?'Введён в эксплуатацию. '+(lot.tenant?'Арендатор есть. ':'Без арендатора. '):owned?'Этап '+stage+' из 4. ':'' );
   if(lot.project?.connections?.length)context+=' Сетей: '+lot.project.connections.length+'.';
+  if(Number.isInteger(lot.reservedFor))context+=' Секция крупного комплекса №'+(lot.reservedFor+1)+'.';
+  const t=territoryAnalysis(i,state.turn);context+=' Свои соседи: '+t.own+'. Блокировка чужой цепи: '+t.blocking+'.';
   el.setAttribute('aria-label',context);
  }
  const cap=document.querySelector('.city-title');
