@@ -59,9 +59,11 @@ jobs:
         run: node tests/browser_work_integration.cjs
       - name: RC1 stale timers, storage failures and full browser campaigns
         run: node tests/browser_rc1_stability.cjs
+      - name: Studio shell and portable save UI
+        run: node tests/browser_studio.cjs && node tests/browser_storage_v019.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: developer-v010-screenshots
-          path: ui-snapshots/*.png
+          name: developer-v019-screenshots
+          path: ui-snapshots/**/*.png
           if-no-files-found: ignore

@@ -1,20 +1,20 @@
 'use strict';
-// Read-only analysis of QA_REPORT_DIR/campaigns.ndjson.gz. No game execution.
-const fs=require('node:fs'),zlib=require('node:zlib');
-const file=process.argv[2];if(!file)throw Error('Pass campaigns.ndjson.gz');
-const rows=zlib.gunzipSync(fs.readFileSync(file)).toString('utf8').trim().split('\n').map(x=>JSON.parse(x));
-const mean=xs=>xs.reduce((s,n)=>s+n,0)/xs.length;
-const limited=rows.filter(r=>r.winType==='tender'),players=limited.flatMap(r=>r.diagnostics),unfinished=players.flatMap(p=>p.unfinished);
-const result={games:rows.length,finishes:Object.fromEntries(['tender','territory','developer'].map(k=>[k,rows.filter(r=>r.winType===k).length])),
- terminalOnly:true,limitedGames:limited.length,terminalPlayers:players.length,
- limitedWithOwnedChainOfFour:limited.filter(r=>r.diagnostics.some(p=>p.ownedChain>=4)).length,
- averageCompletedProjects:mean(limited.map(r=>r.diagnostics.reduce((s,p)=>s+p.completedProjects,0))),
- averageRetainedReadyBuildings:mean(limited.map(r=>r.built)),
- averageTenants:mean(limited.map(r=>r.diagnostics.reduce((s,p)=>s+p.tenants,0))),
- averageRentPerStartAllPlayers:mean(limited.map(r=>r.diagnostics.reduce((s,p)=>s+p.rent,0))),
- developerGateFailures:Object.fromEntries(['projects','sales','cash','ready','zones','medium'].map(k=>[k,players.filter(p=>!p.developerGates[k]).length])),
- unfinished:{total:unfinished.length,missingCard:unfinished.filter(p=>!p.hasCard).length,
-  missingCardAndEmptyStock:unfinished.filter(p=>!p.hasCard&&!p.stock).length,
-  cardPresentButListedCostTooHigh:unfinished.filter(p=>p.hasCard&&!p.canAffordListed).length},
- limitations:['terminal snapshots do not prove causal history','listed costs ignore profession discounts','bot strategy archetypes and human time were not tested']};
-console.log(JSON.stringify(result,null,2));
+// Read-only terminal analysis; no engine import or balance mutation.
+const fs=require('node:fs'),zlib=require('node:zlib'),crypto=require('node:crypto');
+const args=process.argv.slice(2);if(!args[0])throw Error('Usage: node scripts/analyze-campaigns.cjs campaigns.ndjson.gz [comparison.ndjson.gz]');
+const bytes=zlib.gunzipSync(fs.readFileSync(args[0]));
+if(args[1]&&!bytes.equals(zlib.gunzipSync(fs.readFileSync(args[1]))))throw Error('Deterministic economic records differ');
+const rows=bytes.toString().trim().split('\n').map(JSON.parse),limit=rows.filter(x=>x.winType==='tender'),players=limit.flatMap(x=>x.diagnostics),unfinished=players.flatMap(x=>x.unfinished);
+const count=pred=>players.filter(pred).length;
+console.log(JSON.stringify({games:rows.length,recordsSha256:crypto.createHash('sha256').update(bytes).digest('hex'),identicalComparison:args[1]?true:null,
+ endings:rows.reduce((a,x)=>(a[x.winType]=(a[x.winType]||0)+1,a),{}),
+ byPlayers:[3,4,5,6].map(n=>({players:n,limit:limit.filter(x=>x.players===n).length,total:rows.filter(x=>x.players===n).length})),
+ limit:{games:limit.length,playerPositions:players.length,ownershipChainPossible:limit.filter(x=>x.diagnostics.some(p=>p.ownedChain>=4)).length,
+ averageCompletedProjects:players.reduce((s,p)=>s+p.completedProjects,0)/limit.length,
+ averageReadyBuildings:players.reduce((s,p)=>s+p.ready,0)/limit.length,
+ averageTenants:players.reduce((s,p)=>s+p.tenants,0)/limit.length,
+ failedGates:Object.fromEntries(['projects','sales','cash','ready','zones','medium'].map(k=>[k,count(p=>!p.developerGates[k])])),
+ unfinished:unfinished.length,missingCard:unfinished.filter(x=>!x.hasCard).length,
+ missingCardAndEmptyStock:unfinished.filter(x=>!x.hasCard&&x.stock===0).length,
+ hasCardButUnaffordable:unfinished.filter(x=>x.hasCard&&x.canAffordListed===false).length},
+ interpretation:'Terminal correlations, not causal proof. Listed costs exclude profession discounts. No human duration or strategic diversity measured.'},null,2));

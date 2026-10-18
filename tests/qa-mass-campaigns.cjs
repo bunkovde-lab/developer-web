@@ -135,7 +135,7 @@ const sizeReports=[3,4,5,6].map(n=>{
    networkStockouts:rows.reduce((s,x)=>s+x.networkStockouts,0)};
 });
 const allTurns=raw.map(x=>x.completedTurns);
-const summary={kind:"actual-engine-vm",commit:sourceCommit,engineWorkingTreeDirty,rules:"HTML "+(html.match(/HTML · (v[0-9.]+(?:-[a-z0-9]+)?)/)?.[1]||"unknown"),engineSha256:engineSha256.digest("hex"),games:raw.length,seeds:"202610180+player_count*100000+trial",complete:raw.length,meanTurns:Number(mean(allTurns).toFixed(2)),medianTurns:median(allTurns),byPlayerCount:sizeReports,limitations:["all bots use the same existing AI, no human strategy archetypes", "headless Node VM; no full Chromium interaction", "real human time, deal negotiation, exact cumulative rent/sales split not measured"]};
+const summary={kind:"actual-engine-vm",commit:sourceCommit,engineWorkingTreeDirty,rules:"HTML "+(html.match(/name="developer-version" content="([^"]+)"/)?.[1]||html.match(/HTML · (v[0-9.]+(?:-[a-z0-9]+)?)/)?.[1]||"unknown"),engineSha256:engineSha256.digest("hex"),games:raw.length,seeds:"202610180+player_count*100000+trial",complete:raw.length,meanTurns:Number(mean(allTurns).toFixed(2)),medianTurns:median(allTurns),byPlayerCount:sizeReports,limitations:["all bots use the same existing AI, no human strategy archetypes", "headless Node VM; no full Chromium interaction", "real human time, deal negotiation, exact cumulative rent/sales split not measured"]};
 console.log('QA_BASELINE_SUMMARY '+JSON.stringify(summary));
 if(process.env.QA_REPORT_DIR){
  const path=require('node:path'),out=path.resolve(process.env.QA_REPORT_DIR);fs.mkdirSync(out,{recursive:true});
