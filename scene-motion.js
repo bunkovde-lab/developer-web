@@ -209,17 +209,25 @@ function paint(){
     const lot=state.plots[i];if(!lot)return;
     const stage=lot.project?.stage||0,zone=String(lot.zone||'').toLowerCase();
     const key=lot.owner<0?'lot.'+String(i+1).padStart(2,'0'):stage===4?'building.'+zone:'stage.'+stage;
-    const stageNode=el.querySelector('.plot-stage');if(stageNode){
+    const stageNode=el.querySelector('.plot-stage');
+    const parcel=urlFor('lot.'+String(i+1).padStart(2,'0'));
+    const tileArt=urlFor(key)||parcel;
+    el.classList.toggle('scene-full-parcel',!!tileArt);
+    if(tileArt)el.style.setProperty('--scene-parcel-art','url("'+tileArt+'")');
+    else el.style.removeProperty('--scene-parcel-art');
+    if(stageNode){
      const art=validImg(key,'scene-stage-art');
      if(art){
       const fallback=stageNode.textContent;
       stageNode.replaceChildren(art);stageNode.classList.add('scene-art-stage');
-      art.onerror=()=>{stageNode.classList.remove('scene-art-stage');stageNode.textContent=fallback;};
+      art.onerror=()=>{
+       stageNode.classList.remove('scene-art-stage');stageNode.textContent=fallback;
+       // Keep the original semantic icon legible if an SVG file is unavailable.
+       el.classList.remove('scene-full-parcel');el.style.removeProperty('--scene-parcel-art');
+      };
      }
     }
     el.dataset.sceneOwner=lot.owner;
-    const parcel=urlFor('lot.'+String(i+1).padStart(2,'0'));
-    if(parcel)el.style.setProperty('--scene-parcel-art','url("'+parcel+'")');
     el.classList.toggle('scene-lease',!!lot.tenant);
     const connections=lot.project?.connections?.length||0;
     if(connections>0&&!el.querySelector('.scene-network-pin')){
@@ -233,8 +241,18 @@ function paint(){
    });
    board.querySelectorAll(':scope > .cell').forEach((el,i)=>{
     const n=el.querySelector('.track-icon');if(!n)return;
-    const art=validImg('track.'+String(i+1).padStart(2,'0'),'scene-track-art');
-    if(art){const fallback=n.textContent;n.replaceChildren(art);n.classList.add('scene-art-track');art.onerror=()=>{n.classList.remove('scene-art-track');n.textContent=fallback;};}
+    const key='track.'+String(i+1).padStart(2,'0');
+    const art=validImg(key,'scene-track-art');
+    if(art){
+     const fallback=n.textContent;
+     n.replaceChildren(art);n.classList.add('scene-art-track');
+     el.classList.add('scene-full-track');
+     el.style.setProperty('--scene-track-tile-art','url("'+urlFor(key)+'")');
+     art.onerror=()=>{
+      n.classList.remove('scene-art-track');n.textContent=fallback;
+      el.classList.remove('scene-full-track');el.style.removeProperty('--scene-track-tile-art');
+     };
+    }
    });
   }
   const hand=document.querySelectorAll('#handGroups details[data-deck]');
