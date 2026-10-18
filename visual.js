@@ -12,8 +12,8 @@ const FIELD_ICONS={
 const STAGE_ICONS=['▫','📐','📑','🏗','🏢'];
 const STAGE_TITLES=['Под проект','Проект','Разрешения','Строится','Введён'];
 let previousRender={pos:null,dice:null,round:null,money:null,winner:null,logCount:0};
-let muted=localStorage.getItem('developer-v10-sound')==='off',audio=null,lastBoardMessage='',zoomOpen=false;
-let userGesture=false,volume=Math.max(0,Math.min(1,Number(localStorage.getItem('developer-v18-volume')??'0.5')||0));
+let muted=readStoredValue('developer-v10-sound')==='off',audio=null,lastBoardMessage='',zoomOpen=false;
+let userGesture=false,volume=Math.max(0,Math.min(1,Number(readStoredValue('developer-v18-volume')??'0.5')||0));
 document.addEventListener('pointerdown',()=>{userGesture=true;},{capture:true,once:true});
 document.addEventListener('keydown',()=>{userGesture=true;},{capture:true,once:true});
 const $v=id=>document.getElementById(id);
@@ -22,7 +22,7 @@ function createControls(){
  if(zoom&&!zoom.dataset.bound){zoom.addEventListener('click',()=>toggleZoom());zoom.dataset.bound='1';}
  if(sound&&!sound.dataset.bound){
   sound.addEventListener('click',()=>{
-   muted=!muted;localStorage.setItem('developer-v10-sound',muted?'off':'on');
+   muted=!muted;try{localStorage.setItem('developer-v10-sound',muted?'off':'on')}catch{}
    updateSoundButton();if(!muted)play('confirm');
   });
   sound.dataset.bound='1';

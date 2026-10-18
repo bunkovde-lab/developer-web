@@ -21,6 +21,7 @@ on:
       - 'tests/browser_finance.cjs'
       - 'tests/browser_living_city.cjs'
       - 'tests/browser_work_integration.cjs'
+      - 'tests/browser_rc1_stability.cjs'
       - 'tests/browser_marketplace.cjs'
       - 'tests/browser_city_requests.cjs'
       - '.github/workflows/browser-ui.yml'
@@ -53,6 +54,8 @@ jobs:
         run: node tests/browser_living_city.cjs
       - name: Work integration metadata, zoom stacking, touch and missing SVG regression
         run: node tests/browser_work_integration.cjs
+      - name: RC1 stale timers, storage failures and full browser campaigns
+        run: node tests/browser_rc1_stability.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

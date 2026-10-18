@@ -6,7 +6,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const storageKey='developer-motion-mode', DURATION={normal:1,fast:.25,off:0};
-let mode=localStorage.getItem(storageKey)||'normal';if(!(mode in DURATION))mode='normal';
+let mode=readStoredValue(storageKey)||'normal';if(!(mode in DURATION))mode='normal';
 const reduced=()=>!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 const enabled=()=>mode!=='off'&&!reduced();
 let manifest=Object.create(null),assetsReady=false;
