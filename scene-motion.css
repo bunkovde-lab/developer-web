@@ -63,3 +63,96 @@
  .scene-toast,.scene-cash-delta,.scene-moving-token,.scene-dice-pair{animation:none!important;transition:none!important}
  .board .map-plot.scene-linked,.board .cell.active{animation:none!important}
 }
+
+/* v0.18 mobile hotfix: a full SVG card must be the tile, never a tiny card
+   inserted inside a second HTML card. Keep semantic labels in the DOM. */
+.board .map-plot.scene-full-parcel::before{
+ background-size:cover;
+ background-position:center;
+ background-repeat:no-repeat;
+ opacity:1;
+}
+.board.zoom-map .map-plot.scene-full-parcel::before,
+.board .map-plot.scene-full-parcel[data-scene-owner="-1"]::before{opacity:1}
+.board .map-plot.scene-full-parcel .plot-stage.scene-art-stage{
+ /* The image is still present for graceful load-error fallback and testability;
+    the parcel-wide artwork renders from the same manifest entry. */
+ position:absolute!important;
+ width:1px!important;
+ height:1px!important;
+ min-width:0!important;
+ min-height:0!important;
+ overflow:hidden!important;
+ clip-path:inset(50%)!important;
+ pointer-events:none!important;
+}
+.board .map-plot.scene-full-parcel[data-scene-owner="-1"] .plot-id,
+.board .map-plot.scene-full-parcel .plot-zone{
+ /* The full SVG already contains its own zone and parcel caption. */
+ position:absolute!important;
+ width:1px!important;
+ height:1px!important;
+ overflow:hidden!important;
+ clip-path:inset(50%)!important;
+}
+.board .map-plot.scene-full-parcel .plot-id{
+ background:#091e30dc;
+ padding:1px 4px;
+ border-radius:4px;
+}
+.board .map-plot.scene-full-parcel .plot-progress{
+ position:absolute!important;
+ bottom:2px;
+ left:2px;
+ right:2px;
+ width:auto;
+ max-width:none;
+ margin:0;
+ padding:2px 3px;
+ border:1px solid #e6ca8440;
+ border-radius:5px;
+ font-size:clamp(7px,.75vw,12px);
+ line-height:1.1;
+ color:#fce9bd;
+ background:#061522eb;
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis;
+ text-align:center;
+ z-index:3;
+}
+.board.zoom-map .map-plot.scene-full-parcel .plot-progress{
+ bottom:4px;
+ padding:3px 5px;
+ font-size:clamp(9px,1.2vw,14px);
+}
+.board .cell.scene-full-track{
+ background-image:var(--scene-track-tile-art)!important;
+ background-position:center!important;
+ background-size:cover!important;
+ background-repeat:no-repeat!important;
+}
+.board .cell.scene-full-track > b,
+.board .cell.scene-full-track > .track-icon.scene-art-track{
+ /* Retain text/icon for accessibility and fallback without nested thumbnails. */
+ position:absolute!important;
+ width:1px!important;
+ height:1px!important;
+ min-width:0!important;
+ min-height:0!important;
+ overflow:hidden!important;
+ clip-path:inset(50%)!important;
+ pointer-events:none!important;
+}
+.board .cell.scene-full-track .tokens{
+ position:absolute;
+ left:2px;
+ right:2px;
+ bottom:3px;
+ justify-content:center;
+ z-index:4;
+}
+@media(max-width:600px){
+ .board .map-plot.scene-full-parcel .plot-progress{font-size:clamp(6px,1.5vw,10px);padding:1px 2px}
+ .board.zoom-map .map-plot.scene-full-parcel .plot-progress{font-size:clamp(9px,2.2vw,13px)}
+}
