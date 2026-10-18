@@ -13,3 +13,5 @@ assert(/DeveloperBotFactory\.create/.test(fs.readFileSync('balance.js','utf8')),
 assert(!/function bot\(/.test(fs.readFileSync('balance.js','utf8')),'AI decisions are outside financial calculations');
 assert(/scheduleTurnTask\(\(\)=>window\.endTurn\(\),350\)/.test(fs.readFileSync('game/bots.js','utf8')),'AI uses the current turn lifecycle');
 console.log('ARCHITECTURE PASSED: ordered external modules, separate AI, current lifecycle');
+assert(html.indexOf('src="'+manifest.entrypoint)>html.indexOf('src="game/runtime.js'),'Saved games resume after the complete engine and presentation boundary');
+assert(html.indexOf('src="'+manifest.entrypoint)>html.indexOf('src="ui/studio.js'),'UI subscribes before restore');

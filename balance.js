@@ -197,7 +197,7 @@ function sellQuote(i,c){
  return Math.round(cardPrice(c)*(wants?1.12:.70)/5)*5;
 }
 function selectedCardOption(c){return '<option value="'+c.id+'">'+cardName(c)+' №'+c.id+'</option>';}
-const TWO_ACTIONS=2;
+const TWO_ACTIONS=DEVELOPER_RULES.actionsPerTurn;
 function turnActionKey(){return state?.turn+'-'+state?.round;}
 function actionAllowed(){
  if(!state||current().bot)return true;

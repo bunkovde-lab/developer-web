@@ -1,0 +1,12 @@
+{
+  "baseline": "c86df7daac15172fcea3afdc2a94a7ca0265b468",
+  "modular": "97288ecf322730c13070497cfea3101dcf1d944e",
+  "games": 1000,
+  "identicalCampaignRecords": true,
+  "uncompressedSha256": "5bb2065fbce2a48d2781237b996d52b7548b628e19272ff49357c6f4e8bb3d55",
+  "finishReasons": {
+    "tender": 805,
+    "territory": 166,
+    "developer": 29
+  }
+}
