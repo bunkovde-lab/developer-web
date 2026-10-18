@@ -6,6 +6,8 @@ const {createHash}=require('node:crypto');
 let sourceCommit=process.env.GITHUB_SHA;
 if(!sourceCommit){try{sourceCommit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();}catch{sourceCommit='unversioned';}}
 const sourceFiles=['index.html','balance.js','marketplace.js','pace.js','auction-competition.js','city-requests.js','game-rework-v016.js'];
+let engineWorkingTreeDirty=null;
+try{engineWorkingTreeDirty=execFileSync('git',['status','--porcelain','--',...sourceFiles],{encoding:'utf8'}).trim().length>0;}catch{}
 const engineSha256=createHash('sha256');
 for(const file of sourceFiles)engineSha256.update(file+'\0').update(fs.readFileSync(file));
 const html=fs.readFileSync('index.html','utf8');
@@ -73,6 +75,25 @@ const gameCount=Number(process.env.QA_GAMES||1000);
 assert(Number.isInteger(gameCount)&&gameCount>=4&&gameCount%4===0,'QA_GAMES must be a multiple of four');
 const perSize=gameCount/4;
 const raw=[];
+// Read-only terminal diagnostics: distinguish ownership fragmentation from unfinished projects.
+const diagnosticSnapshot=`(()=>{
+ function cluster(indices){const set=new Set(indices),seen=new Set();let max=0;
+  for(const start of set){if(seen.has(start))continue;let count=0,q=[start];seen.add(start);
+   while(q.length){const j=q.pop();count++;for(const k of neighborsBySide(j))if(set.has(k)&&!seen.has(k)){seen.add(k);q.push(k);}}max=Math.max(max,count);}return max;}
+ return state.players.map((p,i)=>{
+  const lots=state.plots.map((l,j)=>({l,j})).filter(x=>x.l.owner===i&&!Number.isInteger(x.l.reservedFor));
+  const ready=lots.filter(x=>x.l.project?.stage===4),unfinished=lots.filter(x=>x.l.project?.stage!==4);
+  const gates={projects:(p.completedProjects||0)>=5,sales:(p.saleRevenue||0)>=2350,cash:p.money>=650,
+   ready:ready.length>=2,zones:new Set(ready.map(x=>x.l.zone)).size>=2,medium:ready.some(x=>x.l.project.size>=1)};
+  return {player:i,cash:p.money,completedProjects:p.completedProjects||0,saleRevenue:p.saleRevenue||0,
+   owned:lots.length,ready:ready.length,readyChain:cluster(ready.map(x=>x.j)),ownedChain:cluster(lots.map(x=>x.j)),
+   stages:[0,1,2,3,4].map(stage=>lots.filter(x=>(x.l.project?.stage||0)===stage).length),
+   tenants:ready.filter(x=>x.l.tenant).length,rent:rentalIncomeFor(i),developerGates:gates,
+   unfinished:unfinished.map(({l,j})=>{const deck=nextStageDeck(l.project),card=p.cards.find(c=>c.deck===deck);
+    const size=l.project?.size??zoneOf(j).sizes[0],cost=card?BALANCED_DECKS[deck][card.index].costs[size]:null;
+    return {lot:j,deck,hasCard:!!card,stock:state.stock.stage[deck]?.length||0,listedCost:cost,canAffordListed:card?p.money>=cost+25:null};})};
+ });
+})()`;
 run('window.qaEvents=[];var _qaNote=note;note=function(t){window.qaEvents.push(String(t));_qaNote(t)};');
 const median=xs=>{const a=xs.slice().sort((a,b)=>a-b);return a.length%2?a[(a.length-1)/2]:(a[a.length/2-1]+a[a.length/2])/2;};
 const mean=xs=>xs.reduce((s,v)=>s+v,0)/xs.length;
@@ -91,7 +112,8 @@ for(const n of [3,4,5,6]){
   assert(Number.isInteger(snap.winner),'Every campaign must terminate with a winner');
   assert(snap.completedTurns<=240,'Turn horizon must hold');
   assert(snap.money.every(Number.isFinite),'No invalid money');
-  raw.push({players:n,trial:i,seed:(202610180+n*100000+i)>>>0,...snap});
+  const diagnostics=run(diagnosticSnapshot);
+  raw.push({diagnostics,players:n,trial:i,seed:(202610180+n*100000+i)>>>0,...snap});
  }
 }
 const sizeReports=[3,4,5,6].map(n=>{
@@ -113,5 +135,11 @@ const sizeReports=[3,4,5,6].map(n=>{
    networkStockouts:rows.reduce((s,x)=>s+x.networkStockouts,0)};
 });
 const allTurns=raw.map(x=>x.completedTurns);
-const summary={kind:"actual-engine-vm",commit:sourceCommit,rules:"HTML "+(html.match(/HTML · (v[0-9.]+)/)?.[1]||"unknown"),engineSha256:engineSha256.digest("hex"),games:raw.length,seeds:"202610180+player_count*100000+trial",complete:raw.length,meanTurns:Number(mean(allTurns).toFixed(2)),medianTurns:median(allTurns),byPlayerCount:sizeReports,limitations:["all bots use the same existing AI, no human strategy archetypes", "headless Node VM; no full Chromium interaction", "real human time, deal negotiation, exact cumulative rent/sales split not measured"]};
+const summary={kind:"actual-engine-vm",commit:sourceCommit,engineWorkingTreeDirty,rules:"HTML "+(html.match(/HTML · (v[0-9.]+(?:-[a-z0-9]+)?)/)?.[1]||"unknown"),engineSha256:engineSha256.digest("hex"),games:raw.length,seeds:"202610180+player_count*100000+trial",complete:raw.length,meanTurns:Number(mean(allTurns).toFixed(2)),medianTurns:median(allTurns),byPlayerCount:sizeReports,limitations:["all bots use the same existing AI, no human strategy archetypes", "headless Node VM; no full Chromium interaction", "real human time, deal negotiation, exact cumulative rent/sales split not measured"]};
 console.log('QA_BASELINE_SUMMARY '+JSON.stringify(summary));
+if(process.env.QA_REPORT_DIR){
+ const path=require('node:path'),out=path.resolve(process.env.QA_REPORT_DIR);fs.mkdirSync(out,{recursive:true});
+ fs.writeFileSync(path.join(out,'summary.json'),JSON.stringify(summary,null,2)+'\n');
+ fs.writeFileSync(path.join(out,'campaigns.ndjson.gz'),require('node:zlib').gzipSync(raw.map(x=>JSON.stringify(x)).join('\n')+'\n'));
+ console.log('QA_DIAGNOSTICS_SAVED '+out);
+}

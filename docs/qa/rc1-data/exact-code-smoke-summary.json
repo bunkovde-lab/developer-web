@@ -1,0 +1,110 @@
+{
+  "kind": "actual-engine-vm",
+  "commit": "8689f0ab8e9b5db1c5df3255e61332de292dc44d",
+  "rules": "HTML v0.18.1-rc1",
+  "engineSha256": "bc81dd2f904ca8ab3a70057542177826f26c91e5f12bacde090f50bae4f13a4b",
+  "games": 4,
+  "seeds": "202610180+player_count*100000+trial",
+  "complete": 4,
+  "meanTurns": 240,
+  "medianTurns": 240,
+  "byPlayerCount": [
+    {
+      "players": 3,
+      "games": 1,
+      "completed": 1,
+      "completionPercent": 100,
+      "averageTurns": 240,
+      "medianTurns": 240,
+      "finishReasons": {
+        "tender": 1
+      },
+      "professionWins": {
+        "permits": 1
+      },
+      "avgFinalCashPerPlayer": 677,
+      "minFinalCash": 502,
+      "maxFinalCash": 814,
+      "bankruptcies": 0,
+      "peerCardTrades": 16,
+      "peerLandTrades": 0,
+      "buildingSales": 3,
+      "constructionStockouts": 0,
+      "networkStockouts": 0
+    },
+    {
+      "players": 4,
+      "games": 1,
+      "completed": 1,
+      "completionPercent": 100,
+      "averageTurns": 240,
+      "medianTurns": 240,
+      "finishReasons": {
+        "tender": 1
+      },
+      "professionWins": {
+        "foreman": 1
+      },
+      "avgFinalCashPerPlayer": 964.25,
+      "minFinalCash": 715,
+      "maxFinalCash": 1139,
+      "bankruptcies": 0,
+      "peerCardTrades": 20,
+      "peerLandTrades": 0,
+      "buildingSales": 10,
+      "constructionStockouts": 0,
+      "networkStockouts": 0
+    },
+    {
+      "players": 5,
+      "games": 1,
+      "completed": 1,
+      "completionPercent": 100,
+      "averageTurns": 240,
+      "medianTurns": 240,
+      "finishReasons": {
+        "tender": 1
+      },
+      "professionWins": {
+        "financier": 1
+      },
+      "avgFinalCashPerPlayer": 712,
+      "minFinalCash": 277,
+      "maxFinalCash": 1577,
+      "bankruptcies": 0,
+      "peerCardTrades": 18,
+      "peerLandTrades": 1,
+      "buildingSales": 1,
+      "constructionStockouts": 0,
+      "networkStockouts": 4
+    },
+    {
+      "players": 6,
+      "games": 1,
+      "completed": 1,
+      "completionPercent": 100,
+      "averageTurns": 240,
+      "medianTurns": 240,
+      "finishReasons": {
+        "tender": 1
+      },
+      "professionWins": {
+        "permits": 1
+      },
+      "avgFinalCashPerPlayer": 567.5,
+      "minFinalCash": 140,
+      "maxFinalCash": 905,
+      "bankruptcies": 1,
+      "peerCardTrades": 21,
+      "peerLandTrades": 0,
+      "buildingSales": 4,
+      "constructionStockouts": 7,
+      "networkStockouts": 0
+    }
+  ],
+  "limitations": [
+    "all bots use the same existing AI, no human strategy archetypes",
+    "headless Node VM; no full Chromium interaction",
+    "real human time, deal negotiation, exact cumulative rent/sales split not measured"
+  ]
+}
