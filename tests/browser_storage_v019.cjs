@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),{chromium}=require('playwright'),{spawn}=require('node:child_process');
 const server=spawn('python3',['-m','http.server','8898','--bind','127.0.0.1'],{stdio:'ignore'});
-(async()=>{let browser;try{browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
+(async()=>{let browser;try{browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>{void d.accept().catch(error=>{if(!page.isClosed())errors.push('dialog: '+error.message);});});
 await page.goto('http://127.0.0.1:8898',{waitUntil:'networkidle'});
 await page.evaluate(()=>{newGame();closeSessionMenu();DeveloperMotion.setMode('off');localStorage.setItem('developer-html-save','stable-slot-marker');state.players[0].money=987;persistState()});
 const before=await page.evaluate(()=>JSON.stringify(state));
