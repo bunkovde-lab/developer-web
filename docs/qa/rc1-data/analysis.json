@@ -1,0 +1,35 @@
+{
+  "games": 1000,
+  "finishes": {
+    "tender": 805,
+    "territory": 166,
+    "developer": 29
+  },
+  "terminalOnly": true,
+  "limitedGames": 805,
+  "terminalPlayers": 3754,
+  "limitedWithOwnedChainOfFour": 390,
+  "averageCompletedProjects": 15.240993788819877,
+  "averageRetainedReadyBuildings": 8.436024844720498,
+  "averageTenants": 5.66583850931677,
+  "averageRentPerStartAllPlayers": 206.3689440993789,
+  "developerGateFailures": {
+    "projects": 2879,
+    "sales": 3647,
+    "cash": 1872,
+    "ready": 864,
+    "zones": 2849,
+    "medium": 3005
+  },
+  "unfinished": {
+    "total": 4934,
+    "missingCard": 4104,
+    "missingCardAndEmptyStock": 312,
+    "cardPresentButListedCostTooHigh": 342
+  },
+  "limitations": [
+    "terminal snapshots do not prove causal history",
+    "listed costs ignore profession discounts",
+    "bot strategy archetypes and human time were not tested"
+  ]
+}
