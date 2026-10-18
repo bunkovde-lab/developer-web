@@ -43,10 +43,10 @@ async function wait(){
        nestedTrackWidth:track.querySelector('.track-icon')?.getBoundingClientRect().width
      };
    });
-   assert.match(tileVisual.parcelArt,/lot-01\\.svg/,'land art fills the tile');
+   assert.match(tileVisual.parcelArt,/lot-01\.svg/,'land art fills the tile');
    assert.equal(tileVisual.parcelOpacity,'1','land art must not be faded to a thumbnail backdrop');
    assert(tileVisual.nestedLotWidth<=2,'no miniature architecture card inside parcel');
-   assert.match(tileVisual.trackArt,/track-01-start\\.svg/,'track SVG fills the tile');
+   assert.match(tileVisual.trackArt,/track-01-start\.svg/,'track SVG fills the tile');
    assert(tileVisual.nestedTrackWidth<=2,'no miniature track card inside track cell');
    const status=await page.evaluate(()=>DeveloperMotion.status());
    assert.equal(status.assetCount,266,'all artist manifest assets');
