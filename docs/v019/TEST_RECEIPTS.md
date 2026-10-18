@@ -57,3 +57,21 @@ STUDIO PASSED {"width":1366,"height":1000} {"version":"0.19","dispatches":2,"not
 ```text
 V019 STORAGE PASSED: late restore, actual JSON download/upload, invalid-file rollback, separate stable slot, explicit legacy migration
 ```
+
+## Pending-decision restore regression
+
+Before fix: `Audit must restore only the decision, without a duplicate generic event` failed.
+
+```text
+PENDING RESTORE PASSED: audit payment once, deck selection, event card, sealed auction and stale dialog cleanup
+RC1 STORAGE/TIMERS PASSED: new/loaded session isolation, malformed save rejection, storage denied
+V019 STORAGE PASSED: late restore, actual JSON download/upload, invalid-file rollback, separate stable slot, explicit legacy migration
+```
+
+## Full Chromium campaigns after final restore fix 3999780
+
+```text
+RC1 STORAGE/TIMERS PASSED: new/loaded session isolation, malformed save rejection, storage denied
+RC1 BROWSER CAMPAIGN {"players":3,"restored":true,"turns":240,"winner":2,"type":"tender","finite":true,"built":16,"scene":{"renderPasses":482,"emitted":621,"animations":948,"cancelled":2,"errors":0,"mode":"fast","reduced":false,"assetsReady":true,"assetCount":266,"activeAnimations":5,"activeGhosts":1},"nodes":990,"lots":24,"cells":32}
+RC1 BROWSER CAMPAIGN {"players":6,"restored":true,"turns":240,"winner":2,"type":"tender","finite":true,"built":15,"scene":{"renderPasses":481,"emitted":640,"animations":976,"cancelled":2,"errors":0,"mode":"fast","reduced":false,"assetsReady":true,"assetCount":266,"activeAnimations":7,"activeGhosts":0},"nodes":972,"lots":24,"cells":32}
+```
