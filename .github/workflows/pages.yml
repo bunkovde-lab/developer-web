@@ -15,6 +15,7 @@ on:
       - 'scene-motion.css'
       - 'game-rework-v016.js'
       - 'assets/**'
+      - 'scripts/build-site.cjs'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
@@ -36,32 +37,49 @@ jobs:
         with:
           node-version: '22'
       - uses: actions/configure-pages@v5
-      # Publish visual fix PR #11 as a test-only subdirectory; never replace stable
-      # root game or merge experimental gameplay into main for this preview.
-      - name: Assemble independent v0.18 SVG fix preview from PR #11
+      - name: Build stable release and isolated v0.18.1-rc1 preview
         shell: bash
         run: |
           set -euo pipefail
-          preview_sha="$(git ls-remote origin refs/pull/11/head | awk '{print $1}')"
-          if [[ ! "$preview_sha" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "PR #11 head cannot be resolved" >&2
-            exit 1
-          fi
-          git fetch --no-tags --depth=1 origin "$preview_sha"
-          staging="$(mktemp -d)"
-          git archive FETCH_HEAD | tar -x -C "$staging"
-          mkdir -p "$staging/scripts"
-          cp scripts/build-site.cjs "$staging/scripts/build-site.cjs"
+          # Last verified v0.18 stable source, deliberately unchanged by RC review.
+          stable_sha="7ece96d3315a2e5698c086122f356b7209fc658a"
+          git fetch --no-tags --depth=1 origin "$stable_sha"
+          stable="$(mktemp -d)"
+          git archive "$stable_sha" | tar -x -C "$stable"
           (
-            cd "$staging"
-            GITHUB_SHA="$preview_sha" PR_NUMBER=11 node scripts/build-site.cjs --out dist
+            cd "$stable"
+            GITHUB_SHA="$stable_sha" node scripts/build-site.cjs --out dist
           )
-          mkdir -p previews/v018
-          cp -R "$staging/dist/." previews/v018/
-          printf 'Preview of PR #11, source commit %s\n' "$preview_sha" >> "$GITHUB_STEP_SUMMARY"
-          test -f previews/v018/index.html
+          mkdir -p site
+          cp -R "$stable/dist/." site/
+
+          # GitHub Pages shares an origin across paths; testers must use a
+          # private browser profile to avoid mixing v0.18 save slots with rc1.
+          GITHUB_SHA="$GITHUB_SHA" PR_NUMBER=15 node scripts/build-site.cjs --out dist
+          test -f dist/scene-motion.js
+          test -f dist/tests/browser_rc1_stability.cjs || test -f tests/browser_rc1_stability.cjs
+          test "$(node -p "require('./assets/svg/manifest.json').version")" = 1
+          grep -q 'v0.18.1-rc1' dist/index.html
+          mkdir -p site/previews/v0181-rc1
+          cp -R dist/. site/previews/v0181-rc1/
+
+          # Maintain the old preview address for existing Android feedback.
+          mkdir -p site/previews/v018
+          cp -R "$stable/dist/." site/previews/v018/
+          cat >site/previews/v0181-rc1/RC1_SOURCE.json <<EOF
+          {
+            "release": "v0.18.1-rc1",
+            "status": "TEST ONLY - not stable",
+            "source_sha": "$GITHUB_SHA",
+            "stable_source_sha": "$stable_sha",
+            "preview_path": "/developer-web/previews/v0181-rc1/"
+          }
+          EOF
+          touch site/.nojekyll
+          echo "Stable root from $stable_sha" >> "$GITHUB_STEP_SUMMARY"
+          echo "RC1 preview: $GITHUB_SHA at https://bunkovde-lab.github.io/developer-web/previews/v0181-rc1/" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v4
