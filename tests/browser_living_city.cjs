@@ -28,6 +28,26 @@ async function wait(){
    assert.equal(await page.locator('#board .map-plot').count(),24,'24 city land parcels');
    assert.equal(await page.locator('#board .scene-track-art').count(),32,'real track SVG present');
    assert.equal(await page.locator('#board .scene-stage-art').count(),24,'all lots have real architecture SVG');
+   // Regression from physical Android: a full-size SVG card must not appear as
+   // a miniature inside a separate HTML tile.
+   assert.equal(await page.locator('#board .scene-full-parcel').count(),24,'full-bleed SVG land tiles');
+   assert.equal(await page.locator('#board .scene-full-track').count(),32,'full-bleed SVG track tiles');
+   const tileVisual=await page.evaluate(()=>{
+     const lot=document.querySelector('#board .map-plot');
+     const track=document.querySelector('#board > .cell');
+     return {
+       parcelArt:getComputedStyle(lot,'::before').backgroundImage,
+       parcelOpacity:getComputedStyle(lot,'::before').opacity,
+       nestedLotWidth:lot.querySelector('.scene-art-stage')?.getBoundingClientRect().width,
+       trackArt:getComputedStyle(track).backgroundImage,
+       nestedTrackWidth:track.querySelector('.track-icon')?.getBoundingClientRect().width
+     };
+   });
+   assert.match(tileVisual.parcelArt,/lot-01\.svg/,'land art fills the tile');
+   assert.equal(tileVisual.parcelOpacity,'1','land art must not be faded to a thumbnail backdrop');
+   assert(tileVisual.nestedLotWidth<=2,'no miniature architecture card inside parcel');
+   assert.match(tileVisual.trackArt,/track-01-start\.svg/,'track SVG fills the tile');
+   assert(tileVisual.nestedTrackWidth<=2,'no miniature track card inside track cell');
    const status=await page.evaluate(()=>DeveloperMotion.status());
    assert.equal(status.assetCount,266,'all artist manifest assets');
    assert.equal(status.errors,0,'no scene errors');
