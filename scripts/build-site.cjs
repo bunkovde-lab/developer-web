@@ -18,6 +18,7 @@ copy('index.html');
 for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
   if (entry.isFile() && /\.(?:js|css)$/i.test(entry.name)) copy(entry.name);
 }
+for(const folder of ['game','styles','ui'])if(fs.existsSync(path.join(root,folder)))fs.cpSync(path.join(root,folder),path.join(output,folder),{recursive:true});
 if (fs.existsSync(path.join(root, 'assets'))) {
   fs.cpSync(path.join(root, 'assets'), path.join(output, 'assets'), { recursive: true });
 }

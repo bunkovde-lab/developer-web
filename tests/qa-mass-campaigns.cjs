@@ -5,14 +5,14 @@ const {execFileSync}=require('node:child_process');
 const {createHash}=require('node:crypto');
 let sourceCommit=process.env.GITHUB_SHA;
 if(!sourceCommit){try{sourceCommit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();}catch{sourceCommit='unversioned';}}
-const sourceFiles=['index.html','balance.js','marketplace.js','pace.js','auction-competition.js','city-requests.js','game-rework-v016.js'];
+const sourceFiles=[...require('./helpers/core-source.cjs').coreFiles(),'index.html','balance.js','marketplace.js','pace.js','auction-competition.js','city-requests.js','game-rework-v016.js'];
 let engineWorkingTreeDirty=null;
 try{engineWorkingTreeDirty=execFileSync('git',['status','--porcelain','--',...sourceFiles],{encoding:'utf8'}).trim().length>0;}catch{}
 const engineSha256=createHash('sha256');
 for(const file of sourceFiles)engineSha256.update(file+'\0').update(fs.readFileSync(file));
 const html=fs.readFileSync('index.html','utf8');
-const legacy=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
-assert(legacy,'Legacy inline script must exist');
+const legacy=require('./helpers/core-source.cjs').coreSource();
+assert(legacy,'Modular core source must exist');
 const extension=fs.readFileSync('balance.js','utf8');
 new vm.Script(legacy,{filename:'index.html'});
 new vm.Script(extension,{filename:'balance.js'});

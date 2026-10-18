@@ -12,6 +12,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Preserved mechanics and modular architecture
+        run: node tests/feature-contract.cjs && node tests/architecture.cjs
       - name: Game mechanics and syntax smoke tests
         run: node tests/smoke.cjs
       - name: Spatial map, explicit land auction and development rules

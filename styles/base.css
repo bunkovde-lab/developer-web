@@ -1,0 +1,113 @@
+
+:root{color-scheme:dark}*{box-sizing:border-box}body{font-family:system-ui,Arial;background:#0d182a;color:#f0f5ff;margin:0}header{padding:18px;background:#152642;border-bottom:2px solid #d6a85c}h1{margin:0;color:#ffdc92;font-size:25px}small{color:#aebed4}.wrap{max-width:1050px;margin:auto;padding:12px}.stats,.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.pill,.panel{background:#1b304c;border:1px solid #395477;border-radius:12px;padding:10px}.pill{flex:1;min-width:110px}button,select{border:0;border-radius:9px;background:#e0b568;color:#172439;padding:11px;font-weight:800;cursor:pointer}button:disabled{opacity:.4}.board{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:14px 0}.cell{min-height:95px;border:2px solid #355070;border-radius:10px;padding:6px;background:linear-gradient(145deg,#224462,#192d47);font-size:11px;position:relative}.cell.owned{border-color:#ddbc75}.cell.active{box-shadow:0 0 0 2px #ffd275 inset}.cell b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cell span{color:#ffd58a}.tokens{position:absolute;bottom:4px;display:flex;gap:3px;flex-wrap:wrap}.token{width:15px;height:15px;border-radius:50%;border:1px solid white}.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}#log{max-height:220px;overflow:auto;font-size:13px;line-height:1.55}#players{font-size:14px;line-height:1.8} .muted{color:#a7bfd9}@media(max-width:650px){.board{grid-template-columns:repeat(4,minmax(0,1fr))}.cell{min-height:88px}.cols{grid-template-columns:1fr}}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:15px;align-items:start}.board{position:relative;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));aspect-ratio:1/1;gap:3px;padding:7px;margin:0;background:radial-gradient(circle at center,#234d59,#122a3f 75%);border:7px ridge #b68a48;border-radius:18px;box-shadow:0 12px 28px #0008;min-width:0}.cell{min-height:0;overflow:hidden;padding:3px;border-radius:5px;text-align:center;font-size:9px;background:linear-gradient(140deg,#375677,#1a2e48);z-index:2}.cell b{font-size:9px;white-space:normal;line-height:1.1}.cell span{font-size:9px}.cell .tokens{bottom:1px;left:2px}.token{width:10px;height:10px}.city{grid-column:2/9;grid-row:2/9;z-index:1;display:flex;flex-direction:column;gap:4px;padding:8px;background:linear-gradient(160deg,#183d49,#205c54);border:2px solid #ba9b55;border-radius:8px;min-width:0;min-height:0}.city-title{text-align:center;color:#ffe4a5;font-size:16px;font-weight:800;letter-spacing:.08em}.districts{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:6px;min-height:0}.district{background:#19374caa;border:1px solid #8fb2b9;border-radius:8px;padding:4px;min-width:0;display:flex;flex-direction:column;gap:3px}.district strong{font-size:10px;color:#ffdaa0;text-align:center}.lots{flex:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;align-items:stretch}.lot{border:1px solid #679985;background:#2d665c;min-width:0;min-height:0;border-radius:3px;color:#ebfff5;cursor:pointer;padding:0;font-size:10px;font-weight:700}.lot.built{background:#b38b53}.lot.chosen{outline:2px solid #fff2a0}.company-panel{margin:0}.company-panel h3{margin-top:2px}.cols{grid-template-columns:1fr}.scene-tip{font-size:12px;color:#c4d6df;margin:7px 0}.panel{min-width:0}@media(max-width:760px){.layout{grid-template-columns:1fr}.board{width:100%}.cell b{font-size:clamp(6px,1.5vw,10px)}.cell span{font-size:8px}.city-title{font-size:13px}.district strong{font-size:9px}.city{padding:4px}.districts{gap:3px}.lots{gap:1px}.lot{font-size:9px}} 
+
+/* Right-side company cabinet: no horizontal top toolbar. */
+.wrap{max-width:1440px}.layout{grid-template-columns:minmax(0,1fr) 330px;gap:14px}.game-field{min-width:0}.company-panel{display:flex;flex-direction:column;gap:10px;position:sticky;top:10px}.company-panel .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:8px 0}.company-panel .pill{min-width:0;font-size:12px}.company-panel .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0 0}.company-panel .actions button,.company-panel select{font-size:12px;padding:9px 5px;min-width:0}.company-panel .actions label{grid-column:1/-1}.company-panel .panel{padding:11px}.company-panel h3{color:#ffdc92;margin:0 0 6px}.company-panel #log{max-height:180px}@media(max-width:760px){.wrap{overflow-x:auto}.layout{grid-template-columns:minmax(430px,1fr) 260px;width:max(100%,706px)}.company-panel{position:static}.board{width:100%}.company-panel .actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Compact responsive board: fit entire board without horizontal scrolling. */
+html,body{max-width:100%;overflow-x:hidden}
+header{padding:7px 10px}header h1{font-size:clamp(15px,2.5vw,22px)}header small{font-size:10px}
+.wrap{width:100%;max-width:1400px;margin:0 auto;padding:6px}
+.layout{width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(115px,29vw,330px);gap:6px;align-items:start}
+.game-field{min-width:0;display:flex;flex-direction:column;align-items:center}
+.board{width:min(100%,calc(100dvh - 85px));max-width:100%;min-width:0;aspect-ratio:1/1;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));padding:clamp(1px,.5vw,5px);gap:clamp(1px,.25vw,3px);border-width:clamp(2px,.6vw,7px);border-radius:8px}
+.cell{min-height:0;padding:1px;border-width:1px;border-radius:2px;font-size:clamp(4px,.7vw,9px)}
+.cell b{font-size:clamp(4px,.7vw,9px);line-height:1.05;overflow-wrap:anywhere}
+.cell span{font-size:clamp(4px,.65vw,9px)}
+.city{padding:clamp(1px,.4vw,5px);gap:2px;border-width:1px}
+.city-title{font-size:clamp(6px,1.3vw,15px);letter-spacing:0}
+.districts{gap:clamp(1px,.35vw,5px)}
+.district{padding:1px;border-radius:3px;gap:1px;min-width:0}
+.district strong{font-size:clamp(5px,.85vw,10px);line-height:1.05}
+.lots{gap:1px}
+.lot{font-size:clamp(5px,.8vw,10px);line-height:1;overflow:hidden}
+.token{width:clamp(4px,1vw,10px);height:clamp(4px,1vw,10px)}
+.company-panel{min-width:0;position:static;gap:5px}
+.company-panel .panel{padding:clamp(3px,.65vw,10px);border-radius:5px}
+.company-panel h3{font-size:clamp(10px,1.2vw,15px);margin:0 0 4px}
+.company-panel .stats{gap:3px;margin:4px 0}
+.company-panel .pill{padding:clamp(3px,.5vw,8px);font-size:clamp(8px,.9vw,12px);border-radius:4px}
+.company-panel .actions{gap:3px;margin-top:4px}
+.company-panel .actions button,.company-panel select{padding:clamp(4px,.55vw,9px) 2px;font-size:clamp(8px,.9vw,12px);border-radius:4px;overflow-wrap:anywhere}
+#players{font-size:clamp(8px,1vw,13px);line-height:1.35;overflow-wrap:anywhere}
+.company-panel .muted,.company-panel #log{font-size:clamp(8px,.95vw,12px)}
+.scene-tip{margin:3px 0;font-size:clamp(8px,.9vw,11px);text-align:center}
+@media(max-width:760px){
+ .wrap{padding:3px}
+ .layout{width:100%;grid-template-columns:minmax(0,1fr) clamp(110px,31vw,230px);gap:4px}
+ .board{width:min(100%,calc(100dvh - 64px));grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr))}
+ .cell{min-height:0}.cell b{font-size:clamp(4px,1.05vw,7px)}.cell span{font-size:clamp(4px,1vw,7px)}
+ .city-title{font-size:clamp(6px,1.4vw,11px)}.district strong{font-size:clamp(5px,1.05vw,8px)}.lot{font-size:clamp(5px,1.1vw,8px)}
+ .company-panel .actions{grid-template-columns:1fr}
+ .company-panel .actions label{grid-column:1}
+ .company-panel .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .company-panel .muted{display:none}
+}
+
+
+/* Landscape tablet: a wide board instead of the former square. 
+   Keep the 9x9 perimeter indexing and game logic unchanged. */
+@media (orientation:landscape) and (min-width:700px){
+ .wrap{max-width:none;padding:5px 8px}
+ .layout{grid-template-columns:minmax(0,1fr) clamp(220px,25vw,350px);gap:8px}
+ .game-field{align-items:stretch}
+ .board{
+   box-sizing:border-box;
+   width:min(100%,calc((100dvh - 85px)*1.56));
+   max-width:100%;
+   aspect-ratio:1.56 / 1;
+   grid-template-columns:repeat(9,minmax(0,1fr));
+   grid-template-rows:repeat(9,minmax(0,1fr));
+   margin:0 auto;
+ }
+ .cell b{font-size:clamp(8px,.95vw,12px)}
+ .cell span{font-size:clamp(7px,.8vw,10px)}
+ .city-title{font-size:clamp(12px,1.6vw,19px)}
+ .district strong{font-size:clamp(9px,1vw,12px)}
+ .lot{font-size:clamp(9px,1vw,13px)}
+}
+
+/* Playable event-card overlay */
+.card-overlay[hidden]{display:none!important}
+.card-overlay{position:fixed;inset:0;z-index:1000;background:#030b19c9;display:grid;place-items:center;padding:16px}
+.event-card{width:min(92vw,420px);background:linear-gradient(160deg,#2c4a63,#12233d);border:3px solid #d3a85f;border-radius:18px;box-shadow:0 25px 65px #000b;padding:23px;text-align:center;color:#f5f2e9}
+.event-card .deck-label{font-size:12px;letter-spacing:.15em;color:#f2c87c;text-transform:uppercase}
+.event-card h2{font-size:clamp(21px,4vw,30px);color:#ffdf9b;margin:12px 0}
+.event-card p{line-height:1.5}
+.event-card .effect{background:#10243a;border-radius:9px;padding:12px;margin:18px 0;font-weight:700;color:#bdecd6}
+.event-card button{min-width:170px}
+
+.auction-overlay[hidden]{display:none!important}
+.auction-overlay{position:fixed;inset:0;z-index:1200;background:#020711dc;display:grid;place-items:center;padding:12px}
+.auction-box{width:min(92vw,430px);max-height:94dvh;overflow:auto;background:linear-gradient(150deg,#263e5d,#122135);border:3px solid #d7ad65;border-radius:15px;padding:17px;color:#eef5fb;box-shadow:0 20px 60px #0009}
+.auction-box h2{margin:0 0 10px;color:#ffdc92}.auction-box p{font-size:13px;line-height:1.5}
+.auction-box input{width:100%;margin:6px 0 10px;padding:12px;font-size:18px;border-radius:8px;background:white;color:#172439;border:0}
+.auction-buttons{display:flex;gap:7px}.auction-buttons button{flex:1}.auction-hint{font-size:12px;color:#c2d5e6}
+
+.session-menu{margin-bottom:7px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.session-menu button{padding:8px 12px}.session-status{font-size:12px;color:#b9dbd0}
+.session-menu .share-note{font-size:11px;color:#ffdc92}
+.lobby-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.lobby-slots div{padding:9px 7px;border:1px solid #446785;background:#19334e;border-radius:8px;font-size:13px}.lobby-slots .lobby-wait{grid-column:1/-1;opacity:.7}.lobby-controls{margin:12px 0}.lobby-controls select{margin-left:6px}.lobby-buttons{margin:12px 0}.lobby-online{width:100%;opacity:.55;cursor:not-allowed}.auction-overlay .auction-box{max-height:94dvh;overflow:auto}@media(max-width:460px){.lobby-slots{grid-template-columns:1fr}}
+
+.profession-picker{margin:12px 0}.profession-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px}.profession-choice{background:#19334e;color:#f0f5ff;border:1px solid #446785;text-align:left;padding:9px;font-weight:500}.profession-choice[aria-checked="true"]{border:2px solid #f2c36c;background:#2b4563}.profession-choice b{display:block;color:#ffdc92;margin-bottom:4px}.profession-choice small{display:block;font-size:11px;line-height:1.35}
+/* Central parcel map inspired by Developer board AAA v03: separate square parcels and coloured zones */
+.city-map{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;background:linear-gradient(155deg,#163a42,#173c4c 60%,#0e2b36);container-type:size}
+.city-map .city-title{flex:0 0 auto}
+.city-lots{flex:1 1 auto;min-height:0;min-width:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:clamp(1px,.25vw,4px);place-items:center;padding:2px;background:repeating-linear-gradient(90deg,transparent 0 15%,#a2aaa73b 15% 16%,transparent 16% 32%);border-radius:5px}
+.map-plot{position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;aspect-ratio:1;width:min(100%,22cqh);height:auto;max-height:100%;min-height:0;min-width:0;padding:0;border:1px solid #b6d9cd;border-radius:3px;background:linear-gradient(145deg,color-mix(in srgb,var(--zone) 90%,white),var(--zone));color:#fff;box-shadow:inset 0 0 0 1px #071c2769;overflow:hidden}
+.map-plot .plot-id{position:absolute;top:1px;left:2px;font-size:clamp(5px,.7vw,10px);font-weight:900;text-shadow:0 1px 2px #000}
+.map-plot .plot-stage{font-size:clamp(8px,1.2vw,17px);line-height:1}
+.map-plot .plot-zone{font-size:clamp(4px,.57vw,8px);white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis}
+.map-plot.built{background:linear-gradient(140deg,#dcb373,var(--zone))}
+.map-plot.chosen{outline:2px solid #ffea9c;z-index:3}
+.map-plot[style*="--owner:#"]{border-bottom:3px solid var(--owner)}
+.map-key{flex:0 0 auto;text-align:center;font-size:clamp(5px,.65vw,9px);color:#c9e1db;white-space:nowrap;overflow:hidden}
+@media(max-width:760px){.city-lots{gap:1px;padding:1px}.map-plot{border-width:1px}.map-plot .plot-zone{display:none}.map-key{display:none}.map-plot .plot-stage{font-size:clamp(7px,1.8vw,12px)}}
+
+.plot-card-overlay[hidden]{display:none!important}.plot-card-overlay{position:fixed;inset:0;z-index:1250;background:#030915d9;display:grid;place-items:center;padding:10px}.plot-card{width:min(96vw,820px);max-height:94dvh;overflow:auto;border:2px solid #d7ac60;border-radius:15px;background:linear-gradient(140deg,#17354b,#091d2e);padding:16px;color:#ecf2f4;box-shadow:0 20px 70px #000b}.plot-card h2{margin:2px 0 7px;color:#ffe0a2}.plot-card .pc-top{display:flex;justify-content:space-between;gap:10px}.plot-card .pc-sub{font-size:13px;color:#c5d8de;margin:4px 0 13px}.plot-card .pc-projects{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.plot-card .pc-project{background:#203a50;border:1px solid #6b8aa0;border-radius:10px;padding:12px;min-width:0}.plot-card .pc-project strong{color:#f9d89e}.plot-card .pc-project p{font-size:12px;line-height:1.4}.plot-card .pc-project ul{padding-left:17px;font-size:12px;line-height:1.55}.plot-card .pc-project button{width:100%;font-size:12px}.plot-card .pc-foot{font-size:11px;color:#b5cdd8;margin-top:10px}.pc-finished{grid-column:1/-1}.pc-networks{display:grid;gap:7px}.pc-network-item{padding:9px;border:1px solid #476982;border-radius:8px;background:#152b3e}.pc-network-item button{display:block;width:100%;margin:7px 0 0}@media(max-width:690px){.plot-card .pc-projects{grid-template-columns:1fr}.plot-card{width:min(96vw,460px)}}
+.construction-deck-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.construction-deck-choices button{min-height:75px;white-space:normal}@media(max-width:420px){.construction-deck-choices{grid-template-columns:1fr}}#cardEffect{white-space:pre-line;text-align:left;line-height:1.6}.inventory-card{padding:6px 8px;border:1px solid #496481;border-radius:8px;margin:5px 0;font-size:12px}.pc-project button{margin:5px 0;white-space:normal}
+.hand-section{margin-top:14px}.hand-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;align-items:center}.hand-heading h3{margin:3px 0 10px}.hand-heading span{font-size:12px;color:#c2d3ea}.hand-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hand-category{border:1px solid #476282;border-radius:10px;background:#142840;min-width:0;overflow:hidden}.hand-category summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:11px;font-size:13px;font-weight:700;list-style:none}.hand-category summary::-webkit-details-marker{display:none}.hand-category summary:after{content:'⌄';color:#b9d0f0}.hand-category[open] summary:after{content:'⌃'}.hand-count{display:inline-block;min-width:24px;text-align:center;background:#36547a;color:#fff;border-radius:99px;padding:2px 7px}.hand-stack{padding:0 10px 10px;display:grid;gap:7px}.hand-card{background:#253c5c;border:1px solid #56739b;border-radius:9px;padding:10px;font-size:12px;overflow-wrap:anywhere}.hand-card strong{display:block;font-size:13px;margin-bottom:5px}.hand-card small{display:block;color:#d4e1f1;line-height:1.45}.hand-empty{color:#93a8c5;font-size:12px;margin:0}.hand-card button{margin-top:8px;width:100%;padding:9px;font-size:12px}@media(min-width:650px){.hand-groups{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.contract-detail{padding:0}.contract-detail summary{display:block;cursor:pointer;padding:10px;list-style:none}.contract-detail summary::-webkit-details-marker{display:none}.contract-detail summary strong{margin-bottom:5px}.contract-detail summary small{margin:0}.contract-body{padding:0 10px 10px}.contract-body p{margin:7px 0;line-height:1.45}.contract-detail[open]{border-color:#e0b568}
+.market-apply-label{display:block;font-size:12px;margin-top:8px}.market-apply-label select{display:block;width:100%;margin-top:5px;min-width:0;font-size:14px}.hand-card button{margin-top:8px}
+.win-banner[hidden]{display:none!important}.win-banner{border:2px solid #e0b568;margin-top:10px}.win-banner h3{margin:0 0 7px;color:#ffe09e}.win-banner p{margin:0;line-height:1.5}
