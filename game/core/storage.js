@@ -14,10 +14,13 @@ function resumeSavedGame(){
   const raw=readStoredValue(STORAGE_KEY);
   if(!raw){state=null;showSessionMenu();return}
   const loaded=validateSavedGame(raw);
+  // A restored transaction owns its UI; discard dialogs from the previous state.
+  document.querySelectorAll('[role="dialog"]').forEach(dialog=>{dialog.hidden=true});
+  $('auditDecision')?.remove?.();$('quickSaleOverlay')?.remove?.();
   state=loaded;
   $('count').value=String(state.players.length);
   render();
-  state.players.forEach(p=>{if(!Array.isArray(p.cards))p.cards=[]});if(state.pendingCard&&!current().bot)showCard();if(state.constructionDeckChoice)showConstructionDeckChoice();
+  state.players.forEach(p=>{if(!Array.isArray(p.cards))p.cards=[]});if(state.pendingCard&&!state.auditPending&&!current().bot)showCard();if(state.constructionDeckChoice)showConstructionDeckChoice();
   if(state.auction)showAuction();
   if(current().bot&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice)scheduleTurnTask(bot,450);
   return true;

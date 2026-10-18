@@ -60,7 +60,7 @@ jobs:
       - name: RC1 stale timers, storage failures and full browser campaigns
         run: node tests/browser_rc1_stability.cjs
       - name: Studio shell and portable save UI
-        run: node tests/browser_studio.cjs && node tests/browser_storage_v019.cjs
+        run: node tests/browser_studio.cjs && node tests/browser_storage_v019.cjs && node tests/browser_pending_restore.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
