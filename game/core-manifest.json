@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "baseline": "c86df7daac15172fcea3afdc2a94a7ca0265b468",
+  "files": [
+    "game/rules.js",
+    "game/core/catalog.js",
+    "game/core/state.js",
+    "game/core/auctions.js",
+    "game/core/cards.js",
+    "game/core/construction.js",
+    "game/core/finance.js",
+    "game/core/inventory.js",
+    "game/core/board.js",
+    "game/core/storage.js",
+    "game/bots.js"
+  ],
+  "entrypoint": "game/core/bootstrap.js"
+}

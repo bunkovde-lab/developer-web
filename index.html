@@ -1,1072 +1,399 @@
-<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Девелопер — браузерная версия</title><style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{font-family:system-ui,Arial;background:#0d182a;color:#f0f5ff;margin:0}header{padding:18px;background:#152642;border-bottom:2px solid #d6a85c}h1{margin:0;color:#ffdc92;font-size:25px}small{color:#aebed4}.wrap{max-width:1050px;margin:auto;padding:12px}.stats,.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.pill,.panel{background:#1b304c;border:1px solid #395477;border-radius:12px;padding:10px}.pill{flex:1;min-width:110px}button,select{border:0;border-radius:9px;background:#e0b568;color:#172439;padding:11px;font-weight:800;cursor:pointer}button:disabled{opacity:.4}.board{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:14px 0}.cell{min-height:95px;border:2px solid #355070;border-radius:10px;padding:6px;background:linear-gradient(145deg,#224462,#192d47);font-size:11px;position:relative}.cell.owned{border-color:#ddbc75}.cell.active{box-shadow:0 0 0 2px #ffd275 inset}.cell b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cell span{color:#ffd58a}.tokens{position:absolute;bottom:4px;display:flex;gap:3px;flex-wrap:wrap}.token{width:15px;height:15px;border-radius:50%;border:1px solid white}.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}#log{max-height:220px;overflow:auto;font-size:13px;line-height:1.55}#players{font-size:14px;line-height:1.8} .muted{color:#a7bfd9}@media(max-width:650px){.board{grid-template-columns:repeat(4,minmax(0,1fr))}.cell{min-height:88px}.cols{grid-template-columns:1fr}}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:15px;align-items:start}.board{position:relative;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));aspect-ratio:1/1;gap:3px;padding:7px;margin:0;background:radial-gradient(circle at center,#234d59,#122a3f 75%);border:7px ridge #b68a48;border-radius:18px;box-shadow:0 12px 28px #0008;min-width:0}.cell{min-height:0;overflow:hidden;padding:3px;border-radius:5px;text-align:center;font-size:9px;background:linear-gradient(140deg,#375677,#1a2e48);z-index:2}.cell b{font-size:9px;white-space:normal;line-height:1.1}.cell span{font-size:9px}.cell .tokens{bottom:1px;left:2px}.token{width:10px;height:10px}.city{grid-column:2/9;grid-row:2/9;z-index:1;display:flex;flex-direction:column;gap:4px;padding:8px;background:linear-gradient(160deg,#183d49,#205c54);border:2px solid #ba9b55;border-radius:8px;min-width:0;min-height:0}.city-title{text-align:center;color:#ffe4a5;font-size:16px;font-weight:800;letter-spacing:.08em}.districts{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:6px;min-height:0}.district{background:#19374caa;border:1px solid #8fb2b9;border-radius:8px;padding:4px;min-width:0;display:flex;flex-direction:column;gap:3px}.district strong{font-size:10px;color:#ffdaa0;text-align:center}.lots{flex:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;align-items:stretch}.lot{border:1px solid #679985;background:#2d665c;min-width:0;min-height:0;border-radius:3px;color:#ebfff5;cursor:pointer;padding:0;font-size:10px;font-weight:700}.lot.built{background:#b38b53}.lot.chosen{outline:2px solid #fff2a0}.company-panel{margin:0}.company-panel h3{margin-top:2px}.cols{grid-template-columns:1fr}.scene-tip{font-size:12px;color:#c4d6df;margin:7px 0}.panel{min-width:0}@media(max-width:760px){.layout{grid-template-columns:1fr}.board{width:100%}.cell b{font-size:clamp(6px,1.5vw,10px)}.cell span{font-size:8px}.city-title{font-size:13px}.district strong{font-size:9px}.city{padding:4px}.districts{gap:3px}.lots{gap:1px}.lot{font-size:9px}} 
-
-/* Right-side company cabinet: no horizontal top toolbar. */
-.wrap{max-width:1440px}.layout{grid-template-columns:minmax(0,1fr) 330px;gap:14px}.game-field{min-width:0}.company-panel{display:flex;flex-direction:column;gap:10px;position:sticky;top:10px}.company-panel .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:8px 0}.company-panel .pill{min-width:0;font-size:12px}.company-panel .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0 0}.company-panel .actions button,.company-panel select{font-size:12px;padding:9px 5px;min-width:0}.company-panel .actions label{grid-column:1/-1}.company-panel .panel{padding:11px}.company-panel h3{color:#ffdc92;margin:0 0 6px}.company-panel #log{max-height:180px}@media(max-width:760px){.wrap{overflow-x:auto}.layout{grid-template-columns:minmax(430px,1fr) 260px;width:max(100%,706px)}.company-panel{position:static}.board{width:100%}.company-panel .actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
-
-/* Compact responsive board: fit entire board without horizontal scrolling. */
-html,body{max-width:100%;overflow-x:hidden}
-header{padding:7px 10px}header h1{font-size:clamp(15px,2.5vw,22px)}header small{font-size:10px}
-.wrap{width:100%;max-width:1400px;margin:0 auto;padding:6px}
-.layout{width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(115px,29vw,330px);gap:6px;align-items:start}
-.game-field{min-width:0;display:flex;flex-direction:column;align-items:center}
-.board{width:min(100%,calc(100dvh - 85px));max-width:100%;min-width:0;aspect-ratio:1/1;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));padding:clamp(1px,.5vw,5px);gap:clamp(1px,.25vw,3px);border-width:clamp(2px,.6vw,7px);border-radius:8px}
-.cell{min-height:0;padding:1px;border-width:1px;border-radius:2px;font-size:clamp(4px,.7vw,9px)}
-.cell b{font-size:clamp(4px,.7vw,9px);line-height:1.05;overflow-wrap:anywhere}
-.cell span{font-size:clamp(4px,.65vw,9px)}
-.city{padding:clamp(1px,.4vw,5px);gap:2px;border-width:1px}
-.city-title{font-size:clamp(6px,1.3vw,15px);letter-spacing:0}
-.districts{gap:clamp(1px,.35vw,5px)}
-.district{padding:1px;border-radius:3px;gap:1px;min-width:0}
-.district strong{font-size:clamp(5px,.85vw,10px);line-height:1.05}
-.lots{gap:1px}
-.lot{font-size:clamp(5px,.8vw,10px);line-height:1;overflow:hidden}
-.token{width:clamp(4px,1vw,10px);height:clamp(4px,1vw,10px)}
-.company-panel{min-width:0;position:static;gap:5px}
-.company-panel .panel{padding:clamp(3px,.65vw,10px);border-radius:5px}
-.company-panel h3{font-size:clamp(10px,1.2vw,15px);margin:0 0 4px}
-.company-panel .stats{gap:3px;margin:4px 0}
-.company-panel .pill{padding:clamp(3px,.5vw,8px);font-size:clamp(8px,.9vw,12px);border-radius:4px}
-.company-panel .actions{gap:3px;margin-top:4px}
-.company-panel .actions button,.company-panel select{padding:clamp(4px,.55vw,9px) 2px;font-size:clamp(8px,.9vw,12px);border-radius:4px;overflow-wrap:anywhere}
-#players{font-size:clamp(8px,1vw,13px);line-height:1.35;overflow-wrap:anywhere}
-.company-panel .muted,.company-panel #log{font-size:clamp(8px,.95vw,12px)}
-.scene-tip{margin:3px 0;font-size:clamp(8px,.9vw,11px);text-align:center}
-@media(max-width:760px){
- .wrap{padding:3px}
- .layout{width:100%;grid-template-columns:minmax(0,1fr) clamp(110px,31vw,230px);gap:4px}
- .board{width:min(100%,calc(100dvh - 64px));grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr))}
- .cell{min-height:0}.cell b{font-size:clamp(4px,1.05vw,7px)}.cell span{font-size:clamp(4px,1vw,7px)}
- .city-title{font-size:clamp(6px,1.4vw,11px)}.district strong{font-size:clamp(5px,1.05vw,8px)}.lot{font-size:clamp(5px,1.1vw,8px)}
- .company-panel .actions{grid-template-columns:1fr}
- .company-panel .actions label{grid-column:1}
- .company-panel .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
- .company-panel .muted{display:none}
-}
-
-
-/* Landscape tablet: a wide board instead of the former square. 
-   Keep the 9x9 perimeter indexing and game logic unchanged. */
-@media (orientation:landscape) and (min-width:700px){
- .wrap{max-width:none;padding:5px 8px}
- .layout{grid-template-columns:minmax(0,1fr) clamp(220px,25vw,350px);gap:8px}
- .game-field{align-items:stretch}
- .board{
-   box-sizing:border-box;
-   width:min(100%,calc((100dvh - 85px)*1.56));
-   max-width:100%;
-   aspect-ratio:1.56 / 1;
-   grid-template-columns:repeat(9,minmax(0,1fr));
-   grid-template-rows:repeat(9,minmax(0,1fr));
-   margin:0 auto;
- }
- .cell b{font-size:clamp(8px,.95vw,12px)}
- .cell span{font-size:clamp(7px,.8vw,10px)}
- .city-title{font-size:clamp(12px,1.6vw,19px)}
- .district strong{font-size:clamp(9px,1vw,12px)}
- .lot{font-size:clamp(9px,1vw,13px)}
-}
-
-/* Playable event-card overlay */
-.card-overlay[hidden]{display:none!important}
-.card-overlay{position:fixed;inset:0;z-index:1000;background:#030b19c9;display:grid;place-items:center;padding:16px}
-.event-card{width:min(92vw,420px);background:linear-gradient(160deg,#2c4a63,#12233d);border:3px solid #d3a85f;border-radius:18px;box-shadow:0 25px 65px #000b;padding:23px;text-align:center;color:#f5f2e9}
-.event-card .deck-label{font-size:12px;letter-spacing:.15em;color:#f2c87c;text-transform:uppercase}
-.event-card h2{font-size:clamp(21px,4vw,30px);color:#ffdf9b;margin:12px 0}
-.event-card p{line-height:1.5}
-.event-card .effect{background:#10243a;border-radius:9px;padding:12px;margin:18px 0;font-weight:700;color:#bdecd6}
-.event-card button{min-width:170px}
-
-.auction-overlay[hidden]{display:none!important}
-.auction-overlay{position:fixed;inset:0;z-index:1200;background:#020711dc;display:grid;place-items:center;padding:12px}
-.auction-box{width:min(92vw,430px);max-height:94dvh;overflow:auto;background:linear-gradient(150deg,#263e5d,#122135);border:3px solid #d7ad65;border-radius:15px;padding:17px;color:#eef5fb;box-shadow:0 20px 60px #0009}
-.auction-box h2{margin:0 0 10px;color:#ffdc92}.auction-box p{font-size:13px;line-height:1.5}
-.auction-box input{width:100%;margin:6px 0 10px;padding:12px;font-size:18px;border-radius:8px;background:white;color:#172439;border:0}
-.auction-buttons{display:flex;gap:7px}.auction-buttons button{flex:1}.auction-hint{font-size:12px;color:#c2d5e6}
-
-.session-menu{margin-bottom:7px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-.session-menu button{padding:8px 12px}.session-status{font-size:12px;color:#b9dbd0}
-.session-menu .share-note{font-size:11px;color:#ffdc92}
-.lobby-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.lobby-slots div{padding:9px 7px;border:1px solid #446785;background:#19334e;border-radius:8px;font-size:13px}.lobby-slots .lobby-wait{grid-column:1/-1;opacity:.7}.lobby-controls{margin:12px 0}.lobby-controls select{margin-left:6px}.lobby-buttons{margin:12px 0}.lobby-online{width:100%;opacity:.55;cursor:not-allowed}.auction-overlay .auction-box{max-height:94dvh;overflow:auto}@media(max-width:460px){.lobby-slots{grid-template-columns:1fr}}
-
-.profession-picker{margin:12px 0}.profession-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px}.profession-choice{background:#19334e;color:#f0f5ff;border:1px solid #446785;text-align:left;padding:9px;font-weight:500}.profession-choice[aria-checked="true"]{border:2px solid #f2c36c;background:#2b4563}.profession-choice b{display:block;color:#ffdc92;margin-bottom:4px}.profession-choice small{display:block;font-size:11px;line-height:1.35}
-/* Central parcel map inspired by Developer board AAA v03: separate square parcels and coloured zones */
-.city-map{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;background:linear-gradient(155deg,#163a42,#173c4c 60%,#0e2b36);container-type:size}
-.city-map .city-title{flex:0 0 auto}
-.city-lots{flex:1 1 auto;min-height:0;min-width:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:clamp(1px,.25vw,4px);place-items:center;padding:2px;background:repeating-linear-gradient(90deg,transparent 0 15%,#a2aaa73b 15% 16%,transparent 16% 32%);border-radius:5px}
-.map-plot{position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;aspect-ratio:1;width:min(100%,22cqh);height:auto;max-height:100%;min-height:0;min-width:0;padding:0;border:1px solid #b6d9cd;border-radius:3px;background:linear-gradient(145deg,color-mix(in srgb,var(--zone) 90%,white),var(--zone));color:#fff;box-shadow:inset 0 0 0 1px #071c2769;overflow:hidden}
-.map-plot .plot-id{position:absolute;top:1px;left:2px;font-size:clamp(5px,.7vw,10px);font-weight:900;text-shadow:0 1px 2px #000}
-.map-plot .plot-stage{font-size:clamp(8px,1.2vw,17px);line-height:1}
-.map-plot .plot-zone{font-size:clamp(4px,.57vw,8px);white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis}
-.map-plot.built{background:linear-gradient(140deg,#dcb373,var(--zone))}
-.map-plot.chosen{outline:2px solid #ffea9c;z-index:3}
-.map-plot[style*="--owner:#"]{border-bottom:3px solid var(--owner)}
-.map-key{flex:0 0 auto;text-align:center;font-size:clamp(5px,.65vw,9px);color:#c9e1db;white-space:nowrap;overflow:hidden}
-@media(max-width:760px){.city-lots{gap:1px;padding:1px}.map-plot{border-width:1px}.map-plot .plot-zone{display:none}.map-key{display:none}.map-plot .plot-stage{font-size:clamp(7px,1.8vw,12px)}}
-
-.plot-card-overlay[hidden]{display:none!important}.plot-card-overlay{position:fixed;inset:0;z-index:1250;background:#030915d9;display:grid;place-items:center;padding:10px}.plot-card{width:min(96vw,820px);max-height:94dvh;overflow:auto;border:2px solid #d7ac60;border-radius:15px;background:linear-gradient(140deg,#17354b,#091d2e);padding:16px;color:#ecf2f4;box-shadow:0 20px 70px #000b}.plot-card h2{margin:2px 0 7px;color:#ffe0a2}.plot-card .pc-top{display:flex;justify-content:space-between;gap:10px}.plot-card .pc-sub{font-size:13px;color:#c5d8de;margin:4px 0 13px}.plot-card .pc-projects{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.plot-card .pc-project{background:#203a50;border:1px solid #6b8aa0;border-radius:10px;padding:12px;min-width:0}.plot-card .pc-project strong{color:#f9d89e}.plot-card .pc-project p{font-size:12px;line-height:1.4}.plot-card .pc-project ul{padding-left:17px;font-size:12px;line-height:1.55}.plot-card .pc-project button{width:100%;font-size:12px}.plot-card .pc-foot{font-size:11px;color:#b5cdd8;margin-top:10px}.pc-finished{grid-column:1/-1}.pc-networks{display:grid;gap:7px}.pc-network-item{padding:9px;border:1px solid #476982;border-radius:8px;background:#152b3e}.pc-network-item button{display:block;width:100%;margin:7px 0 0}@media(max-width:690px){.plot-card .pc-projects{grid-template-columns:1fr}.plot-card{width:min(96vw,460px)}}
-.construction-deck-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.construction-deck-choices button{min-height:75px;white-space:normal}@media(max-width:420px){.construction-deck-choices{grid-template-columns:1fr}}#cardEffect{white-space:pre-line;text-align:left;line-height:1.6}.inventory-card{padding:6px 8px;border:1px solid #496481;border-radius:8px;margin:5px 0;font-size:12px}.pc-project button{margin:5px 0;white-space:normal}
-.hand-section{margin-top:14px}.hand-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;align-items:center}.hand-heading h3{margin:3px 0 10px}.hand-heading span{font-size:12px;color:#c2d3ea}.hand-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hand-category{border:1px solid #476282;border-radius:10px;background:#142840;min-width:0;overflow:hidden}.hand-category summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:11px;font-size:13px;font-weight:700;list-style:none}.hand-category summary::-webkit-details-marker{display:none}.hand-category summary:after{content:'⌄';color:#b9d0f0}.hand-category[open] summary:after{content:'⌃'}.hand-count{display:inline-block;min-width:24px;text-align:center;background:#36547a;color:#fff;border-radius:99px;padding:2px 7px}.hand-stack{padding:0 10px 10px;display:grid;gap:7px}.hand-card{background:#253c5c;border:1px solid #56739b;border-radius:9px;padding:10px;font-size:12px;overflow-wrap:anywhere}.hand-card strong{display:block;font-size:13px;margin-bottom:5px}.hand-card small{display:block;color:#d4e1f1;line-height:1.45}.hand-empty{color:#93a8c5;font-size:12px;margin:0}.hand-card button{margin-top:8px;width:100%;padding:9px;font-size:12px}@media(min-width:650px){.hand-groups{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.contract-detail{padding:0}.contract-detail summary{display:block;cursor:pointer;padding:10px;list-style:none}.contract-detail summary::-webkit-details-marker{display:none}.contract-detail summary strong{margin-bottom:5px}.contract-detail summary small{margin:0}.contract-body{padding:0 10px 10px}.contract-body p{margin:7px 0;line-height:1.45}.contract-detail[open]{border-color:#e0b568}
-.market-apply-label{display:block;font-size:12px;margin-top:8px}.market-apply-label select{display:block;width:100%;margin-top:5px;min-width:0;font-size:14px}.hand-card button{margin-top:8px}
-.win-banner[hidden]{display:none!important}.win-banner{border:2px solid #e0b568;margin-top:10px}.win-banner h3{margin:0 0 7px;color:#ffe09e}.win-banner p{margin:0;line-height:1.5}
-</style><link rel="stylesheet" href="visual.css?v=130"><link rel="stylesheet" href="scene-motion.css?v=180"></head>
-<body><header><h1>🏙️ ДЕВЕЛОПЕР</h1><small>HTML · v0.18.1-rc1 · ТЕСТОВАЯ СБОРКА</small></header><main class="wrap">
-<section class="hand-dock" aria-label="Мои карты на руках"><div class="hand-dock-title"><strong>🎴 Мои карты</strong><span id="handOwner"></span></div><div id="handQuick" class="hand-quick" role="group" aria-label="Выбор категории карт"></div></section>
-<div class="layout"><div class="game-field"><div class="board" id="board"></div><button type="button" class="board-zoom-action" id="v10Zoom" aria-label="Увеличить центральную карту участков">🔎 Увеличить город</button><section class="panel win-banner" id="winBanner" hidden><h3 id="winTitle"></h3><p id="winDetails"></p></section><p class="scene-tip">Нажмите на участок, чтобы посмотреть его объект и статус.</p></div><aside class="cols company-panel" aria-label="Кабинет компании и управление"><section class="panel cabinet-main"><div class="cabinet-heading"><h3>Игровой кабинет</h3><button class="cabinet-menu-button" id="sessionOpen" type="button" onclick="showSessionMenu()">☰ Меню</button></div><div class="stats"><div class="pill">Раунд: <b id="round">1</b></div><div class="pill">Ход: <b id="who">—</b></div><div class="pill">Капитал: <b id="money">—</b></div><div class="pill">Бросок: <b id="dice">—</b></div><div class="pill">Аренда за круг: <b id="rentalIncome">0</b> тыс.</div><div class="pill">Следующий «Старт»: <b id="startPayout">0</b> тыс.</div></div><div class="actions"><select id="count" hidden aria-hidden="true"><option>3</option><option>4</option><option>5</option><option>6</option></select><button onclick="roll()" id="roll">🎲 Бросить кубик</button><button onclick="buy()" id="buy">Аукцион (только клетка)</button><button onclick="build()" id="build">🏗️ Построить</button><button onclick="sell()" id="sell">Продать объект</button><button onclick="openPropertySale()" id="propertySale">🏙️ Предложить объект игрокам</button><button onclick="endTurn()" id="end">Завершить ход</button></div></section></aside></div><section class="secondary-panels" aria-label="Дополнительная информация"><section class="panel"><h3>Участники</h3><div id="players"></div></section><section class="panel"><h3>События партии</h3><div id="log"></div></section></section>
-</main><div class="auction-overlay hand-overlay" id="handOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="handDialogTitle"><div class="hand-dialog"><div class="hand-dialog-head"><div><h2 id="handDialogTitle">🎴 Мои карты</h2><p id="handDialogHint">Выберите карту, чтобы увидеть описание и доступное действие</p></div><button type="button" id="handClose" onclick="closeHandCards()" aria-label="Закрыть карты">✕</button></div><div class="hand-groups" id="handGroups"></div></div></div><div class="auction-overlay" id="constructionDeckOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="constructionDeckTitle"><div class="auction-box"><h2 id="constructionDeckTitle">🏗️ Выберите колоду строительства</h2><p>Выберите строительную колоду. Дополнительные карты начисляются из физического запаса, если они доступны.</p><div class="construction-deck-choices"><button onclick="selectConstructionDeck('utilities')">📐 Проектирование</button><button onclick="selectConstructionDeck('permits')">📑 Разрешения</button><button onclick="selectConstructionDeck('construction')">🏗️ Строительство</button><button onclick="selectConstructionDeck('commissioning')">🏢 Ввод в эксплуатацию</button></div></div></div><div class="auction-overlay" id="propertySaleOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="propertySaleTitle"><div class="auction-box"><h2 id="propertySaleTitle">🏙️ Продажа готовой недвижимости</h2><p>Объект продаётся целиком вместе с действующим арендатором. Торги проходят между другими участниками.</p><label>Объект <select id="propertySaleLot"></select></label><label>Стартовая цена, тыс. <input type="number" id="propertySalePrice" min="1" step="1" value="400"></label><p id="propertySaleMessage" role="status"></p><button type="button" onclick="runPropertySale()">🔨 Предложить участникам</button><button type="button" onclick="closePropertySale()">Закрыть</button></div></div><div class="auction-overlay" id="exchangeOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="exchangeTitle"><div class="auction-box"><h2 id="exchangeTitle">📈 Биржа недвижимости</h2><p>Карты инвесторов, арендаторов и покупателей продаются с повышением ставок.</p><label>Карта <select id="exchangeCard"></select></label><label>Начальная цена, тыс. <input id="exchangePrice" type="number" min="1" step="1" value="30"></label><p id="exchangeMessage" role="status"></p><button type="button" onclick="runExchangeAuction()">🔨 Провести аукцион</button><hr><h3>📋 Заявки биржи</h3><p>Вместо продажи игрокам вытяните случайный запрос. Подходящую карту можно продать бирже с премией.</p><button type="button" id="exchangeDrawBtn" onclick="drawExchangeDemand()">🎴 Вытянуть заявку</button><div id="exchangeDemandInfo" role="status"></div><label id="exchangeMatchLabel" hidden>Подходящая карта <select id="exchangeMatchCard"></select></label><button type="button" id="exchangeSellDemandBtn" onclick="sellToExchangeDemand()" hidden>💰 Выполнить заявку</button><button type="button" onclick="closeExchange()">Закрыть</button></div></div><div class="auction-overlay" id="dealOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="dealTitle"><div class="auction-box"><h2 id="dealTitle">🤝 Сделка: продать карту</h2><label>Карта <select id="dealCard"></select></label><label>Покупатель <select id="dealBuyer"></select></label><label>Цена, игровые деньги <input id="dealPrice" type="number" min="0" step="1" value="50"></label><p id="dealMessage">Боты принимают предложение, если хватает средств и цена не превышает их оценку карты.</p><button onclick="offerCardTrade()">Предложить сделку</button><hr><h3>📋 Заказы подрядчиков</h3><p>Вытяните запрос на строительную карту вместо продажи игрокам. Если нужной карты нет, заявка возвращается в колоду.</p><button type="button" id="dealDrawBtn" onclick="drawDealDemand()">🎴 Вытянуть заявку</button><div id="dealDemandInfo" role="status"></div><label id="dealMatchLabel" hidden>Подходящая карта <select id="dealMatchCard"></select></label><button id="dealSellDemandBtn" type="button" onclick="sellDealDemand()" hidden>💰 Выполнить заявку</button><button onclick="closeCardTrade()">Закрыть</button></div></div><div class="card-overlay" id="cardOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="cardTitle"><div class="event-card"><div class="deck-label" id="cardDeck"></div><h2 id="cardTitle"></h2><p id="cardText"></p><div class="effect" id="cardEffect"></div><button onclick="dismissCard()">Принять событие</button></div></div><div class="auction-overlay" id="landSelectOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="landSelectTitle"><div class="auction-box land-select-box"><div class="pc-top"><h2 id="landSelectTitle">⚖️ Аукцион · карта города</h2><button type="button" onclick="closeLandSelection()" aria-label="Закрыть выбор">✕</button></div><p>Выберите свободную клетку на карте из 24 участков. Видно, где строят соперники, где ваши соседние здания и какой путь к победе можно перекрыть.</p><div class="auction-city-map"><div class="auction-city-map-title">🏙 ДЕВЕЛОПЕР · 24 УЧАСТКА · 6 × 4</div><div class="land-browse" id="landBrowse" aria-label="Центральное поле для выбора участка"></div></div><p class="land-selection-info" id="landSelectionInfo">Выберите свободный участок на карте; занятые клетки отмечены владельцами.</p><div class="land-selection-actions"><button type="button" class="land-primary" id="landBidStart" onclick="startSelectedLandAuction()" disabled>⚖️ Начать торги</button><button type="button" onclick="closeLandSelection()">Отмена</button></div></div></div><div class="auction-overlay" id="auctionOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="auctionTitle"><div class="auction-box"><h2 id="auctionTitle">🔒 Закрытый аукцион</h2><p id="auctionInfo"></p><p class="auction-hint">Цена повышается по очереди. Боты отвечают после вашего хода.</p><label for="auctionBid">Ваша закрытая ставка</label><input id="auctionBid" type="number" min="0" step="1" inputmode="numeric" autocomplete="off"><div class="auction-buttons"><button onclick="submitAuctionBid()">Повысить цену</button><button onclick="submitAuctionBid(true)">Пропустить</button></div><p id="auctionError" role="status"></p></div></div><div class="auction-overlay" id="sessionOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="sessionTitle"><div class="auction-box"><h2 id="sessionTitle">☰ Меню «Девелопера»</h2><p class="session-status" id="sessionStatus">Партия сохранена локально</p><p id="sessionInfo">Игра сохраняется автоматически на этом устройстве. Обновление браузера не начинает новую партию.</p><div class="profession-picker"><p><b>Ваша профессия перед стартом партии</b></p><div id="professionChoices" class="profession-choices" role="radiogroup" aria-label="Выбор профессии"></div><p class="muted">Профессия сохраняется до конца партии. Бонусы пока не активны — их параметры ещё согласуются.</p></div><div id="lobbySlots" class="lobby-slots"></div><div class="lobby-controls"><label>Количество ботов (от 2 до 5) <select id="lobbyBots" onchange="updateLobby()"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label></div><div class="auction-buttons lobby-buttons"><button id="continueGame" onclick="closeSessionMenu()">Вернуться в игру</button><button type="button" onclick="startLobbyGame()">🆕 Новая партия</button></div><div class="menu-options"><button type="button" id="v10Sound" aria-label="Включить или отключить звуки игры" aria-pressed="false">🔊 Звук включён</button><button type="button" onclick="save()">💾 Сохранить</button><button type="button" onclick="load()">📂 Загрузить</button></div><button class="lobby-online" disabled title="Нужен сервер синхронизации">Пригласить игрока по ссылке — скоро</button><p class="auction-hint">Локальная версия: 1 человек и 2–5 ботов. Для покупки земли необходимо участвовать в аукционах; готовых участков при старте нет.</p></div></div><div id="plotCardOverlay" class="plot-card-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="plotCardTitle"><div class="plot-card"><div class="pc-top"><h2 id="plotCardTitle">Участок</h2><button onclick="closePlotCard()" aria-label="Закрыть карточку">✕</button></div><div class="pc-sub" id="plotCardInfo"></div><div class="pc-projects" id="plotCardProjects"></div><div class="pc-foot">Стоимость участка не является требованием к оплате этапов. Временные цены карт используют прежние условные единицы; экономика требует согласования.</div></div></div><script>
-const ZONE_LIBRARY={
- J1:{title:'Ж1 · ИЖС',short:'Ж1',color:'#2e906e',sizes:[0],base:120,step:7,desc:'Дешёвый малый объект; много соседних участков, легко начать цепочку.'},
- RET:{title:'Торговля',short:'Т',color:'#d5a752',sizes:[0,1],base:220,step:14,desc:'Малый или средний объект; переход между жилым районом и дорогими кварталами.'},
- PK:{title:'ПК · Производство',short:'ПК',color:'#6c97b3',sizes:[1,2],base:350,step:26,desc:'Средний или крупный проект; соседняя земля важна для крупного комплекса.'},
- OD:{title:'ОД · Деловой центр',short:'ОД',color:'#a884bb',sizes:[1,2],base:510,step:37,desc:'Высокая цена входа, высокий порог строительных ресурсов.'},
- JK4:{title:'Ж4 · Многоэтажная жилая',short:'Ж4',color:'#5bb6c4',sizes:[1,2],base:660,step:52,desc:'Дорогая многоэтажная застройка. Простые малые объекты запрещены.'},
- UNIQUE:{title:'Уникальная локация',short:'★',color:'#e4be76',sizes:[1,2],base:930,step:200,desc:'Особая дорогая земля: стратегический узел, пригодный для среднего или крупного комплекса.'}
-};
-const ZONE_GRID=[
- 'J1','J1','J1','RET','RET','RET',
- 'J1','J1','J1','RET','RET','PK',
- 'J1','J1','J1','OD','PK','PK',
- 'J1','JK4','JK4','OD','UNIQUE','UNIQUE'
-];
-const UNIQUE_NAMES={22:'Набережная · Премиум',23:'Транспортный узел'};
-const UNIQUE_BENEFITS={
- 22:{desc:'Престижная набережная: премия к цене продажи выше арендной.',sale:2.05,rent:1.78},
- 23:{desc:'Транспортный узел: премия к аренде выше цены продажи.',sale:1.78,rent:2.14}
-};
-function locationYield(index,kind){
- const site=UNIQUE_BENEFITS[index];
- if(site)return kind==='tenant'?site.rent:site.sale;
- return {J1:1,RET:1.12,PK:1.24,OD:1.47,JK4:1.63}[ZONE_GRID[index]]||1;
-}
-const names=ZONE_GRID.map((code,i)=>UNIQUE_NAMES[i]||ZONE_LIBRARY[code].short+' · участок '+(i+1));
-function canonicalLot(index){
- const zone=ZONE_LIBRARY[ZONE_GRID[index]];
- if(!zone)return null;
- const pos=ZONE_GRID.slice(0,index).filter(z=>z===ZONE_GRID[index]).length;
- return {zone:ZONE_GRID[index],price:zone.base+zone.step*pos,name:names[index],owner:-1,level:0};
-}
-function zoneOf(index){return ZONE_LIBRARY[ZONE_GRID[index]]||ZONE_LIBRARY.J1}
-function allowedProject(index,size){return !!state?.plots?.[index]&&zoneOf(index).sizes.includes(size)}
-function adjacentOwner(index,player){
- const free=neighborsBySide(index).filter(j=>state.plots[j].owner===player && !state.plots[j].project && !Number.isInteger(state.plots[j].reservedFor));
- return free;
-}
-function largePairCandidate(index,owner){
- if(!state||state.plots[index]?.owner!==owner)return -1;
- return adjacentOwner(index,owner).find(j=>ZONE_GRID[j]===ZONE_GRID[index]||zoneOf(j).sizes.includes(2))??-1;
-}
-function territoryAnalysis(index,playerIndex){
- if(!state?.plots?.[index])return {score:0,own:0,enemy:0,free:0,blocking:0};
- const adjacent=neighborsBySide(index),own=adjacent.filter(j=>state.plots[j].owner===playerIndex).length;
- const enemy=adjacent.filter(j=>state.plots[j].owner>=0&&state.plots[j].owner!==playerIndex).length;
- const free=adjacent.filter(j=>state.plots[j].owner<0).length;
- const selfComplete=adjacent.filter(j=>state.plots[j].owner===playerIndex&&state.plots[j].project?.stage===4).length;
- let blocking=0;
- for(let k=0;k<state.players.length;k++){
-  if(k===playerIndex)continue;
-  const targets=adjacent.filter(j=>state.plots[j].owner===k);
-  if(!targets.length)continue;
-  const connected=new Set(targets),queue=[...targets];
-  while(queue.length){
-   const j=queue.shift();
-   for(const near of neighborsBySide(j))if(state.plots[near].owner===k&&!connected.has(near)){connected.add(near);queue.push(near);}
-  }
-  blocking=Math.max(blocking,connected.size);
- }
- const zone=zoneOf(index);
- const sizeFit=zone.sizes.includes(0)?30:zone.sizes.includes(1)?15:0;
- const score=own*230+selfComplete*70+Math.min(blocking,4)*100+free*35+sizeFit-state.plots[index].price*.25;
- return {score:Math.round(score),own,enemy,free,blocking,zone:ZONE_GRID[index]};
-}
-const colors=['#f1bf65','#68d9b5','#e77ca6','#82aefe','#c48ff4','#ff846d'];let state;const PROFESSIONS=[{id:'foreman',name:'Инженер-строитель (прораб)',description:'Организация строительства и контроль перерасходов'},{id:'designer',name:'Проектировщик',description:'Проектная документация и устранение ошибок'},{id:'permits',name:'Специалист по согласованиям',description:'Разрешения и экспертиза'},{id:'lawyer',name:'Юрист',description:'Сделки, договоры и претензии'},{id:'financier',name:'Финансист',description:'Кредиты, капитал и обслуживание долга'}];let chosenProfession=PROFESSIONS[0].id;const professionName=id=>(PROFESSIONS.find(p=>p.id===id)||{}).name||'Не выбрана';const $=id=>document.getElementById(id);function note(t){state.logs.unshift(t);state.logs=state.logs.slice(0,24)}function newGame(){if($('auctionOverlay'))closeAuctionResult();if($('cardOverlay'))$('cardOverlay').hidden=true;let n=+$('count').value;state={round:1,turn:0,rolled:false,dice:'—',exchangeDemandDrawn:false,activeExchangeDemand:null,exchangeDemandDeck:[],players:Array.from({length:n},(_,i)=>({name:i?'Бот '+i:'Вы',bot:i>0,money:750,pos:0,skipTurns:0,networkCards:[],profession:i===0?chosenProfession:PROFESSIONS[(PROFESSIONS.findIndex(p=>p.id===chosenProfession)+i)%PROFESSIONS.length].id})),plots:names.map((_,i)=>canonicalLot(i)),logs:[],landDeck:[],networkDeck:[],dealDemandDeck:[],dealDemandDrawn:false,activeDealDemand:null};note('Новая партия: '+n+' участников');render();persistState()}function current(){return state.players[state.turn]}function rentalIncomeFor(playerIndex){return state.plots.filter(x=>x.owner===playerIndex&&x.level>0).reduce((sum,x)=>sum+tenantIncomeForLot(x),0)}
-function startSettlement(playerIndex){const rent=rentalIncomeFor(playerIndex);return {rent,bonus:0,total:rent}}
-function roll(){if(state.winnerIndex!==undefined&&state.winnerIndex!==null||state.pendingCard||state.constructionDeckChoice||state.auction||state.rolled)return;let p=current();state.dealDemandDrawn=false;state.activeDealDemand=null;state.exchangeDemandDrawn=false;state.activeExchangeDemand=null;let d=2+Math.floor(Math.random()*6)+Math.floor(Math.random()*6);const crossedStart=p.pos+d>=32;p.pos=(p.pos+d)%32;state.dice=d;state.rolled=true;let plot=state.plots[(Math.max(1,p.pos)-1)%30];note(p.name+': 🎲 '+d+' → '+eventNames[p.pos]);if(crossedStart){const payment=startSettlement(state.turn);p.money+=payment.total;note(p.name+' прошёл Старт: бонус 0; выплата арендаторов '+payment.rent+' тыс.');}/* No unrelated-plot rent toll on perimeter cells. Rent is paid by tenant on START. *//* Торговля на клетке «Сделка» проводится через новую площадку без старого всплывающего окна. */if(eventNames[p.pos]==='Биржа недвижимости'&&!p.bot)setTimeout(openExchange,0);resolveSpecialCell();if(eventNames[p.pos]==='Строительство')beginConstructionDeckChoice();else if(cardCellDeck[p.pos])drawCard(cardCellDeck[p.pos]);if(!p.bot&&[1,9,18,24].includes(p.pos)&&!state.pendingCard)beginAuction(-1);render()}/* Sealed-bid first-price land auction. One shared-screen human vs bot bidders.
-   Bid confidentiality among multiple humans requires separate authenticated devices. */
-function ensureLandDeck(){
- if(!Array.isArray(state.landDeck))state.landDeck=[];
- state.landDeck=state.landDeck.filter(i=>Number.isInteger(i)&&i>=0&&i<state.plots.length&&state.plots[i].owner<0);
- if(!state.landDeck.length){
-  const free=state.plots.map((lot,i)=>lot.owner<0?i:-1).filter(i=>i>=0);
-  state.landDeck=free.sort((a,b)=>a-b); // Deterministic physical availability: no random land draws.
- }
-}
-function auctionLotIndex(){
- ensureLandDeck();
- return state.landDeck.length?state.landDeck[0]:-1;
-}
-let chosenLand=null;
-function closeLandSelection(){const el=$('landSelectOverlay');if(el)el.hidden=true;}
-function openLandSelection(){
- if(!state||!state.rolled||current().bot||![1,9,18,24].includes(current().pos)||state.pendingCard||state.auction)return false;
- ensureLandDeck();chosenLand=null;
- $('landSelectOverlay').hidden=false;renderLandSelection();return true;
-}
-function landAuctionOption(index){
- const lot=state.plots[index],zone=zoneOf(index),a=territoryAnalysis(index,state.turn);
- const taken=lot.owner>=0,affordable=current().money>=lot.price,selected=chosenLand===index;
- const owner=taken?state.players[lot.owner]:null;
- const stage=Number.isInteger(lot.reservedFor)?'Секция комплекса':lot.project?.stage===4?'🏢 Готов':lot.project?'🏗 '+lot.project.stage+'/4':'';
- return '<button type="button" class="land-option'+(selected?' selected':'')+(taken?' occupied':'')+'" data-lot="'+index+'" data-zone="'+lot.zone+'" style="--land-zone:'+zone.color+';--land-owner:'+(owner?colors[lot.owner]:'#c1cecb')+'" onclick="chooseAuctionLand('+index+')"'+(taken||!affordable?' disabled':'')+' title="'+lot.name+'" aria-label="'+lot.name+', участок '+(index+1)+', '+zone.title+', '+(taken?'владелец '+owner.name:lot.price+' тысяч')+'">'+
- '<span class="land-option-top"><b>№'+(index+1)+' '+zone.short+'</b><strong>'+(taken?'● '+owner.name:lot.price+' тыс.')+'</strong></span>'+
- '<span class="land-zone">'+(stage||zone.title)+'</span><span class="land-tactics">🔗'+a.own+' · ⛨'+a.blocking+' · ☐'+a.free+'</span></button>';
-}
-function renderLandSelection(){
- if(!$('landBrowse')||!state)return;
- $('landBrowse').innerHTML=state.plots.map((_,i)=>landAuctionOption(i)).join('');
- const lot=Number.isInteger(chosenLand)?state.plots[chosenLand]:null;
- const can=lot&&lot.owner<0&&current().money>=lot.price;
- $('landBidStart').disabled=!can;
- $('landSelectionInfo').textContent=can?'Выбрано: №'+(chosenLand+1)+' · '+lot.name+' · стартовая цена '+lot.price+' тыс. · разрешено: '+zoneOf(chosenLand).sizes.map(i=>['малый','средний','крупный'][i]).join(', '):
- 'Карта показывает все 24 клетки. 🔗 собственные соседи; ⛨ блокируемая цепь соперника. Нажмите доступную клетку.';
-}
-function chooseAuctionLand(index){
- if(!state?.plots?.[index]||state.plots[index].owner>=0||current().money<state.plots[index].price)return;
- chosenLand=index;renderLandSelection();
-}
-function startSelectedLandAuction(){
- if(!Number.isInteger(chosenLand))return false;
- const index=chosenLand;closeLandSelection();return beginAuction(index);
-}
-function startBotAuction(index,botIndex){
- if(!state||!state.rolled||!state.players[botIndex]?.bot||state.turn!==botIndex||state.auction||state.pendingCard||![1,9,18,24].includes(state.players[botIndex].pos))return false;
- const lot=state.plots[index];if(!lot||lot.owner>=0)return false;
- ensureLandDeck();
- const at=state.landDeck.indexOf(index);if(at>=0)state.landDeck.splice(at,1);
- const step=Math.max(20,Math.ceil(lot.price*.1/10)*10);
- state.auction={lot:index,price:0,minBid:lot.price,step,leader:-1,active:state.players.map(()=>true),history:[],round:0,botInitiated:true,humanBidder:state.players.findIndex(p=>!p.bot)};
- const a=state.auction,bot=state.players[botIndex];
- if(bot.money>=lot.price){a.price=lot.price;a.leader=botIndex;a.history.push(bot.name+': '+lot.price);}
- if(a.humanBidder<0){resolveAuction();return true;}
- note('🔨 '+bot.name+' выставил на аукцион '+lot.name+'. Ваше участие обязательно доступно.');
- showAuction();render();return true;
-}
-function beginAuction(index){
- if(!state.rolled||current().bot||![1,9,18,24].includes(current().pos)||state.auction||state.pendingCard)return false;
- if(index<0){openLandSelection();return false;}
- if(index<0||!state.plots[index]||state.plots[index].owner>=0){note('Нет свободного участка');return false}
- // Reveal and remove the drawn plot card only when the auction actually begins.
- ensureLandDeck();
- const deckPos=state.landDeck.indexOf(index);
- if(deckPos>=0)state.landDeck.splice(deckPos,1);
- const x=state.plots[index],increment=Math.max(20,Math.ceil(x.price*.1/10)*10);
- state.auction={lot:index,price:0,minBid:x.price,step:increment,leader:-1,active:state.players.map(()=>true),history:[],round:0};
- selectedLot=index;showAuction();render();return true;
-}
-function showAuction(){
- closeAuctionResult();
- const a=state?.auction;if(!a)return;
- const bidder=a.humanBidder??state.turn,player=state.players[bidder];
- const next=a.price?a.price+a.step:a.minBid;
- $('auctionTitle').textContent=a.botInitiated?'🔨 Аукцион бота · можете участвовать':'🔨 Аукцион · конкурентные ставки';
- $('auctionInfo').textContent=state.plots[a.lot].name+' · текущая цена: '+(a.price||'нет ставок')+' · следующая ставка: '+next+' · лидер: '+(a.leader<0?'нет':state.players[a.leader].name)+' · ваши деньги: '+player.money+'.';
- $('auctionBid').min=next;$('auctionBid').max=player.money;$('auctionBid').value=next;
- document.querySelector('.auction-box label[for="auctionBid"]').textContent='Ваша ставка (от '+next+' тыс.)';
- document.querySelector('.auction-buttons button').textContent=a.leader===bidder?'Удержать ставку':'Повысить цену';
- $('auctionBid').disabled=a.leader===bidder;
- document.querySelector('.auction-buttons button').disabled=!a.active[bidder]||next>player.money&&a.leader!==bidder;
- $('auctionError').textContent=a.history.slice(-5).join(' • ')||'Боты будут отвечать на ваши предложения.';
- $('auctionOverlay').hidden=false;
-}
-function submitAuctionBid(pass=false){
- const a=state?.auction;if(!a)return;
- const bidder=a.humanBidder??state.turn,p=state.players[bidder];
- if(p.bot||!a.active[bidder])return;
- if(pass){a.active[bidder]=false;a.history.push(p.name+': пас');}
- else if(a.leader===bidder){a.history.push(p.name+': удерживает лидерство');}
- else{
-  const minimum=a.price?a.price+a.step:a.minBid,n=Number($('auctionBid').value);
-  if(!Number.isSafeInteger(n)||n<minimum||n>p.money){
-   $('auctionError').textContent='Ставка от '+minimum+' до '+p.money;return;
-  }
-  a.price=n;a.leader=bidder;a.history.push(p.name+': '+n);
- }
- for(let k=0;k<state.players.length;k++){
-  const bot=state.players[k];if(!bot.bot||!a.active[k]||a.leader===k)continue;
-  const next=a.price?a.price+a.step:a.minBid,limit=Math.min(Math.floor(bot.money*.82),Math.floor(a.minBid*(1.05+Math.max(0,Math.min(1.1,territoryAnalysis(a.lot,k).score/850))+(territoryAnalysis(a.lot,k).blocking>=2?.18:0))));
-  if(next<=limit){a.price=next;a.leader=k;a.history.push(bot.name+': '+next);}
-  else{a.active[k]=false;a.history.push(bot.name+': пас');}
- }
- a.round++;
- const botsRemaining=a.active.some((v,k)=>v&&state.players[k].bot&&k!==a.leader);
- if(!a.active[bidder]||!botsRemaining&&a.leader===bidder||a.round>=20){resolveAuction();return;}
- if(a.leader!==bidder&&a.active[bidder]){showAuction();render();return;}
- // No other bidder can raise and the current leader is a bot: settle immediately.
- if(!botsRemaining){resolveAuction();return;}
- showAuction();render();
-}
-function resolveAuction(){
- const a=state.auction;if(!a)return;
- const lot=state.plots[a.lot],winner=a.leader;
- if(winner>=0&&a.price>=a.minBid&&lot.owner<0&&state.players[winner].money>=a.price){
-  lot.owner=winner;state.players[winner].money-=a.price;
-  note('Аукцион '+lot.name+': победил '+state.players[winner].name+' за '+a.price);
- }else note('Аукцион '+lot.name+': участок не продан');
- if(!state.auctionHistory)state.auctionHistory=[];
- state.auctionHistory.push({lot:a.lot,winner,price:a.price,history:[...a.history]});
- state.auction=null;render();
- $('auctionTitle').textContent='Результат торгов';
- $('auctionInfo').textContent=(winner>=0?'Победитель: '+state.players[winner].name+' · цена '+a.price:'Участок не продан')+'. Ход торгов: '+a.history.join(' → ');
- $('auctionBid').style.display='none';
- document.querySelector('.auction-box label[for="auctionBid"]').style.display='none';
- document.querySelector('.auction-buttons').style.display='none';
- $('auctionError').innerHTML='<button onclick="closeAuctionResult()">Продолжить</button>';
- $('auctionOverlay').hidden=false;
-}
-function closeAuctionResult(){
- $('auctionOverlay').hidden=true;$('auctionBid').style.display='';
- $('auctionBid').disabled=false;
- document.querySelector('.auction-box label[for="auctionBid"]').style.display='';
- document.querySelector('.auction-buttons').style.display='';
- document.querySelector('.auction-buttons button').disabled=false;
- $('auctionError').textContent='';
-}
-function buy(){if(!state||!state.rolled||current().bot||![1,9,18,24].includes(current().pos)||state.pendingCard||state.auction)return false;return openLandSelection();}
-function build(){alert('Строительство теперь выполняется розыгрышем четырёх карт на своём участке. Откройте карточку участка и используйте карты из инвентаря.');render()}function closePropertySale(){$('propertySaleOverlay').hidden=true}
-function ownedPropertyForSale(){return state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===state.turn&&x.lot.level>0&&x.lot.project?.stage===4)}
-function openPropertySale(){
- if(!state||current().bot||state.auction||state.pendingCard||!state.rolled)return;
- const properties=ownedPropertyForSale();
- if(!properties.length){alert('Для продажи нужен готовый объект в вашей собственности.');return}
- $('propertySaleLot').innerHTML=properties.map(({lot,i})=>'<option value="'+i+'">'+lot.name+' · '+(lot.tenant?'с арендатором':'без арендатора')+'</option>').join('');
- $('propertySalePrice').value=Math.round(marketBase(properties[0].lot,'buyer'));
- $('propertySaleMessage').textContent='Покупатели предложат цены в пределах собственных средств и оценки объекта.';
- $('propertySaleOverlay').hidden=false;
-}
-function runPropertySale(){
- if(!state||current().bot||state.pendingCard||state.auction||!state.rolled)return;
- const lotIndex=Number($('propertySaleLot').value),priceStart=Number($('propertySalePrice').value),lot=state.plots[lotIndex];
- if(!Number.isInteger(lotIndex)||!Number.isSafeInteger(priceStart)||priceStart<=0||!lot||lot.owner!==state.turn||lot.level<1||lot.project?.stage!==4){
-  $('propertySaleMessage').textContent='Недопустимая цена или объект не готов к продаже.';return;
- }
- const participants=state.players.map((p,i)=>({p,i})).filter(x=>x.i!==state.turn&&x.p.bot);
- const reference=marketBase(lot,'buyer'),rental=tenantIncomeForLot(lot);
- const offers=participants.map(x=>({...x,limit:Math.min(x.p.money,Math.round(reference*(0.72+0.07*(x.i%5))+rental*2))}));
- const step=Math.max(10,Math.round(priceStart*.05)),history=[];
- let highest=0,winner=null;
- for(let rounds=0;rounds<100;rounds++){
-  let changed=false;
-  for(const bidder of offers){
-   if(winner?.i===bidder.i)continue;
-   const next=highest?highest+step:priceStart;
-   if(next<=bidder.limit){highest=next;winner=bidder;changed=true;history.push(bidder.p.name+' '+highest);}
-  }
-  if(!changed)break;
- }
- if(!winner){$('propertySaleMessage').textContent='Участники отказались от покупки. Объект и арендатор остаются у вас.';return}
- const seller=current();
- seller.money+=highest;winner.p.money-=highest;transferLargeSection(lotIndex,winner.i);lot.owner=winner.i;
- note('Продажа недвижимости: '+seller.name+' → '+winner.p.name+', '+lot.name+' за '+highest+' тыс.; арендатор '+(lot.tenant?'сохранён':'отсутствует'));
- closePropertySale();render();
- alert('Объект продан: '+winner.p.name+' · '+highest+' тыс.\n'+history.join(' → '));
-}
-function transferLargeSection(index,newOwner){
- const lot=state.plots[index],pair=lot?.project?.pair;
- if(!Number.isInteger(pair)||pair===index||!state.plots[pair])return;
- const support=state.plots[pair];
- if(support.reservedFor!==index)return;
- if(newOwner===-1){support.owner=-1;support.level=0;support.project=null;support.tenant=null;delete support.reservedFor;}
- else support.owner=newOwner;
-}
-function sell(){let p=current(),x=state.plots[p.pos];if(state.rolled&&x.owner===state.turn){let val=x.project?.stage===4?marketBase(x,'buyer'):x.price+250*x.level;p.money+=val;transferLargeSection(state.plots.indexOf(x),-1);x.owner=-1;x.level=0;x.project=null;x.tenant=null;note(p.name+' продал объект за '+val)}render()}function endTurn(){if(Number.isInteger(state.winnerIndex)||state.pendingCard||state.constructionDeckChoice||state.auction)return;if(!state.rolled)return;closeCardTrade();state.turn++;if(state.turn>=state.players.length){state.turn=0;state.round++;/* Rent and debt servicing are settled only when a player crosses START. */}state.rolled=false;state.dice='—';let safety=0;while((current().skipTurns||0)>0&&safety++<state.players.length*4){let skipped=current();skipped.skipTurns--;note(skipped.name+' пропускает ход. Осталось '+skipped.skipTurns);state.turn++;if(state.turn>=state.players.length){state.turn=0;state.round++;}}render();if(current().bot)scheduleTurnTask(bot,450)}function bot(){if(!current().bot)return;roll();let p=current(),x=state.plots[p.pos];/* Боты пока не разыгрывают строительные карты автоматически. */scheduleTurnTask(endTurn,350)}function value(i){let p=state.players[i];return p.money+state.plots.filter(x=>x.owner===i).reduce((s,x)=>s+(x.project?.stage===4?marketBase(x,'buyer'):x.price+250*x.level),0)}const eventNames=["СТАРТ","Аукцион","Работа","Рынок","Строительство","События","Инженерные сети","Сделка","Налоговая проверка","Аукцион","Работа","Кризис","Работа","Рынок","Инженерные сети","Строительство","Сделка","События","Аукцион","Работа","Кризис","Рынок","Строительство","Инженерные сети","Аукцион","Сделка","События","Сделка","Работа","Строительство","Биржа недвижимости","События"];
-
-/* Prototype decks: content requires game-design approval. */
-const STAGE_DECKS=["utilities","permits","construction","commissioning"];
-const STAGE_LABELS=["Проектирование","Разрешения","Строительство","Ввод в эксплуатацию"];
-// Experimental costs in thousands: 12 unique cards per stage, with three independently priced sizes.
-// A card can favor small, medium or large construction instead of following a single markup.
-const STAGE_BASE={permits:[35,65,115],utilities:[45,90,160],construction:[135,290,540],commissioning:[30,55,110]};
-const STAGE_VARIANTS={
- permits:[
- ['Стандартный пакет', [1.00,1.00,1.00]],['Сложная экспертиза',[1.45,1.10,0.97]],['Зелёный стандарт',[1.36,0.92,1.05]],
- ['Ускоренное согласование',[1.62,1.22,1.08]],['Комплексная документация',[0.91,0.96,1.23]],['Повторная экспертиза',[1.18,1.40,1.03]],
- ['Архитектурный регламент',[1.08,0.85,1.34]],['Технический надзор',[1.26,1.31,0.90]],['Экологическая оценка',[1.56,1.00,1.16]],
- ['Проектирование в центре',[1.48,1.17,1.31]],['Пакет согласований',[0.82,1.27,1.11]],['Градостроительная комиссия',[1.29,0.89,1.38]]
- ],
- utilities:[
- ['Типовой эскизный проект',[1.00,1.00,1.00]],['Геодезическая съёмка',[1.52,1.04,0.91]],['Архитектурная концепция',[1.23,0.88,1.20]],
- ['Проектирование сложного рельефа',[1.38,1.19,1.02]],['Генеральный план территории',[1.11,1.34,0.94]],['Проект реконструкции',[1.60,0.97,1.17]],
- ['Планировочное решение',[0.92,1.25,1.35]],['Конструктивные разделы',[1.32,0.91,1.29]],['Инженерные разделы проекта',[1.49,1.15,0.87]],
- ['Комплексная проектная документация',[1.21,1.43,1.09]],['Сметная документация',[1.04,0.86,1.44]],['Ускоренная разработка проекта',[1.41,1.23,1.15]]
- ],
- construction:[
- ['Генеральный подряд',[1.00,1.00,1.00]],['Дорогие материалы',[1.48,1.12,0.95]],['Заводская модульная сборка',[1.15,0.87,1.22]],
- ['Сложный фундамент',[1.36,1.27,1.11]],['Ресурсосберегающая технология',[0.91,1.08,1.28]],['Премиальная отделка',[1.59,1.18,1.30]],
- ['Ускоренный подряд',[1.42,1.39,0.97]],['Массовое домостроение',[1.18,0.92,0.82]],['Высотные работы',[1.25,1.11,1.48]],
- ['Нестандартная архитектура',[1.54,1.34,1.20]],['Региональный подряд',[0.86,1.21,1.09]],['Сложная логистика',[1.32,0.98,1.42]]
- ],
- commissioning:[
- ['Стандартная приёмка',[1.00,1.00,1.00]],['Дополнительная инспекция',[1.42,1.10,0.92]],['Пожарная сертификация',[1.16,0.89,1.24]],
- ['Ускоренный ввод',[1.55,1.20,1.11]],['Испытание коммуникаций',[0.94,1.31,1.09]],['Повторная комиссия',[1.34,1.45,0.98]],
- ['Энергопаспорт',[1.24,0.95,1.37]],['Документы на собственность',[1.08,1.18,0.85]],['Стресс-тест здания',[1.39,1.05,1.29]],
- ['Техническая инвентаризация',[1.13,1.35,1.17]],['Комплексное освидетельствование',[1.50,0.87,1.32]],['Финальная госкомиссия',[0.88,1.25,1.46]]
- ]
-};
-const BALANCED_DECKS={};
-for(const deck of Object.keys(STAGE_VARIANTS)){
- BALANCED_DECKS[deck]=STAGE_VARIANTS[deck].map(([title,multipliers],i)=>({
-  title:title,text:'Индивидуальная смета: цена различается по масштабу проекта. Оплачивается только при розыгрыше карты.',
-  effect:'Карта в инвентаре',delta:0,
-  costs:multipliers.map((factor,size)=>Math.round(STAGE_BASE[deck][size]*factor)),
-  index:i
- }));
-}
-const SPECIAL_CARDS={
- job:Array.from({length:8},(_,i)=>({pay:80+12*i,profession:['foreman','designer','permits','lawyer','financier'][i%5]})),
- tax:Array.from({length:8},(_,i)=>({skip:1+i%3})),
- individual:[-90,-60,-35,-20,25,40,65,90],
- crisis:[80,85,90,95,105,110,115,120],
- investor:Array.from({length:10},(_,i)=>({investment:150+35*i,share:10+5*(i%5)})),
- tenant:Array.from({length:10},(_,i)=>({percent:105+5*i})),
- buyer:Array.from({length:10},(_,i)=>({percent:105+5*i}))
-};
-function randomPick(a){return a[Math.floor(Math.random()*a.length)]}
-function showResolvedCard(title,description,effect){
- const p=current();
- if(p.bot)return;
- state.pendingCard={special:true,playerIndex:state.turn,title,description,effect};
- showCard();
-}
-// Board-cell deck: five engineering categories. Connection prices and bonuses are experimental.
-const NETWORK_CARDS=[
- {type:'water',title:'Вода',description:'Водоснабжение',cost:35},
- {type:'gas',title:'Газ',description:'Газоснабжение',cost:50},
- {type:'electricity',title:'Электроэнергия',description:'Электроснабжение',cost:60},
- {type:'sewerage',title:'Канализация',description:'Водоотведение',cost:45},
- {type:'district_heating',title:'Центральное теплоснабжение',description:'Центральное теплоснабжение',cost:65}
-];
-function drawNetworkCard(){
- if(!state||!current())return;
- if(!Array.isArray(state.networkDeck))state.networkDeck=[];
- if(!state.networkDeck.length){
-  state.networkDeck=NETWORK_CARDS.map((_,index)=>index);
-  for(let i=state.networkDeck.length-1;i>0;i--){
-   const j=Math.floor(Math.random()*(i+1));
-   [state.networkDeck[i],state.networkDeck[j]]=[state.networkDeck[j],state.networkDeck[i]];
-  }
- }
- const index=state.networkDeck.pop(),model=NETWORK_CARDS[index],player=current();
- if(!model)return;
- if(!Array.isArray(player.networkCards))player.networkCards=[];
- const id=state.nextCardId=(state.nextCardId||0)+1;
- player.networkCards.push({id,type:model.type});
- note(player.name+' получил инженерную карту «'+model.title+'» (№'+id+')');
- showResolvedCard('⚡ '+model.title,'Карта инженерных сетей получена и сохранена в вашем инвентаре.',
-  model.description+'. Подключение к готовому объекту: '+model.cost+' тыс. Выгода за подходящую сеть: +10% к базовой аренде и продаже (тестовый баланс).');
-}
-function resolveSpecialCell(){
- const p=current(),cell=eventNames[p.pos];
- if(cell==='Инженерные сети')drawNetworkCard();
- if(cell==='Работа'){
-  const c=randomPick(SPECIAL_CARDS.job),matched=p.profession===c.profession,pay=Math.round(c.pay*(matched?1.25:1));
-  p.money+=pay;note('Работа: '+p.name+' получил '+pay+' тыс.');
-  showResolvedCard('💼 Профессиональный заказ','Выполнена работа по специальности: '+({'foreman':'Инженер-строитель','designer':'Проектировщик','permits':'Согласования','lawyer':'Юрист','financier':'Финансист'}[c.profession]||c.profession), 'Вознаграждение: +'+pay+' тыс.'+(matched?' (профильный бонус +25%)':''));
- }
- if(cell==='Налоговая проверка'){
-  p.skipTurns=randomPick(SPECIAL_CARDS.tax).skip;
-  note('Налоговая проверка: '+p.name+' пропускает '+p.skipTurns+' следующих ходов');
-  showResolvedCard('📋 Налоговая проверка','Проверка завершена. Ограничение применяется только к вашему игроку.','Пропустить следующие ходы: '+p.skipTurns);
- }
- if(cell==='События'){
-  const amount=randomPick(SPECIAL_CARDS.individual);p.money+=amount;
-  note('Личное событие: '+p.name+' '+(amount>=0?'+':'')+amount+' тыс.');
-  showResolvedCard('🎴 Индивидуальное событие','Экономическое событие применяется только к вашему игроку.','Изменение капитала: '+(amount>=0?'+':'')+amount+' тыс.');
- }
- if(cell==='Кризис'){
-  const percent=randomPick(SPECIAL_CARDS.crisis);state.crisis={percent,until:state.round+2};
-  note('Кризис для всех: рыночный коэффициент '+percent+'% на два раунда (экономическое применение в разработке)');
-  showResolvedCard('📉 Глобальное событие','Карточка влияет на всех участников. Расчёт применения эффекта ещё в разработке.','Предварительный рыночный коэффициент: '+percent+'%, два раунда');
- }
- if(cell==='Рынок'){
-  if(!p.marketCards)p.marketCards=[];
-  const type=randomPick(['investor','tenant','buyer']),card=randomPick(SPECIAL_CARDS[type]);
-  p.marketCards.push({type,card,id:state.nextCardId=(state.nextCardId||0)+1});
-  note(p.name+' получил предложение '+type+' и сохранил в инвентаре');
-  const label={investor:'Инвестор',tenant:'Арендатор',buyer:'Покупатель'}[type];
-  const effect=type==='investor'?'Инвестиция '+card.investment+' тыс. за '+card.share+'% прибыли проекта': 'Предлагаемая цена: '+card.percent+'% базовой '+(type==='tenant'?'аренды':'стоимости продажи');
-  showResolvedCard('📈 '+label,'Коммерческое предложение сохранено в вашем инвентаре. Выбор колоды вручную пока не реализован.',effect);
- }
-
-}
-
-const eventDecks={
- permits:[{title:"Проверка документации",text:"Рассмотрение проектной документации.",effect:"Параметры механики ещё не утверждены.",delta:0},{title:"Дополнительные материалы",text:"Запрошены уточнения к комплекту разрешительных документов.",effect:"Параметры механики ещё не утверждены.",delta:0}],
- utilities:[{title:"Технические условия",text:"Определяются условия подключения инженерных сетей.",effect:"Параметры механики ещё не утверждены.",delta:0},{title:"Доступная мощность",text:"Проверяется возможность подключения к сетям.",effect:"Параметры механики ещё не утверждены.",delta:0}],
- commissioning:[{title:"Приёмка объекта",text:"Проверяется готовность построенного объекта к эксплуатации.",effect:"Параметры механики ещё не утверждены.",delta:0},{title:"Итоговая инспекция",text:"Проводится заключительная проверка объекта.",effect:"Параметры механики ещё не утверждены.",delta:0}],
- market:[
- {title:'Рост спроса',text:'Покупатели активнее выходят на рынок недвижимости.',effect:'Рыночный бонус: +180',delta:180},
- {title:'Снижение спроса',text:'Продажи замедлились, потребовались дополнительные расходы.',effect:'Рыночные затраты: −120',delta:-120},
- {title:'Выгодная сделка',text:'Компания получает разовый доход от консультационного контракта.',effect:'Доход: +150',delta:150},
- {title:'Коррекция цен',text:'Негативная конъюнктура снижает текущий денежный поток.',effect:'Потери: −90',delta:-90}],
- finance:[
- {title:'Одобренный транш',text:'Банк предоставляет небольшой безвозвратный бонус в рамках тестовой модели.',effect:'Капитал: +100',delta:100},
- {title:'Проценты и комиссии',text:'Дополнительные расходы по финансовым операциям.',effect:'Расход: −80',delta:-80},
- {title:'Инвестиционный контракт',text:'Компания получила вознаграждение за участие в проекте.',effect:'Доход: +130',delta:130}],
- construction:[
- {title:'Подорожание материалов',text:'Закупки стали дороже.',effect:'Дополнительные расходы: −110',delta:-110},
- {title:'Экономия подрядчика',text:'Закрытие строительного этапа прошло дешевле плана.',effect:'Возврат: +120',delta:120},
- {title:'Техническая проверка',text:'Экспертиза потребовала дополнительного обследования.',effect:'Расходы: −70',delta:-70}],
- city:[
- {title:'Городской грант',text:'Муниципальная программа поддерживает девелоперов.',effect:'Грант: +140',delta:140},
- {title:'Инфраструктурный сбор',text:'Компания участвует в развитии инженерных сетей.',effect:'Платёж: −100',delta:-100},
- {title:'Награда за проект',text:'Компания получила премию за развитие района.',effect:'Премия: +160',delta:160}]
-};
-// Cards are drawn only on cells with implemented decks; other new cell types await their own mechanics.
-const cardCellDeck={}; // special cells now resolve through the experimental economic event system
-const deckNames={market:'Рынок',finance:'Финансы и инвесторы',construction:'Строительство',city:'Городские события',permits:'Разрешения',utilities:'Проектирование',commissioning:'Ввод в эксплуатацию'};
-let pendingCard=null;
-function beginConstructionDeckChoice(){if(!state?.rolled)return;state.constructionDeckChoice={playerIndex:state.turn};if(current().bot){const ids=['permits','utilities','construction','commissioning'];selectConstructionDeck(ids[Math.floor(Math.random()*ids.length)]);}else showConstructionDeckChoice();}
-function showConstructionDeckChoice(){
- if(!state?.constructionDeckChoice||current().bot)return;
- for(const btn of document.querySelectorAll('.construction-deck-choices button')){
-  const deck=btn.dataset.deck||btn.getAttribute('onclick')?.match(/selectConstructionDeck\('([^']+)'\)/)?.[1];
-  if(!deck)continue;
-  const inHand=current().cards?.filter(c=>c.deck===deck).length||0;
-  const available=state.stock?.stage?.[deck]?.length??BALANCED_DECKS[deck].length;
-  const old=btn.querySelector('.deck-count-info');
-  if(old)old.remove();
-  const note=document.createElement('small');note.className='deck-count-info';note.textContent='В руке: '+inHand+' · в колоде: '+available;
-  btn.appendChild(note);btn.disabled=available<=0;
- }
- $('constructionDeckOverlay').hidden=false;
-}
-function selectConstructionDeck(deck){if(!state?.constructionDeckChoice||state.constructionDeckChoice.playerIndex!==state.turn||!['permits','utilities','construction','commissioning'].includes(deck))return;state.constructionDeckChoice=null;$('constructionDeckOverlay').hidden=true;drawCard(deck);render();}
-function drawCard(deck){
- let cards=BALANCED_DECKS[deck]||eventDecks[deck];if(!cards)return;
- if(!state.deckIndexes)state.deckIndexes={};
- const orderKey=deck+'Order', cursorKey=deck+'Cursor';
- if(!state.deckIndexes[orderKey]||state.deckIndexes[cursorKey]>=cards.length){
-  let order=cards.map((_,i)=>i);
-  for(let j=order.length-1;j>0;j--){let k=Math.floor(Math.random()*(j+1));[order[j],order[k]]=[order[k],order[j]]}
-  state.deckIndexes[orderKey]=order;state.deckIndexes[cursorKey]=0;
- }
- let index=state.deckIndexes[orderKey][state.deckIndexes[cursorKey]++];
- let card=cards[index];let playerIndex=state.turn;let player=state.players[playerIndex];
- if(!STAGE_DECKS.includes(deck))player.money+=card.delta;
- note(player.name+' · '+deckNames[deck]+': '+card.title+(STAGE_DECKS.includes(deck)?' — карта в инвентарь':' ('+(card.delta>=0?'+':'')+card.delta+')'));
- if(STAGE_DECKS.includes(deck)){if(!Array.isArray(player.cards))player.cards=[];player.cards.push({id:state.nextCardId=(state.nextCardId||0)+1,deck,index});}
- state.pendingCard={deck,index,playerIndex};
- pendingCard=state.pendingCard;
- if(!player.bot)showCard();else {state.pendingCard=null;pendingCard=null;} 
-}
-function showCard(){
- const pending=state?.pendingCard;
- if(!pending){$('cardOverlay').hidden=true;return}
- if(pending.special){$('cardDeck').textContent='Карта клетки';$('cardTitle').textContent=pending.title;$('cardText').textContent=pending.description;$('cardEffect').textContent=pending.effect;$('cardOverlay').hidden=false;return;}
- const card=(BALANCED_DECKS[pending.deck]||eventDecks[pending.deck])?.[pending.index];if(!card){state.pendingCard=null;return}
- $('cardDeck').textContent='Колода · '+deckNames[pending.deck];
- $('cardTitle').textContent=card.title;$('cardText').textContent=card.text;
- const priceField={permits:'permit',utilities:'utility',construction:'construction',commissioning:'commission'}[pending.deck];
- if(priceField){
-  const costs=card.costs||projectCatalog.map(p=>priceField==='construction'?p.steps*p.stepCost:p[priceField]);
-  $('cardEffect').textContent='Стоимость этапа по сложности объекта (предварительные сметы):\n'+
-   ['Малый объект','Средний объект','Крупный объект'].map((label,i)=>label+': '+costs[i]+' у.е.').join('\n')+
-   '\nЭто индивидуальная смета карты, в тысячах игровых рублей. Списание происходит только при применении карты.'+
-   '\nКарта добавлена в ваш инвентарь и может быть разыграна на собственном участке или продана на клетке «Сделка». Стоимость списывается при розыгрыше.';
- }else $('cardEffect').textContent=card.effect;
- $('cardOverlay').hidden=false;
-}
-function dismissCard(){if(state)state.pendingCard=null;pendingCard=null;$('cardOverlay').hidden=true;if(state.rolled&&!current().bot&&[1,9,18,24].includes(current().pos))beginAuction(-1);render()}
-
-let selectedLot=-1;
-// Older saves stored stage 1 as completed permits. Keep their next step as design.
-// Newly started projects store an explicit order so reloading them cannot reclassify them.
-function nextStageDeck(project){
- const stage=project?.stage||0;
- if(stage===1&&project&&!project.order)return 'utilities';
- return STAGE_DECKS[stage];
-}
-function nextStageLabel(project){
- return deckNames[nextStageDeck(project)]||'объект введён в эксплуатацию';
-}
-function availableCards(player,deck){return (player.cards||[]).filter(c=>!deck||c.deck===deck)}
-function stageCost(deck,size){const p=projectCatalog[size];return deck==='construction'?p.steps*p.stepCost:({permits:p.permit,utilities:p.utility,commissioning:p.commission})[deck]}
-function playStageCard(lotIndex,size,cardId){const p=current(),lot=state.plots[lotIndex];if(!lot||lot.owner!==state.turn||!Number.isInteger(size)||size<0||size>2||!allowedProject(lotIndex,size)||Number.isInteger(lot.reservedFor))return;const partner=size===2&&!lot.project?largePairCandidate(lotIndex,state.turn):-1;
- if(size===2&&!lot.project&&partner<0){alert('Крупному комплексу нужны два собственных соседних свободных участка с подходящей зоной.');return;}
- const cards=p.cards||[],ci=cards.findIndex(c=>c.id===cardId);if(ci<0)return;const card=cards[ci],stage=lot.project?.stage||0;if(stage>3||card.deck!==nextStageDeck(lot.project)||lot.project&&lot.project.size!==size)return;const cost=BALANCED_DECKS[card.deck]?.[card.index]?.costs?.[size]??stageCost(card.deck,size);if(!Number.isFinite(cost)||p.money<cost){alert('Недостаточно денег для оплаты этапа: '+cost);return}p.money-=cost;cards.splice(ci,1);if(size===2&&stage===0&&partner>=0){state.plots[partner].reservedFor=lotIndex;note('🏗 Участок №'+(partner+1)+' зарезервирован под секцию крупного комплекса на участке №'+(lotIndex+1));}
- lot.project={size,stage:stage+1,pair:size===2?(stage===0?partner:lot.project?.pair):undefined,order:lot.project?.order||(stage===0?'design-first':'legacy')};if(stage===3)lot.level=Math.max(1,lot.level);note(p.name+' разыграл '+deckNames[card.deck]+' на '+lot.name+' за '+cost+' (тестовые цены)');render();if(!p.bot)inspectLot(lotIndex)}
-function closeCardTrade(){$('dealOverlay').hidden=true}
-function closeExchange(){$('exchangeOverlay').hidden=true}
-function exchangeValue(card){
- if(card.type==='investor')return Math.max(25,Math.round((card.card?.investment||150)*0.33));
- if(card.type==='tenant')return Math.max(20,Math.round((card.card?.percent||100)*0.42));
- if(card.type==='buyer')return Math.max(20,Math.round((card.card?.percent||100)*0.55));
- return 20;
-}
-
-const EXCHANGE_DEMANDS=[
- {type:'tenant',min:105,bonus:75},{type:'tenant',min:120,bonus:95},{type:'tenant',min:135,bonus:120},{type:'tenant',min:145,bonus:135},
- {type:'buyer',min:105,bonus:85},{type:'buyer',min:120,bonus:110},{type:'buyer',min:135,bonus:135},{type:'buyer',min:145,bonus:155},
- {type:'investor',min:150,bonus:85},{type:'investor',min:220,bonus:110},{type:'investor',min:290,bonus:140},{type:'investor',min:360,bonus:170}
-];
-function exchangeDemandMatches(card,demand){
- if(!card||!demand||card.type!==demand.type)return false;
- const val=demand.type==='investor'?Number(card.card?.investment):Number(card.card?.percent);
- return Number.isFinite(val)&&val>=demand.min;
-}
-function exchangeDemandDescription(d){
- const label={tenant:'Арендатор',buyer:'Покупатель',investor:'Инвестор'}[d.type];
- const condition=d.type==='investor'?'объём инвестиций не менее '+d.min+' тыс.':'предложение не ниже '+d.min+'% от базовой '+(d.type==='tenant'?'аренды':'цены продажи');
- return label+': '+condition+'. Вознаграждение биржи: '+d.bonus+' тыс. (экспериментально).';
-}
-function ensureExchangeDeck(){
- if(!Array.isArray(state.exchangeDemandDeck))state.exchangeDemandDeck=[];
- if(state.exchangeDemandDeck.length===0){
-  state.exchangeDemandDeck=EXCHANGE_DEMANDS.map((_,i)=>i);
-  for(let i=state.exchangeDemandDeck.length-1;i>0;i--){
-   const j=Math.floor(Math.random()*(i+1));
-   [state.exchangeDemandDeck[i],state.exchangeDemandDeck[j]]=[state.exchangeDemandDeck[j],state.exchangeDemandDeck[i]];
-  }
- }
-}
-function drawExchangeDemand(){
- if(!state||!state.rolled||current().bot||eventNames[current().pos]!=='Биржа недвижимости'||state.exchangeDemandDrawn)return;
- ensureExchangeDeck();
- const drawn=state.exchangeDemandDeck.pop(),d=EXCHANGE_DEMANDS[drawn];
- state.exchangeDemandDrawn=true;
- const matches=(current().marketCards||[]).filter(c=>exchangeDemandMatches(c,d));
- if(matches.length){state.activeExchangeDemand=drawn;note('Биржа: получена заявка — '+exchangeDemandDescription(d));}
- else {state.activeExchangeDemand=null;state.exchangeDemandDeck.push(drawn);note('Биржа: подходящей карты нет, заявка возвращена в колоду');}
- renderExchangeDemand(drawn);
- render();
-}
-function renderExchangeDemand(drawnIndex){
- const idx=Number.isInteger(drawnIndex)?drawnIndex:state?.activeExchangeDemand;
- const d=Number.isInteger(idx)?EXCHANGE_DEMANDS[idx]:null;
- const matches=d?(current().marketCards||[]).filter(c=>exchangeDemandMatches(c,d)):[];
- const info=$('exchangeDemandInfo'),label=$('exchangeMatchLabel'),sell=$('exchangeSellDemandBtn');
- if(!info)return;
- if(!d){info.textContent=state?.exchangeDemandDrawn?'Подходящей карты не оказалось. Заявка возвращена в колоду.':'Заявка ещё не вытянута.';label.hidden=true;sell.hidden=true;return}
- info.textContent=exchangeDemandDescription(d)+(matches.length?' Выберите карту для продажи.':' Подходящей карты нет: заявка возвращена в колоду.');
- label.hidden=!matches.length;sell.hidden=!matches.length;
- $('exchangeMatchCard').innerHTML=matches.map(c=>'<option value="'+c.id+'">'+c.type+' №'+c.id+' · '+(d.type==='investor'?c.card.investment+' тыс.':c.card.percent+'%')+'</option>').join('');
-}
-function sellToExchangeDemand(){
- if(!state||current().bot||!state.rolled||eventNames[current().pos]!=='Биржа недвижимости')return;
- const index=state.activeExchangeDemand,d=Number.isInteger(index)?EXCHANGE_DEMANDS[index]:null;
- const cardId=Number($('exchangeMatchCard').value),p=current(),card=(p.marketCards||[]).find(c=>c.id===cardId);
- if(!exchangeDemandMatches(card,d))return;
- p.marketCards=p.marketCards.filter(c=>c.id!==cardId);
- p.money+=d.bonus;
- state.activeExchangeDemand=null;
- note('Биржа выкупила карту '+card.type+' №'+cardId+' за '+d.bonus+' тыс.');
- closeExchange();render();
-}
-function openExchange(){
- if(!state||current().bot||!state.rolled||eventNames[current().pos]!=='Биржа недвижимости')return;
- const cards=current().marketCards||[];
- 
- $('exchangeCard').innerHTML=cards.map(c=>'<option value="'+c.id+'">'+({'investor':'Инвестор','tenant':'Арендатор','buyer':'Покупатель'}[c.type]||c.type)+' №'+c.id+' · оценка '+exchangeValue(c)+' тыс.</option>').join('');
- $('exchangeMessage').textContent=cards.length?'Начальная цена устанавливается продавцом, дальше участники повышают ставки.':'Для аукциона нужны рыночные карты, но заявку биржи можно вытянуть и без них.';
- $('exchangeDrawBtn').disabled=!!state.exchangeDemandDrawn;
- renderExchangeDemand();
- $('exchangeOverlay').hidden=false;
-}
-function runExchangeAuction(){
- if(!state||current().bot||!state.rolled||eventNames[current().pos]!=='Биржа недвижимости')return;
- const seller=current(),cardId=Number($('exchangeCard').value),start=Number($('exchangePrice').value),cards=seller.marketCards||[],card=cards.find(c=>c.id===cardId);
- if(!card||!Number.isSafeInteger(start)||start<1){$('exchangeMessage').textContent='Укажите корректную карточку и положительную начальную цену.';return}
- const bidders=state.players.map((p,i)=>({p,i})).filter(x=>x.i!==state.turn&&x.p.bot);
- if(!bidders.length){$('exchangeMessage').textContent='Нет доступных участников торгов. Карта осталась у вас.';return}
- const estimates=bidders.map(({p,i})=>({p,i,max:Math.min(Math.max(0,p.money),Math.round(exchangeValue(card)*(0.8+0.1*(i%5))))}));
- const increment=Math.max(5,Math.ceil(start*.1));
- let price=0,leader=null,round=0,history=[];
- while(round++<100){
-  let bidMade=false;
-  for(const bidder of estimates){
-   if(leader&&leader.i===bidder.i)continue;
-   const next=price?price+increment:start;
-   if(next<=bidder.max&&next<=bidder.p.money){price=next;leader=bidder;bidMade=true;history.push(bidder.p.name+': '+price+' тыс.');}
-  }
-  if(!bidMade)break;
- }
- if(!leader){$('exchangeMessage').textContent='Аукцион завершился без ставок. Карта осталась у продавца.';note('Биржа: '+seller.name+' не продал карту №'+cardId);render();return}
- seller.marketCards=cards.filter(c=>c.id!==cardId);
- if(!Array.isArray(leader.p.marketCards))leader.p.marketCards=[];
- leader.p.marketCards.push(card);
- seller.money+=price;leader.p.money-=price;
- note('Биржа: '+seller.name+' продал карту '+card.type+' №'+cardId+' игроку '+leader.p.name+' за '+price+' тыс.');
- closeExchange();render();
- alert('Продано! Победитель: '+leader.p.name+'. Цена: '+price+' тыс.\nСтавки: '+history.join(' → '));
-}
-
-const DEAL_DEMANDS=[
- {deck:'permits',size:0,max:39,premium:65},{deck:'permits',size:1,max:70,premium:110},{deck:'permits',size:2,max:125,premium:165},
- {deck:'utilities',size:0,max:54,premium:80},{deck:'utilities',size:1,max:105,premium:140},{deck:'utilities',size:2,max:185,premium:215},
- {deck:'construction',size:0,max:165,premium:190},{deck:'construction',size:1,max:335,premium:390},{deck:'construction',size:2,max:610,premium:685},
- {deck:'commissioning',size:0,max:36,premium:65},{deck:'commissioning',size:1,max:65,premium:105},{deck:'commissioning',size:2,max:125,premium:170}
-];
-function dealDemandMatches(card,demand){
- const cost=BALANCED_DECKS[card?.deck]?.[card?.index]?.costs?.[demand?.size];
- return !!demand&&card?.deck===demand.deck&&Number.isFinite(cost)&&cost<=demand.max;
-}
-function dealDemandText(d){
- return deckNames[d.deck]+' для '+['малого','среднего','крупного'][d.size]+' объекта; смета не выше '+d.max+' тыс. Выкуп за '+d.premium+' тыс. (тестовый баланс).';
-}
-function ensureDealDemandDeck(){
- if(!Array.isArray(state.dealDemandDeck)||!state.dealDemandDeck.length){
-  state.dealDemandDeck=DEAL_DEMANDS.map((_,i)=>i);
-  for(let j=state.dealDemandDeck.length-1;j>0;j--){const k=Math.floor(Math.random()*(j+1));[state.dealDemandDeck[k],state.dealDemandDeck[j]]=[state.dealDemandDeck[j],state.dealDemandDeck[k]];}
- }
-}
-function renderDealDemand(index){
- const demand=Number.isInteger(index)?DEAL_DEMANDS[index]:Number.isInteger(state.activeDealDemand)?DEAL_DEMANDS[state.activeDealDemand]:null;
- const match=demand?availableCards(current()).filter(c=>dealDemandMatches(c,demand)):[];
- $('dealDemandInfo').textContent=!demand?(state.dealDemandDrawn?'Подходящей карты нет; заявка возвращена в колоду.':'Заявка не вытянута.'):dealDemandText(demand);
- $('dealMatchLabel').hidden=!match.length;
- $('dealSellDemandBtn').hidden=!match.length;
- $('dealMatchCard').innerHTML=match.map(c=>'<option value="'+c.id+'">'+(BALANCED_DECKS[c.deck][c.index]?.title||c.deck)+' · №'+c.id+'</option>').join('');
-}
-function drawDealDemand(){
- if(!state||!state.rolled||current().bot||eventNames[current().pos]!=='Сделка'||state.dealDemandDrawn)return;
- ensureDealDemandDeck();
- const index=state.dealDemandDeck.pop(),d=DEAL_DEMANDS[index];
- state.dealDemandDrawn=true;
- const matches=availableCards(current()).filter(c=>dealDemandMatches(c,d));
- if(matches.length){state.activeDealDemand=index;note('Сделка: заявка подрядчика — '+dealDemandText(d));}
- else{state.activeDealDemand=null;state.dealDemandDeck.push(index);note('Сделка: нет подходящей карты, заявка возвращена в колоду');}
- renderDealDemand(index);
- render();
-}
-function sellDealDemand(){
- if(!state||!state.rolled||current().bot||eventNames[current().pos]!=='Сделка')return;
- const idx=state.activeDealDemand,d=Number.isInteger(idx)?DEAL_DEMANDS[idx]:null;
- const id=Number($('dealMatchCard').value),p=current(),c=availableCards(p).find(x=>x.id===id);
- if(!dealDemandMatches(c,d))return;
- p.cards=p.cards.filter(x=>x.id!==id);p.money+=d.premium;state.activeDealDemand=null;
- note('Подрядчик выкупил '+deckNames[c.deck]+' №'+id+' за '+d.premium+' тыс.');
- closeCardTrade();render();
-}
-function openCardTrade(){if(!state||current().bot||!state.rolled||eventNames[current().pos]!=='Сделка')return;const cards=availableCards(current());const buyers=state.players.map((p,i)=>({p,i})).filter(x=>x.i!==state.turn);$('dealCard').innerHTML=cards.map(c=>'<option value="'+c.id+'">'+deckNames[c.deck]+' · '+(BALANCED_DECKS[c.deck]||eventDecks[c.deck])[c.index].title+' (№'+c.id+')</option>').join('');$('dealBuyer').innerHTML=buyers.map(x=>'<option value="'+x.i+'">'+x.p.name+'</option>').join('');$('dealMessage').textContent=cards.length?'Цена согласовывается с покупателем; боты имеют ограниченную оценку.':'Нет строительных карт, но можно вытянуть заявку подрядчика.';$('dealDrawBtn').disabled=!!state.dealDemandDrawn;renderDealDemand();$('dealOverlay').hidden=false}
-function offerCardTrade(){if(!state||!state.rolled||eventNames[current().pos]!=='Сделка')return;const id=Number($('dealCard').value),buyerId=Number($('dealBuyer').value),price=Number($('dealPrice').value),seller=current(),buyer=state.players[buyerId],card=(seller.cards||[]).find(c=>c.id===id);if(!card||!buyer||buyerId===state.turn||!Number.isSafeInteger(price)||price<0||price>buyer.money){$('dealMessage').textContent='Некорректная цена, карта или недостаточно средств у покупателя.';return}if(!buyer.bot){$('dealMessage').textContent='Сделки между двумя людьми появятся при подключении мультиплеера.';return}const maxBid=Math.min(buyer.money,Math.max(20,Math.round(stageCost(card.deck,1)*5)));if(price>maxBid){$('dealMessage').textContent='Бот отказался: предложенная цена выше его оценки ('+maxBid+').';return}seller.cards=seller.cards.filter(c=>c.id!==id);if(!Array.isArray(buyer.cards))buyer.cards=[];buyer.cards.push(card);seller.money+=price;buyer.money-=price;note('Сделка: '+seller.name+' продал карту '+deckNames[card.deck]+' игроку '+buyer.name+' за '+price);closeCardTrade();render()}
-
-
-const HAND_CATEGORIES=[
- ['utilities','📐 Проектирование'],['permits','📑 Разрешения'],['network','💧 Инженерные сети · карты'],['construction','🏗️ Строительство'],['commissioning','🏢 Ввод в эксплуатацию'],
- ['investor','💼 Инвесторы'],['tenant','🏬 Арендаторы'],['buyer','🏷️ Покупатели']
-];
-function handCardDetails(c,type){
- if(type==='network'){const model=NETWORK_CARDS.find(x=>x.type===c.type);return (model?.description||'Инженерная карта')+' · Подключение: '+(model?.cost??'—')+' тыс. · +10% к базовой аренде и продаже подходящего объекта.';}
- if(type==='government')return 'Тип: '+({'investment':'Инвестиционный','construction':'Строительный','land':'Выкуп участка'}[c.type]||c.type)+' · Срок: раунд '+c.deadline+' · '+(c.accepted?'Принят':'Ожидает принятия');
- if(['investor','tenant','buyer'].includes(type)){const d=c.card||{};return type==='investor'?'Вклад: '+d.investment+' тыс. · Доля прибыли: '+d.share+'%':'Предложение: '+d.percent+'% базовой '+(type==='tenant'?'аренды':'цены продажи');}
- const card=(BALANCED_DECKS[type]||eventDecks[type]||[])[c.index];return card?.costs?'Стоимость этапа · малый: '+card.costs[0]+' / средний: '+card.costs[1]+' / крупный: '+card.costs[2]+' тыс.':'Карта этапа';
-}
-
-function renderGovernmentContract(c,i){
- const kind=({'investment':'Инвестиционный','construction':'Строительный','land':'Выкуп участка'}[c.type]||c.type);
- const t=c.terms||{},legacy=!c.terms,deadline=Number.isFinite(c.deadline)?'До '+c.deadline+'-го раунда':'Срок не указан';
- let task='';
- if(c.type==='investment')task='Внести '+(t.invest??'—')+' тыс. в государственный проект; выплата '+(t.reward??'—')+' тыс. после выполнения.';
- else if(c.type==='construction')task='Построить и передать муниципалитету объект: '+(t.buildSize||'масштаб не указан')+'. Вознаграждение '+(t.reward??'—')+' тыс.';
- else if(c.type==='land')task='Передать муниципалитету подходящий земельный участок. Выплата '+(t.reward??'—')+' тыс. (конкретный участок ещё не определён).';
- else task='Тип предложения не определён.';
- const warning=legacy?'Получено до обновления: подробные финансовые условия в сохранённой карте отсутствуют.':'Тестовые суммы, ещё не утверждены балансом.';
- return '<details class="hand-card contract-detail"><summary><strong>Госконтракт №'+(c.id||i+1)+' · '+kind+'</strong><small>'+deadline+' · '+(c.accepted?'Принят':'Ожидает принятия')+' · Подробнее ▾</small></summary>'+
- '<div class="contract-body"><p><b>Задача:</b> '+task+'</p><p><b>Крайний срок:</b> '+deadline+'</p><p><b>Штраф за невыполнение:</b> '+(t.penalty??'не указан')+' тыс.</p><p class="muted">'+warning+'</p>'+
- '<p class="muted">Отказ от предложения до принятия — без штрафа. После принятия контракт обязателен. Кнопки принятия и выполнения пока не реализованы.</p></div></details>';
-}
-
-
-function applySelectedMarketCard(cardId){
- const selector=document.getElementById('market-target-'+cardId);
- if(!selector)return;
- const lotIndex=Number(selector.value);
- if(!Number.isInteger(lotIndex))return;
- applyMarketCard(cardId,lotIndex);
-}
-function ownedFinishedPlots(){
- return state.plots.map((lot,index)=>({lot,index})).filter(x=>x.lot.owner===state.turn&&x.lot.level>0&&x.lot.project?.stage===4);
-}
-function marketBase(lot,kind){
- const size=lot.project?.size;
- const catalog=projectCatalog[size];
- if(!catalog)return 0;
- const base=kind==='tenant'?catalog.rent:catalog.sale;
- const pos=state?.plots?.indexOf(lot);
- const zoningYield=locationYield(pos,kind);
- return Math.round(base*zoningYield*(1+NETWORK_BONUS_PER_CONNECTION*connectedNetworksFor(lot).length));
-}
-function tenantIncomeForLot(lot){
- if(!lot?.tenant)return 0;
- const percentage=Number(lot.tenant.percent);
- if(Number.isFinite(percentage)&&percentage>0)return Math.round(marketBase(lot,'tenant')*percentage/100);
- return Number(lot.tenant.income)||0; // backward compatibility for tenant saves without a percent
-}
-function applyMarketCard(cardId,lotIndex){
- if(!state||current().bot||state.pendingCard||state.auction)return;
- const p=current(),cards=p.marketCards||[],i=cards.findIndex(c=>c.id===cardId);
- if(i<0)return;
- const c=cards[i],lot=state.plots[lotIndex];
- if(!['tenant','buyer'].includes(c.type)||!lot||lot.owner!==state.turn||lot.level<1||lot.project?.stage!==4){alert('Нужен ваш полностью введённый в эксплуатацию объект.');return}
- if(c.type==='tenant'&&lot.tenant){alert('У этого объекта уже есть арендатор.');return}
- const percentage=Number(c.card?.percent);
- if(!Number.isFinite(percentage)||percentage<=0)return;
- const money=Math.round(marketBase(lot,c.type)*percentage/100);
- if(c.type==='tenant'){
-  lot.tenant={percent:percentage,income:money,cardId};
-  note(p.name+' заключил договор аренды для '+lot.name+': '+money+' тыс. за раунд');
- }else{
-  p.money+=money;
-  note(p.name+' продал '+lot.name+' покупателю за '+money+' тыс.');
-  transferLargeSection(lotIndex,-1);lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;
- }
- cards.splice(i,1);
- render();
-}
-
-let openHandDeck=null;
-function handItems(player,type){
- const cards=player.cards||[],market=player.marketCards||[];
- if(type==='network')return player.networkCards||[];
- if(type==='government')return player.governmentCards||[];
- if(['investor','tenant','buyer'].includes(type))return market.filter(c=>c.type===type);
- return cards.filter(c=>c.deck===type);
-}
-function renderHandDock(player){
- const host=$('handQuick');if(!host)return;
- host.innerHTML=HAND_CATEGORIES.map(([type,label])=>{
-  const total=handItems(player,type).length;
-  const icon=label.trim().split(' ')[0];
-  const readable=label.slice(icon.length).trim();
-  return '<button type="button" class="hand-quick-item'+(openHandDeck===type&&!$('handOverlay').hidden?' selected':'')+(total?'':' empty')+'" data-hand-type="'+type+'" onclick="openHandCategory(this.dataset.handType)" aria-label="'+readable+': '+total+' карт" title="'+readable+' — '+total+'"><span class="hand-quick-icon" aria-hidden="true">'+icon+'</span><span class="hand-quick-count" aria-hidden="true">'+total+'</span></button>';
- }).join('');
-}
-function filterHandGroups(){
- if(!openHandDeck)return;
- for(const el of document.querySelectorAll('#handGroups details[data-deck]')){
-  el.hidden=el.dataset.deck!==openHandDeck;
-  if(!el.hidden)el.open=true;
- }
-}
-function openHandCategory(type){
- if(!HAND_CATEGORIES.some(x=>x[0]===type))return;
- openHandDeck=type;
- $('handOverlay').hidden=false;
- $('handDialogTitle').textContent=HAND_CATEGORIES.find(x=>x[0]===type)[1];
- filterHandGroups();renderHandDock(current());
- $('handClose').focus();
-}
-function closeHandCards(){
- $('handOverlay').hidden=true;
- openHandDeck=null;
- if(state)renderHandDock(current());
-}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('handOverlay').hidden)closeHandCards();});
-function renderHand(player){
- $('handOwner').textContent=player.name+' · карта компании';
- const cards=(player.cards||[]),market=(player.marketCards||[]),gov=(player.governmentCards||[]),networks=(player.networkCards||[]);
- const keepOpen=[...document.querySelectorAll('#handGroups details[open]')].map(x=>x.dataset.deck);
- $('handGroups').innerHTML=HAND_CATEGORIES.map(([type,label])=>{
-  const items=type==='network'?networks:type==='government'?gov:type==='investor'||type==='tenant'||type==='buyer'?market.filter(c=>c.type===type):cards.filter(c=>c.deck===type);
-  const html=items.map((c,i)=>{
-   if(type==='government')return renderGovernmentContract(c,i);
-   if(type==='network'){const model=NETWORK_CARDS.find(x=>x.type===c.type);return '<article class="hand-card"><strong>⚡ '+(model?.title||'Инженерная карта')+' №'+c.id+'</strong><small>'+handCardDetails(c,type)+'</small></article>';}
-   if(type==='tenant'||type==='buyer'){
-    const targets=ownedFinishedPlots().filter(x=>type!=='tenant'||!x.lot.tenant);
-    const list=targets.length?'<label class="market-apply-label">Объект<select id="market-target-'+c.id+'">'+targets.map(x=>'<option value="'+x.index+'">'+x.lot.name+' — '+Math.round(marketBase(x.lot,type)*c.card.percent/100)+' тыс.'+(type==='tenant'?'/раунд':'')+'</option>').join('')+'</select></label><button type="button" onclick="applySelectedMarketCard('+c.id+')">'+(type==='tenant'?'Назначить арендатора':'Продать покупателю')+'</button>':'<small>Нет подходящего готового объекта</small>';
-    return '<article class="hand-card"><strong>'+({'tenant':'Арендатор','buyer':'Покупатель'}[type])+' №'+c.id+'</strong><small>'+handCardDetails(c,type)+'</small>'+list+'</article>';
-   }
-
-   if(type==='investor'){
-    const targets=state.plots.map((lot,j)=>({lot,j})).filter(x=>x.lot.owner===state.turn&&x.lot.project?.stage!==4&&!x.lot.investor);
-    const controls=targets.length?'<label class="market-apply-label">Незавершённый проект<select id="investor-plot-'+c.id+'">'+targets.map(t=>'<option value="'+t.j+'">'+t.lot.name+'</option>').join('')+'</select></label><button type="button" onclick="applyInvestorCard('+c.id+',Number($(\'investor-plot-'+c.id+'\').value))">Привлечь инвестора</button>':'<small>Для инвестора нужен свой незавершённый проект</small>';
-    return '<article class="hand-card"><strong>Инвестор №'+c.id+'</strong><small>'+handCardDetails(c,type)+' · Здание автоматически продаётся сразу при вводе; сдать его в аренду нельзя.</small>'+controls+'</article>';
-   }
-   const model=(BALANCED_DECKS[type]||eventDecks[type]||[])[c.index],title=type==='government'?'Госконтракт №'+(c.id||i+1):['investor','tenant','buyer'].includes(type)?label.replace(/^[^ ]+ /,'')+' №'+(c.id||i+1):model?.title||'Карта '+(i+1);
-   return '<article class="hand-card"><strong>'+title+'</strong><small>'+handCardDetails(c,type)+'</small></article>';
-  }).join('')||'<p class="hand-empty">Нет карт</p>';
-  return '<details class="hand-category" data-deck="'+type+'"'+(keepOpen.includes(type)?' open':'')+'><summary><span>'+label+'</span><span class="hand-count">'+items.length+'</span></summary><div class="hand-stack">'+html+'</div></details>';
- }).join('');
- filterHandGroups();renderHandDock(player);
-}
-
-// Victory v0.5: exactly side-adjacent plots in the 6x5 board, never diagonals.
-const LOT_COLUMNS=6;
-function neighborsBySide(i){
- if(!Number.isInteger(i)||i<0||i>=ZONE_GRID.length)return [];
- const row=Math.floor(i/LOT_COLUMNS),col=i%LOT_COLUMNS,neighbors=[];
- if(col>0)neighbors.push(i-1);
- if(col<LOT_COLUMNS-1)neighbors.push(i+1);
- if(row>0)neighbors.push(i-LOT_COLUMNS);
- if(row<ZONE_GRID.length/LOT_COLUMNS-1)neighbors.push(i+LOT_COLUMNS);
- return neighbors;
-}
-function completedNetworkPlot(plot,owner){
- // Completing four ordered stages includes a utilities card, and the building is commissioned.
- // Infrastructure ownership is deliberately NOT compared to plot ownership.
- return !!plot&&plot.owner===owner&&plot.level>0&&plot.project?.stage===4;
-}
-function winningCluster(playerIndex){
- const owned=new Set(state.plots.map((lot,i)=>completedNetworkPlot(lot,playerIndex)?i:-1).filter(i=>i>=0));
- const seen=new Set();
- for(const start of owned){
-  if(seen.has(start))continue;
-  const group=[],queue=[start];seen.add(start);
-  while(queue.length){
-   const node=queue.shift();group.push(node);
-   for(const next of neighborsBySide(node))if(owned.has(next)&&!seen.has(next)){seen.add(next);queue.push(next);}
-  }
-  if(group.length>=4)return group;
- }
- return null;
-}
-function checkVictory(){
- if(Number.isInteger(state.winnerIndex)&&state.players[state.winnerIndex])return state.winnerIndex;
- for(let i=0;i<state.players.length;i++)if(winningCluster(i)){state.winnerIndex=i;state.winningLots=winningCluster(i).slice(0,4);note('🏆 '+state.players[i].name+' победил: 4 собственных соседних введённых объекта; этап «Проектирование» завершён');return i}
- return -1;
-}
-function render(){if(!state)return;const winner=checkVictory();persistState();let p=current();const banner=$('winBanner');banner.hidden=winner<0;if(winner>=0){$('winTitle').textContent='🏆 Победитель: '+state.players[winner].name;$('winDetails').textContent=state.winType==='tender'?'Муниципальный итог после '+state.completedTurns+' ходов. Результат по совокупной стоимости компании, аренде, завершённым проектам и продажам: '+(state.finalScores||[]).map((s,i)=>(i+1)+'. '+state.players[s.i].name+' — '+s.score+' тыс.').join(' · '):state.winType==='developer'?'Победа девелопера: минимум 5 введённых проектов, продажи от 2 350 тыс., капитал от 650 тыс. и два собственных готовых объекта в разных районах (включая средний/крупный).':'Четыре введённых в эксплуатацию здания на участках №'+state.winningLots.map(i=>i+1).join(', ')+'. Соседство только по горизонтали и вертикали; каждый объект прошёл этап «Проектирование».';}$('round').textContent=state.round;$('who').textContent=p.name;$('money').textContent=p.money;$('dice').textContent=state.dice;const settlement=startSettlement(state.turn);$('rentalIncome').textContent=settlement.rent;$('startPayout').textContent=settlement.total;
-let coords=[];for(let c=1;c<=9;c++)coords.push([1,c]);for(let r=2;r<=9;r++)coords.push([r,9]);for(let c=8;c>=1;c--)coords.push([9,c]);for(let r=8;r>=2;r--)coords.push([r,1]);
-const trackIcons={'СТАРТ':['🏁','start'],'Аукцион':['⚖️','auction'],'Работа':['🛠','work'],'Рынок':['💠','market'],'Строительство':['🏗','build'],'Инженерные сети':['⚡','network'],'Сделка':['🤝','deal'],'Налоговая проверка':['📋','danger'],'Госзаказ':['🏛','gov'],'События':['✦','event'],'Кризис':['📉','danger'],'Биржа недвижимости':['📊','market']};
-let ring=coords.map(([r,c],i)=>{
- const label=eventNames[i],look=trackIcons[label]||['◆','event'];
- return '<div class="cell '+(p.pos===i?'active':'')+'" data-kind="'+look[1]+'" style="grid-row:'+r+';grid-column:'+c+'" title="'+label+'" aria-label="'+label+', клетка '+(i+1)+'"'+(p.pos===i?' aria-current="location"':'')+'><b><small class="track-index">'+String(i+1).padStart(2,'0')+'</small>'+label+'</b><span class="track-icon" aria-hidden="true">'+look[0]+'</span><div class="tokens">'+state.players.map((u,k)=>u.pos===i?'<i class="token" style="background:'+colors[k]+'"></i>':'').join('')+'</div></div>';
-}).join('');
-let districtNames=ZONE_GRID.map((code,i)=>zoneOf(i).title);
-let districtColors=ZONE_GRID.map((code,i)=>zoneOf(i).color);
-let city='<div class="city city-map"><div class="city-title">🏙 ДЕВЕЛОПЕР • ГОРОД</div><div class="city-lots">'+state.plots.map((x,i)=>{
- let d=i,owner=x.owner>=0?state.players[x.owner]:null;
- const progress=x.project?.stage||0,built=progress===4;
- let stage=!owner?(ZONE_GRID[i]==='UNIQUE'?'★':'◇'):Number.isInteger(x.reservedFor)?'▣':built?'🏢':['▫','📐','📑','🏗'][progress]||'🏗';
- const tactics=territoryAnalysis(i,state.turn);
- const status=Number.isInteger(x.reservedFor)?'Секция комплекса':!owner?'Свободен':built?(x.tenant?'Сдан в аренду':'Введён'):x.investor?'Инвестиционный проект':'В работе';
- const stageLabel=Number.isInteger(x.reservedFor)?'СЕКЦИЯ':owner?(built?'ГОТОВО':progress+'/4 ЭТАПОВ'):x.price+' тыс.';
- return '<button class="map-plot '+(x.level?'built ':'')+(selectedLot===i?'chosen ':'')+'" data-status="'+(Number.isInteger(x.reservedFor)?'reserved':!owner?'free':built?'completed':x.investor?'investor':'construction')+'" data-zone="'+x.zone+'" style="--zone:'+districtColors[d]+';--owner:'+(owner?colors[x.owner]:'#c1cecb')+'" onclick="inspectLot('+i+')" aria-label="'+x.name+', '+districtNames[d]+', '+(owner?'владелец '+owner.name+', этап '+progress+' из 4':status)+'" title="'+x.name+' · '+districtNames[d]+' · '+x.price+'"><span class="plot-id">'+(i+1)+'</span><span class="plot-stage">'+stage+'</span><span class="plot-zone">'+(owner?status:zoneOf(i).short)+'</span><span class="plot-progress">'+stageLabel+'</span><span class="plot-tactics">'+(tactics.own?'🔗'+tactics.own:'')+(tactics.blocking?' ⛨'+tactics.blocking:'')+'</span></button>'
- }).join('')+'</div><div class="map-key">● Ж1 (10) · Т (5) · ПК (3) · ОД (2) · Ж4 (2) · ★ Особые (2) &nbsp; 🔗 соседство &nbsp; ⛨ блокировка</div></div>';
-$('board').innerHTML=ring+city;
-let info=selectedLot>=0&&selectedLot<state.plots.length?state.plots[selectedLot]:null;
-$('players').innerHTML=state.players.map((u,i)=>'<div><span style="color:'+colors[i]+'">●</span> <b>'+u.name+'</b> · '+professionName(u.profession)+': '+u.money+' 💰 · активы '+value(i)+'</div>').join('')+(info?'<hr><b>'+info.name+'</b> · '+info.price+' 💰 · '+(info.owner<0?'свободен':'владелец: '+state.players[info.owner].name)+' · стройка '+info.level+'/3':'');
-$('log').innerHTML=state.logs.map(t=>'<div>• '+t+'</div>').join('');
-$('propertySale').disabled=!state.rolled||p.bot||!ownedPropertyForSale().length;$('roll').disabled=state.rolled||p.bot||winner>=0;$('end').disabled=!state.rolled||p.bot||winner>=0;
-renderHand(p);
-if(eventNames[p.pos]==='Биржа недвижимости'&&state.rolled&&!p.bot)$('handGroups').insertAdjacentHTML('beforeend','<button type="button" onclick="openExchange()">📈 Выставить карту на биржу</button>');
-let x=state.plots[(Math.max(1,p.pos)-1)%state.plots.length];
-$('buy').disabled=!state.rolled||p.bot||![1,9,18,24].includes(p.pos)||!!state.auction||!!state.pendingCard||!!state.constructionDeckChoice||auctionLotIndex()<0;
-$('build').disabled=!state.rolled||p.bot||p.pos===0||p.pos===31||x.owner!==state.turn||x.level>=3;
-$('sell').disabled=!state.rolled||p.bot||p.pos===0||p.pos===31||x.owner!==state.turn;
-}
-const projectCatalog=[
- {id:'PR1',name:'Малый объект',desc:'Компактный проект на одном участке: короткий цикл и умеренная арендная выручка.',land:1,permit:35,utility:45,steps:1,stepCost:135,commission:30,sale:450,rent:22,license:'ИП'},
- {id:'PR2',name:'Средний объект',desc:'Строительство на одном участке с более сложными разрешениями и подключениями.',land:1,permit:65,utility:90,steps:1,stepCost:290,commission:55,sale:930,rent:45,license:'Компания'},
- {id:'PR3',name:'Крупный комплекс',desc:'Масштабный проект на двух соседних участках с общим допустимым назначением.',land:2,permit:115,utility:160,steps:1,stepCost:540,commission:110,sale:1720,rent:86,license:'Расширенная компания'}];
-// Engineering upgrades: only completed buildings can receive matching cards.
-const NETWORK_BONUS_PER_CONNECTION=0.10; // additive +10% to base rent and sale per installed card
-function requiredNetworkTypes(lotIndex,size){
- if(!Number.isInteger(lotIndex)||lotIndex<0||lotIndex>=30||![0,1,2].includes(size))return [];
- const offsets=size===0?[0]:size===1?[0,2]:[0,1,2];
- return offsets.map(offset=>NETWORK_CARDS[(lotIndex+offset)%NETWORK_CARDS.length].type);
-}
-function connectedNetworksFor(lot){
- if(!lot||!Array.isArray(lot.project?.connections))return [];
- return [...new Set(lot.project.connections)].filter(type=>NETWORK_CARDS.some(x=>x.type===type));
-}
-function applyNetworkCard(lotIndex,cardId){
- if(!state||state.auction||state.pendingCard||state.constructionDeckChoice||Number.isInteger(state.winnerIndex)||current().bot)return false;
- const lot=state.plots[lotIndex],p=current();
- if(!Number.isInteger(lotIndex)||!lot||lot.owner!==state.turn||lot.level<1||lot.project?.stage!==4)return false;
- const cards=p.networkCards||[],index=cards.findIndex(c=>c.id===cardId);
- if(index<0)return false;
- const card=cards[index],model=NETWORK_CARDS.find(x=>x.type===card.type);
- if(!model||!requiredNetworkTypes(lotIndex,lot.project.size).includes(card.type)||connectedNetworksFor(lot).includes(card.type))return false;
- if(p.money<model.cost){alert('Недостаточно денег для подключения сети: '+model.cost+' тыс.');return false;}
- p.money-=model.cost;cards.splice(index,1);
- lot.project.connections=[...connectedNetworksFor(lot),model.type];
- if(lot.tenant)lot.tenant.income=tenantIncomeForLot(lot);
- note(p.name+' подключил '+model.title+' к '+lot.name+' за '+model.cost+' тыс.; бонус к базе аренды и продажи +10%');
- render();if(!p.bot)inspectLot(lotIndex);return true;
-}
-const zoneLabels=['Ж1 · ИЖС','Торговля','ПК · Промзона','ОД · Коммерция','ЖК-4 · Жильё','Городской район'];
-function closePlotCard(){$('plotCardOverlay').hidden=true}
-function inspectLot(i){
- if(!state?.plots?.[i])return;
- selectedLot=i;render();
- const x=state.plots[i],zone=zoneOf(i).title;
- const owner=x.owner<0?'Свободный':state.players[x.owner].name;
- const commissioned=x.level>0&&x.project?.stage===4;
- const project=x.project,chosenSize=project?.size;
- const existing=project&&Number.isInteger(chosenSize)&&projectCatalog[chosenSize];
- const allowedSizes=zoneOf(i).sizes.map(k=>['малый','средний','крупный'][k]).join(' / ');
- $('plotCardTitle').textContent=(commissioned?'🏢 Объект на участке №':'🏗 Участок №')+(i+1);
- $('plotCardInfo').textContent=zone+' · участок: '+x.price+' тыс. · разрешено: '+allowedSizes+' · владелец: '+owner+
-  (commissioned?' · введён в эксплуатацию':' · строительный этап: '+(project?.stage||0)+'/4');
- const options=existing?[projectCatalog[chosenSize]]:projectCatalog.filter((p,k)=>zoneOf(i).sizes.includes(k));
- const landmark=UNIQUE_BENEFITS[i];
- const tactics=territoryAnalysis(i,state.turn);
- $('plotCardProjects').innerHTML=options.map(p=>{
-  const size=projectCatalog.indexOf(p),chosen=project&&project.size===size,stage=chosen?project.stage:0;
-  if(commissioned&&chosen){
-   const requirements=requiredNetworkTypes(i,size),connections=connectedNetworksFor(x),hand=current().networkCards||[];
-   const baseRent=Math.round(p.rent*locationYield(i,'tenant')),baseSale=Math.round(p.sale*locationYield(i,'buyer'));
-   const upgradedRent=marketBase(x,'tenant'),upgradedSale=marketBase(x,'buyer');
-   const tenantCash=tenantIncomeForLot(x);
-   const steps=requirements.map(type=>{
-    const model=NETWORK_CARDS.find(card=>card.type===type),installed=connections.includes(type);
-    const matching=hand.find(card=>card.type===type);
-    const canConnect=x.owner===state.turn&&!current().bot&&!Number.isInteger(state.winnerIndex)&&!state.pendingCard&&!state.auction&&!state.constructionDeckChoice;
-    const button=!installed&&matching&&canConnect?
-     '<button type="button" '+(current().money<model.cost?'disabled ':'')+'onclick="applyNetworkCard('+i+','+matching.id+')">Подключить за '+model.cost+' тыс.'+(current().money<model.cost?' · недостаточно средств':'')+'</button>':'';
-    const label=installed?'✅ Подключено':matching&&x.owner===state.turn?'Карта есть в инвентаре':'Нужна карта';
-    return '<div class="pc-network-item"><b>'+model.title+'</b> · '+label+(installed?'':' · цена подключения '+model.cost+' тыс.')+button+'</div>';
-   }).join('');
-   return '<article class="pc-project pc-finished"><strong>🏢 '+p.name+'</strong><p>'+p.desc+'</p>'+
-    '<p><b>Базовая стоимость продажи:</b> '+baseSale+' тыс.<br><b>С учётом сетей:</b> '+upgradedSale+' тыс.</p>'+
-    '<p><b>Базовая ставка аренды:</b> '+baseRent+' тыс. за круг<br><b>С учётом сетей:</b> '+upgradedRent+' тыс. за круг (при 100% ставке арендатора).</p>'+
-    '<p><b>Фактический доход на «Старте»:</b> '+tenantCash+' тыс.'+(x.tenant?' · арендатор назначен':' · арендатор не назначен')+'</p>'+
-    '<p><b>Инженерные требования:</b> '+connections.filter(t=>requirements.includes(t)).length+' / '+requirements.length+' подключений.</p>'+
-    '<div class="pc-networks">'+steps+'</div><p class="muted">Каждая подходящая сеть: +10% к базовой аренде и цене продажи. Стоимость подключения экспериментальная.</p></article>';
-  }
-  const requirements=p.land===2?'Нужен второй собственный свободный соседний участок для секции комплекса.':'Достаточно одного участка.';
-  const zoneAllowed=allowedProject(i,size),pairCandidate=size===2?largePairCandidate(i,state.turn):-1;
-  const canChoose=x.owner===state.turn&&!Number.isInteger(x.reservedFor)&&(!project||chosen)&&zoneAllowed&&(size!==2||project||pairCandidate>=0),playable=canChoose&&stage<4?availableCards(current(),nextStageDeck(project)):[];
-  const work=p.permit+p.utility+p.stepCost+p.commission,landTotal=x.price+(size===2&&pairCandidate>=0?state.plots[pairCandidate].price:0),investment=landTotal+work,forecast=Math.round(p.sale*locationYield(i,'buyer')),rent=Math.round(p.rent*locationYield(i,'tenant'));
-  const buttons=playable.map(card=>'<button onclick="playStageCard('+i+','+size+','+card.id+')">Разыграть: '+(BALANCED_DECKS[card.deck]||eventDecks[card.deck])[card.index].title+' · '+(BALANCED_DECKS[card.deck]?.[card.index]?.costs?.[size]??stageCost(card.deck,size))+' тыс.</button>').join('');
-  return '<article class="pc-project"><strong>'+p.name+'</strong><p>'+p.desc+'</p><p>Участков: '+p.land+' · '+requirements+' Статус: '+p.license+'</p>'+
-   '<p><b>Зона:</b> '+(landmark?landmark.desc:zoneOf(i).desc)+'</p><p><b>Разрешено в зоне:</b> '+(zoneAllowed?'да':'нет')+(size===2&&!project?' · второй участок: '+(pairCandidate>=0?'№'+(pairCandidate+1):'требуется'):'')+'.</p><p class="pc-forecast"><b>Смета:</b> земля '+landTotal+' + этапы ~'+work+' = <b>~'+investment+' тыс.</b> · ориентир продажи ~'+forecast+' тыс. · базовая аренда ~'+rent+' тыс./цикл. Точные затраты зависят от карт и ставок.</p><p><b>Этапы оплачиваются при розыгрыше соответствующих карт.</b></p><p>Проектирование → Разрешения → Строительство → Ввод в эксплуатацию.</p>'+
-   '<p>'+(chosen?'Текущий этап: '+(stage<4?nextStageLabel(project):'объект введён в эксплуатацию'):project?'На участке выбран другой проект.':x.owner!==state.turn?'Для розыгрыша нужно владеть участком.':'Для запуска нужна карта «Проектирование».')+'</p>'+(x.investor?'<p class="muted"><b>💼 Инвестор: '+x.investor.capital+' тыс., доля '+x.investor.share+'% прибыли.</b> После ввода здание будет автоматически продано. Аренда недоступна.</p>':'')+buttons+'</article>';
- }).join('')+(x.owner<0&&state.rolled&&!current().bot&&[1,9,18,24].includes(current().pos)?'<div class="pc-buy-land"><p><b>⚖️ Аукцион:</b> участок доступен для выбора. Рядом своих: '+tactics.own+', цепь соперника для блокировки: '+tactics.blocking+'.</p><button onclick="closePlotCard();beginAuction('+i+')">⚖️ Купить через аукцион · от '+x.price+' тыс.</button></div>':'')+'<div class="pc-strategy"><b>🔗 Позиция:</b> своих соседей '+tactics.own+' · соседей соперников '+tactics.enemy+' · свободных рядом '+tactics.free+'. Победа: 4 отдельных готовых соседних здания.</div>';
- $('plotCardOverlay').hidden=false;
-}
-function showProjectNotice(){alert('Для строительства получите карты этапов и разыграйте их на своём участке.')}
-
-// Deferred bot work belongs to one session and one turn; stale callbacks are inert.
-function scheduleTurnTask(task,delay){
- const session=state,actor=state?.turn,round=state?.round;
- return setTimeout(()=>{if(state===session&&state?.turn===actor&&state?.round===round&&!Number.isInteger(state?.winnerIndex))task();},delay);
-}
-function readStoredValue(key){try{return localStorage.getItem(key)}catch{return null}}
-const STORAGE_KEY='developer-html-save';
-function persistState(){
- try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));const status=$('sessionStatus');if(status)status.textContent='● Автосохранение · раунд '+state.round;}
- catch(e){const status=$('sessionStatus');if(status)status.textContent='⚠ Сохранение недоступно';}
-}
-function resumeSavedGame(){
- const previousState=state;
- try{
-  const raw=readStoredValue(STORAGE_KEY);
-  if(!raw){state=null;showSessionMenu();return}
-  const loaded=JSON.parse(raw);
-    if(loaded&&Array.isArray(loaded.plots)&&loaded.plots.length!==ZONE_GRID.length){localStorage.setItem('developer-archive-30-lots',raw);throw Error('Сохранение старой карты '+loaded.plots.length+' участков архивировано. Для карты 24 участка начните новую партию.');}
-if(!loaded||!Array.isArray(loaded.players)||loaded.players.length<2||loaded.players.length>6||!Array.isArray(loaded.plots)||!Array.isArray(loaded.logs)||!Number.isInteger(loaded.turn)||loaded.turn<0||loaded.turn>=loaded.players.length||!Number.isInteger(loaded.round)||loaded.round<1)throw Error('Invalid save');
-  if(loaded.players.some(p=>!p||!Number.isFinite(p.money)||!Number.isInteger(p.pos)||p.pos<0||p.pos>=32)||loaded.plots.some(l=>!l||!Number.isInteger(l.owner)||l.owner< -1||l.owner>=loaded.players.length||!Number.isFinite(l.price)||(l.project&&(!Number.isInteger(l.project.stage)||l.project.stage<0||l.project.stage>4))))throw Error('Invalid save data');
-  for(const p of loaded.players){
-   for(const key of ['cards','networkCards','marketCards','investments'])if(p[key]!==undefined&&!Array.isArray(p[key]))throw Error('Invalid save inventory');
-  }
-  state=loaded;
-  $('count').value=String(state.players.length);
-  render();
-  state.players.forEach(p=>{if(!Array.isArray(p.cards))p.cards=[]});if(state.pendingCard&&!current().bot)showCard();if(state.constructionDeckChoice)showConstructionDeckChoice();
-  if(state.auction)showAuction();
-  if(current().bot&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice)scheduleTurnTask(bot,450);
- }catch(e){state=previousState;const status=$('sessionStatus');if(status)status.textContent='⚠ '+(e.message||'Сохранение недоступно');showSessionMenu();$('continueGame').disabled=!state;}
-}
-function showSessionMenu(){updateLobby();const raw=readStoredValue(STORAGE_KEY);$('continueGame').disabled=!raw;$('sessionOverlay').hidden=false}
-function closeSessionMenu(){$('sessionOverlay').hidden=true}
-function requestNewGame(){showSessionMenu()}
-function selectProfession(id){if(!PROFESSIONS.some(p=>p.id===id))return;chosenProfession=id;updateLobby()}
-function updateLobby(){const bots=Number($('lobbyBots').value);const start=PROFESSIONS.findIndex(p=>p.id===chosenProfession);$('professionChoices').innerHTML=PROFESSIONS.map(p=>'<button type="button" class="profession-choice" role="radio" aria-checked="'+(p.id===chosenProfession)+'" data-profession="'+p.id+'" onclick="selectProfession(this.dataset.profession)"><b>'+p.name+'</b><small>'+p.description+'</small></button>').join('');$('lobbySlots').innerHTML='<div>👤 Вы — '+professionName(chosenProfession)+'</div>'+Array.from({length:bots},(_,i)=>'<div>🤖 Бот '+(i+1)+' — '+professionName(PROFESSIONS[(start+i+1)%PROFESSIONS.length].id)+'</div>').join('')+'<div class="lobby-wait">🔗 Сетевые игроки — пока недоступны</div>';}
-function startLobbyGame(){if(readStoredValue(STORAGE_KEY)&&!confirm('Создать новую партию? Текущее сохранение будет заменено.'))return;$('count').value=String(1+Number($('lobbyBots').value));closeSessionMenu();newGame();}
-function save(){persistState();note('Партия сохранена на этом устройстве');render()}
-function load(){closeSessionMenu();resumeSavedGame()}
-resumeSavedGame();
-</script><script src="balance.js?v=170"></script><script src="marketplace.js?v=141"></script><script src="pace.js?v=150"></script><script src="auction-competition.js?v=150"></script><script src="city-requests.js?v=141"></script><script src="visual.js?v=180"></script><script src="game-rework-v016.js?v=170"></script><script src="scene-motion.js?v=180"></script></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Девелопер · v0.19 · тестовая версия</title>
+<meta name="developer-version" content="v0.19-test">
+<meta name="theme-color" content="#111e2b">
+<link rel="stylesheet" href="styles/base.css?v=190">
+<link rel="stylesheet" href="visual.css?v=130">
+<link rel="stylesheet" href="scene-motion.css?v=180">
+<link rel="stylesheet" href="styles/studio.css?v=190">
+</head>
+<body>
+<a class="skip-link" href="#gameControls">К управлению партией</a>
+<header class="studio-header">
+<div class="studio-brand">
+<img src="assets/svg/ui/icon-build.svg" alt="">
+<div>
+<h1>ДЕВЕЛОПЕР</h1>
+<small>Архитектура вашей компании</small>
+</div>
+</div>
+<div class="studio-header-tools">
+<span class="studio-release">v0.19 · тестовая версия</span>
+<button id="studioRules" type="button" aria-controls="studioGuide" aria-expanded="false">Как играть</button>
+</div>
+</header>
+<section id="studioGuide" class="studio-guide" hidden>
+<h2>От первого участка до девелоперской компании</h2>
+<ol>
+<li>Бросьте два кубика. Клетка определит доступные карты и возможности.</li>
+<li>На аукционе приобретайте землю. Откройте «Мои проекты» и развивайте участок картами: проект, разрешение, строительство, ввод.</li>
+<li>Подключайте сети, привлекайте инвесторов, сдавайте объекты и торгуйте картами. Аренда поступает при проходе «Старта».</li>
+<li>За ход доступны два действия. Завершайте ход, чтобы передать управление соперникам.</li>
+</ol>
+<p>Победа: цепь из четырёх соседних зданий; либо стратегия девелопера (5 проектов, продажи 2350 тыс., капитал 650 тыс., 2 готовых объекта в разных районах, один не меньше среднего). На 240-м ходу — итоговая оценка компаний. Подробные требования видны в кабинете.</p>
+<p>Локальная партия: один человек и 2–5 ботов. Все суммы — в тысячах игровых денежных единиц. Тестовая версия, правила экономики сохранены.</p>
+</section>
+<main class="wrap">
+<section class="studio-turn" aria-live="polite">
+<div>
+<span class="studio-eyebrow">ТЕКУЩИЙ ХОД</span>
+<strong id="studioActor">Создайте компанию</strong>
+<span id="studioCell">Выберите профессию и соперников в меню</span>
+</div>
+<div class="studio-timeline">
+<label for="studioProgress" id="studioProgressLabel">До 240 ходов</label>
+<progress id="studioProgress" max="240" value="0">
+</progress>
+</div>
+</section>
+<section class="hand-dock" aria-label="Мои карты на руках">
+<div class="hand-dock-title">
+<strong>Карты компании</strong>
+<span id="handOwner">
+</span>
+</div>
+<div id="handQuick" class="hand-quick" role="group" aria-label="Выбор категории карт">
+</div>
+</section>
+<div class="layout">
+<div class="game-field">
+<div class="studio-map-heading">
+<span>ГЕНЕРАЛЬНЫЙ ПЛАН</span>
+<span>24 участка · 6 районов</span>
+</div>
+<div class="board" id="board">
+</div>
+<button type="button" class="board-zoom-action" id="v10Zoom" aria-label="Увеличить центральную карту участков">🔎 Увеличить город</button>
+<section class="panel win-banner" id="winBanner" hidden>
+<h3 id="winTitle">
+</h3>
+<p id="winDetails">
+</p>
+</section>
+<p class="scene-tip">Нажмите на участок, чтобы посмотреть его объект и статус.</p>
+</div>
+<aside class="cols company-panel" aria-label="Кабинет компании и управление">
+<section class="panel cabinet-main" id="gameControls" tabindex="-1">
+<div class="cabinet-heading">
+<h3>Кабинет компании</h3>
+<button class="cabinet-menu-button" id="sessionOpen" type="button" onclick="showSessionMenu()">☰ Меню</button>
+</div>
+<section class="studio-finance" aria-label="Финансовый обзор">
+<span id="studioCompanyName">Баланс компании</span>
+<div class="studio-equity">
+<strong id="studioNet">—</strong>
+<span>оценка компании · тыс.</span>
+</div>
+<div class="studio-finance-row">
+<div>
+<small>Аренда / круг</small>
+<b id="studioOwnRent">—</b>
+</div>
+<div>
+<small>Обязательства</small>
+<b id="studioDebt">—</b>
+</div>
+</div>
+</section>
+<div class="stats">
+<div class="pill">Раунд: <b id="round">1</b>
+</div>
+<div class="pill">Ход: <b id="who">—</b>
+</div>
+<div class="pill">Капитал: <b id="money">—</b>
+</div>
+<div class="pill">Бросок: <b id="dice">—</b>
+</div>
+<div class="pill">Аренда за круг: <b id="rentalIncome">0</b> тыс.</div>
+<div class="pill">Следующий «Старт»: <b id="startPayout">0</b> тыс.</div>
+</div>
+<div class="actions">
+<select id="count" hidden aria-hidden="true">
+<option>3</option>
+<option>4</option>
+<option>5</option>
+<option>6</option>
+</select>
+<button onclick="roll()" id="roll">🎲 Бросить кубик</button>
+<button onclick="buy()" id="buy">Аукцион (только клетка)</button>
+<button onclick="build()" id="build">🏗️ Построить</button>
+<button onclick="sell()" id="sell">Продать объект</button>
+<button onclick="openPropertySale()" id="propertySale">🏙️ Предложить объект игрокам</button>
+<button onclick="endTurn()" id="end">Завершить ход</button>
+</div>
+<div id="studioProjects" class="studio-portfolio-link">
+<span>Портфель недвижимости</span>
+<small id="studioPortfolioCount">Нет объектов</small>
+</div>
+<p id="studioGoal" class="studio-goal">
+</p>
+</section>
+</aside>
+</div>
+<section class="secondary-panels" aria-label="Дополнительная информация">
+<section class="panel">
+<h3>Участники</h3>
+<div id="players">
+</div>
+</section>
+<section class="panel">
+<h3>События партии</h3>
+<div id="log">
+</div>
+</section>
+</section>
+</main>
+<div class="auction-overlay hand-overlay" id="handOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="handDialogTitle">
+<div class="hand-dialog">
+<div class="hand-dialog-head">
+<div>
+<h2 id="handDialogTitle">🎴 Мои карты</h2>
+<p id="handDialogHint">Выберите карту, чтобы увидеть описание и доступное действие</p>
+</div>
+<button type="button" id="handClose" onclick="closeHandCards()" aria-label="Закрыть карты">✕</button>
+</div>
+<div class="hand-groups" id="handGroups">
+</div>
+</div>
+</div>
+<div class="auction-overlay" id="constructionDeckOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="constructionDeckTitle">
+<div class="auction-box">
+<h2 id="constructionDeckTitle">🏗️ Выберите колоду строительства</h2>
+<p>Выберите строительную колоду. Дополнительные карты начисляются из физического запаса, если они доступны.</p>
+<div class="construction-deck-choices">
+<button onclick="selectConstructionDeck('utilities')">📐 Проектирование</button>
+<button onclick="selectConstructionDeck('permits')">📑 Разрешения</button>
+<button onclick="selectConstructionDeck('construction')">🏗️ Строительство</button>
+<button onclick="selectConstructionDeck('commissioning')">🏢 Ввод в эксплуатацию</button>
+</div>
+</div>
+</div>
+<div class="auction-overlay" id="propertySaleOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="propertySaleTitle">
+<div class="auction-box">
+<h2 id="propertySaleTitle">🏙️ Продажа готовой недвижимости</h2>
+<p>Объект продаётся целиком вместе с действующим арендатором. Торги проходят между другими участниками.</p>
+<label>Объект <select id="propertySaleLot">
+</select>
+</label>
+<label>Стартовая цена, тыс. <input type="number" id="propertySalePrice" min="1" step="1" value="400">
+</label>
+<p id="propertySaleMessage" role="status">
+</p>
+<button type="button" onclick="runPropertySale()">🔨 Предложить участникам</button>
+<button type="button" onclick="closePropertySale()">Закрыть</button>
+</div>
+</div>
+<div class="auction-overlay" id="exchangeOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="exchangeTitle">
+<div class="auction-box">
+<h2 id="exchangeTitle">📈 Биржа недвижимости</h2>
+<p>Карты инвесторов, арендаторов и покупателей продаются с повышением ставок.</p>
+<label>Карта <select id="exchangeCard">
+</select>
+</label>
+<label>Начальная цена, тыс. <input id="exchangePrice" type="number" min="1" step="1" value="30">
+</label>
+<p id="exchangeMessage" role="status">
+</p>
+<button type="button" onclick="runExchangeAuction()">🔨 Провести аукцион</button>
+<hr>
+<h3>📋 Заявки биржи</h3>
+<p>Вместо продажи игрокам вытяните случайный запрос. Подходящую карту можно продать бирже с премией.</p>
+<button type="button" id="exchangeDrawBtn" onclick="drawExchangeDemand()">🎴 Вытянуть заявку</button>
+<div id="exchangeDemandInfo" role="status">
+</div>
+<label id="exchangeMatchLabel" hidden>Подходящая карта <select id="exchangeMatchCard">
+</select>
+</label>
+<button type="button" id="exchangeSellDemandBtn" onclick="sellToExchangeDemand()" hidden>💰 Выполнить заявку</button>
+<button type="button" onclick="closeExchange()">Закрыть</button>
+</div>
+</div>
+<div class="auction-overlay" id="dealOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="dealTitle">
+<div class="auction-box">
+<h2 id="dealTitle">🤝 Сделка: продать карту</h2>
+<label>Карта <select id="dealCard">
+</select>
+</label>
+<label>Покупатель <select id="dealBuyer">
+</select>
+</label>
+<label>Цена, игровые деньги <input id="dealPrice" type="number" min="0" step="1" value="50">
+</label>
+<p id="dealMessage">Боты принимают предложение, если хватает средств и цена не превышает их оценку карты.</p>
+<button onclick="offerCardTrade()">Предложить сделку</button>
+<hr>
+<h3>📋 Заказы подрядчиков</h3>
+<p>Вытяните запрос на строительную карту вместо продажи игрокам. Если нужной карты нет, заявка возвращается в колоду.</p>
+<button type="button" id="dealDrawBtn" onclick="drawDealDemand()">🎴 Вытянуть заявку</button>
+<div id="dealDemandInfo" role="status">
+</div>
+<label id="dealMatchLabel" hidden>Подходящая карта <select id="dealMatchCard">
+</select>
+</label>
+<button id="dealSellDemandBtn" type="button" onclick="sellDealDemand()" hidden>💰 Выполнить заявку</button>
+<button onclick="closeCardTrade()">Закрыть</button>
+</div>
+</div>
+<div class="card-overlay" id="cardOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="cardTitle">
+<div class="event-card">
+<div class="deck-label" id="cardDeck">
+</div>
+<h2 id="cardTitle">
+</h2>
+<p id="cardText">
+</p>
+<div class="effect" id="cardEffect">
+</div>
+<button onclick="dismissCard()">Принять событие</button>
+</div>
+</div>
+<div class="auction-overlay" id="landSelectOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="landSelectTitle">
+<div class="auction-box land-select-box">
+<div class="pc-top">
+<h2 id="landSelectTitle">⚖️ Аукцион · карта города</h2>
+<button type="button" onclick="closeLandSelection()" aria-label="Закрыть выбор">✕</button>
+</div>
+<p>Выберите свободную клетку на карте из 24 участков. Видно, где строят соперники, где ваши соседние здания и какой путь к победе можно перекрыть.</p>
+<div class="auction-city-map">
+<div class="auction-city-map-title">🏙 ДЕВЕЛОПЕР · 24 УЧАСТКА · 6 × 4</div>
+<div class="land-browse" id="landBrowse" aria-label="Центральное поле для выбора участка">
+</div>
+</div>
+<p class="land-selection-info" id="landSelectionInfo">Выберите свободный участок на карте; занятые клетки отмечены владельцами.</p>
+<div class="land-selection-actions">
+<button type="button" class="land-primary" id="landBidStart" onclick="startSelectedLandAuction()" disabled>⚖️ Начать торги</button>
+<button type="button" onclick="closeLandSelection()">Отмена</button>
+</div>
+</div>
+</div>
+<div class="auction-overlay" id="auctionOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="auctionTitle">
+<div class="auction-box">
+<h2 id="auctionTitle">🔒 Закрытый аукцион</h2>
+<p id="auctionInfo">
+</p>
+<p class="auction-hint">Один раунд закрытых ставок. Победитель платит свою ставку. Нужны хотя бы две заявки; при равенстве выигрывает более ранняя.</p>
+<label for="auctionBid">Ваша закрытая ставка</label>
+<input id="auctionBid" type="number" min="0" step="1" inputmode="numeric" autocomplete="off">
+<div class="auction-buttons">
+<button onclick="submitAuctionBid()">Подать ставку</button>
+<button onclick="submitAuctionBid(true)">Пропустить</button>
+</div>
+<p id="auctionError" role="status">
+</p>
+</div>
+</div>
+<div class="auction-overlay" id="sessionOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="sessionTitle">
+<div class="auction-box">
+<h2 id="sessionTitle">☰ Меню «Девелопера»</h2>
+<p class="session-status" id="sessionStatus">Партия сохранена локально</p>
+<p id="sessionInfo">Игра сохраняется автоматически на этом устройстве. Обновление браузера не начинает новую партию.</p>
+<div class="profession-picker">
+<p>
+<b>Ваша профессия перед стартом партии</b>
+</p>
+<div id="professionChoices" class="profession-choices" role="radiogroup" aria-label="Выбор профессии">
+</div>
+<p class="muted">Профессия сохраняется до конца партии. Действующие профессиональные преимущества учитываются при расчётах.</p>
+</div>
+<div id="lobbySlots" class="lobby-slots">
+</div>
+<div class="lobby-controls">
+<label>Количество ботов (от 2 до 5) <select id="lobbyBots" onchange="updateLobby()">
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select>
+</label>
+</div>
+<div class="auction-buttons lobby-buttons">
+<button id="continueGame" onclick="closeSessionMenu()">Вернуться в игру</button>
+<button type="button" onclick="startLobbyGame()">🆕 Новая партия</button>
+</div>
+<div class="menu-options">
+<button type="button" id="v10Sound" aria-label="Включить или отключить звуки игры" aria-pressed="false">🔊 Звук включён</button>
+<button type="button" onclick="save()">💾 Сохранить</button>
+<button type="button" onclick="load()">📂 Загрузить</button>
+</div>
+<section class="studio-backup"><h3>Резервная копия партии</h3><p>v0.19 использует отдельное сохранение. Прежняя версия не перезаписывается. Файл можно перенести на другое устройство.</p><div class="menu-options"><button type="button" id="backupExport">Скачать JSON</button><button type="button" id="backupImport">Открыть JSON</button><button type="button" id="backupLegacy">Импорт v0.18</button></div><input type="file" id="backupFile" accept=".json,application/json" hidden><p id="backupStatus" role="status"></p></section><button class="lobby-online" disabled title="Нужен сервер синхронизации">Пригласить игрока по ссылке — скоро</button>
+<p class="auction-hint">Локальная версия: 1 человек и 2–5 ботов. Для покупки земли необходимо участвовать в аукционах; готовых участков при старте нет.</p>
+</div>
+</div>
+<div id="plotCardOverlay" class="plot-card-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="plotCardTitle">
+<div class="plot-card">
+<div class="pc-top">
+<h2 id="plotCardTitle">Участок</h2>
+<button onclick="closePlotCard()" aria-label="Закрыть карточку">✕</button>
+</div>
+<div class="pc-sub" id="plotCardInfo">
+</div>
+<div class="pc-projects" id="plotCardProjects">
+</div>
+<div class="pc-foot">Строительные этапы оплачиваются отдельно. На ход доступны два действия; требования к картам, сетям и бюджету указаны у проекта.</div>
+</div>
+</div>
+<div id="portfolioOverlay" class="auction-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="portfolioTitle">
+<section class="auction-box studio-portfolio">
+<div class="pc-top">
+<div>
+<span class="studio-eyebrow">НЕДВИЖИМОСТЬ</span>
+<h2 id="portfolioTitle">Мои проекты</h2>
+</div>
+<button type="button" id="portfolioClose" aria-label="Закрыть портфель">✕</button>
+</div>
+<p>Выберите объект, чтобы открыть паспорт и доступные этапы. Просмотр не расходует действие.</p>
+<div id="portfolioList">
+</div>
+</section>
+</div>
+<script src="game/rules.js?v=190">
+</script>
+<script src="game/core/catalog.js?v=190">
+</script>
+<script src="game/core/state.js?v=190">
+</script>
+<script src="game/core/auctions.js?v=190">
+</script>
+<script src="game/core/cards.js?v=190">
+</script>
+<script src="game/core/construction.js?v=190">
+</script>
+<script src="game/core/finance.js?v=190">
+</script>
+<script src="game/core/inventory.js?v=190">
+</script>
+<script src="game/core/board.js?v=190">
+</script>
+<script src="game/core/storage.js?v=190">
+</script>
+<script src="game/bots.js?v=190">
+</script>
+<script src="balance.js?v=170">
+</script>
+<script src="marketplace.js?v=141">
+</script>
+<script src="pace.js?v=150">
+</script>
+<script src="auction-competition.js?v=150">
+</script>
+<script src="city-requests.js?v=141">
+</script>
+<script src="visual.js?v=180">
+</script>
+<script src="game-rework-v016.js?v=170">
+</script>
+<script src="scene-motion.js?v=180">
+</script>
+<script src="game/runtime.js?v=190">
+</script>
+<script src="ui/storage.js?v=190"></script>
+<script src="ui/studio.js?v=190">
+</script>
+<script src="game/core/bootstrap.js?v=190">
+</script>
+</body>
+</html>

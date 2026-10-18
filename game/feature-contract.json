@@ -1,0 +1,217 @@
+{
+  "baseline": "c86df7daac15172fcea3afdc2a94a7ca0265b468",
+  "coreFunctions": 108,
+  "coreSha256": "38d1dbbb4fd003c5eecd14e67595a9191016c16cdc0dfbf96b288a02aa8d9893",
+  "functions": [
+    "locationYield",
+    "canonicalLot",
+    "zoneOf",
+    "allowedProject",
+    "adjacentOwner",
+    "largePairCandidate",
+    "territoryAnalysis",
+    "note",
+    "newGame",
+    "current",
+    "rentalIncomeFor",
+    "startSettlement",
+    "roll",
+    "ensureLandDeck",
+    "auctionLotIndex",
+    "closeLandSelection",
+    "openLandSelection",
+    "landAuctionOption",
+    "renderLandSelection",
+    "chooseAuctionLand",
+    "startSelectedLandAuction",
+    "startBotAuction",
+    "beginAuction",
+    "showAuction",
+    "submitAuctionBid",
+    "resolveAuction",
+    "closeAuctionResult",
+    "buy",
+    "build",
+    "closePropertySale",
+    "ownedPropertyForSale",
+    "openPropertySale",
+    "runPropertySale",
+    "transferLargeSection",
+    "sell",
+    "endTurn",
+    "bot",
+    "value",
+    "randomPick",
+    "showResolvedCard",
+    "drawNetworkCard",
+    "resolveSpecialCell",
+    "beginConstructionDeckChoice",
+    "showConstructionDeckChoice",
+    "selectConstructionDeck",
+    "drawCard",
+    "showCard",
+    "dismissCard",
+    "nextStageDeck",
+    "nextStageLabel",
+    "availableCards",
+    "stageCost",
+    "playStageCard",
+    "closeCardTrade",
+    "closeExchange",
+    "exchangeValue",
+    "exchangeDemandMatches",
+    "exchangeDemandDescription",
+    "ensureExchangeDeck",
+    "drawExchangeDemand",
+    "renderExchangeDemand",
+    "sellToExchangeDemand",
+    "openExchange",
+    "runExchangeAuction",
+    "dealDemandMatches",
+    "dealDemandText",
+    "ensureDealDemandDeck",
+    "renderDealDemand",
+    "drawDealDemand",
+    "sellDealDemand",
+    "openCardTrade",
+    "offerCardTrade",
+    "handCardDetails",
+    "renderGovernmentContract",
+    "applySelectedMarketCard",
+    "ownedFinishedPlots",
+    "marketBase",
+    "tenantIncomeForLot",
+    "applyMarketCard",
+    "handItems",
+    "renderHandDock",
+    "filterHandGroups",
+    "openHandCategory",
+    "closeHandCards",
+    "renderHand",
+    "neighborsBySide",
+    "completedNetworkPlot",
+    "winningCluster",
+    "checkVictory",
+    "render",
+    "requiredNetworkTypes",
+    "connectedNetworksFor",
+    "applyNetworkCard",
+    "closePlotCard",
+    "inspectLot",
+    "showProjectNotice",
+    "scheduleTurnTask",
+    "readStoredValue",
+    "persistState",
+    "resumeSavedGame",
+    "showSessionMenu",
+    "closeSessionMenu",
+    "requestNewGame",
+    "selectProfession",
+    "updateLobby",
+    "startLobbyGame",
+    "save",
+    "load"
+  ],
+  "mechanics": [
+    {
+      "id": "session",
+      "description": "Новая партия, профессии, 3–6 участников и 2d6",
+      "tests": [
+        "tests/smoke.cjs",
+        "tests/rework.cjs",
+        "tests/browser_rc1_stability.cjs"
+      ]
+    },
+    {
+      "id": "territory",
+      "description": "24 участка, 6 зон, смежность и двойной участок",
+      "tests": [
+        "tests/territory.cjs",
+        "tests/browser_territory.cjs"
+      ]
+    },
+    {
+      "id": "auctions",
+      "description": "Закрытые ставки, две заявки, выбор земли и AI",
+      "tests": [
+        "tests/rework.cjs",
+        "tests/browser_territory.cjs"
+      ]
+    },
+    {
+      "id": "construction",
+      "description": "Этапы 0–4, физические колоды, скидки профессий",
+      "tests": [
+        "tests/smoke.cjs",
+        "tests/finance-integrity.cjs"
+      ]
+    },
+    {
+      "id": "networks",
+      "description": "Пять видов инженерных сетей и бонусы",
+      "tests": [
+        "tests/smoke.cjs",
+        "tests/territory.cjs"
+      ]
+    },
+    {
+      "id": "finance",
+      "description": "Аренда на Старте, продажи, инвестиции, остаточный долг",
+      "tests": [
+        "tests/finance-integrity.cjs",
+        "tests/browser_finance.cjs"
+      ]
+    },
+    {
+      "id": "trade",
+      "description": "Рынок, покупка, продажа, обмен с доплатой, обмен земли",
+      "tests": [
+        "tests/city-requests.cjs",
+        "tests/browser_marketplace.cjs",
+        "tests/browser_city_requests.cjs"
+      ]
+    },
+    {
+      "id": "events",
+      "description": "Работа, кризисы, проверка, пропуск хода",
+      "tests": [
+        "tests/smoke.cjs",
+        "tests/rework.cjs"
+      ]
+    },
+    {
+      "id": "victory",
+      "description": "Цепь 4, девелопер, муниципальный итог 240",
+      "tests": [
+        "tests/rework.cjs",
+        "tests/tournament-v016.cjs",
+        "tests/qa-mass-campaigns.cjs"
+      ]
+    },
+    {
+      "id": "bots",
+      "description": "Тактика земли, обмены, стройка, портфель, таймеры",
+      "tests": [
+        "tests/qa-mass-campaigns.cjs",
+        "tests/browser_rc1_stability.cjs"
+      ]
+    },
+    {
+      "id": "persistence",
+      "description": "Автосохранение, продолжение, архив старой карты, отказы Storage",
+      "tests": [
+        "tests/finance-integrity.cjs",
+        "tests/browser_rc1_stability.cjs"
+      ]
+    },
+    {
+      "id": "presentation",
+      "description": "266 SVG, fallback, режимы анимации, звук, touch",
+      "tests": [
+        "tests/svg-assets.cjs",
+        "tests/browser_living_city.cjs",
+        "tests/browser_work_integration.cjs"
+      ]
+    }
+  ]
+}

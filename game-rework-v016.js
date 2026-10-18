@@ -270,7 +270,7 @@ window.render=function(){
  }
 };
 const oldNewGame=window.newGame;
-window.newGame=function(){E('auditDecision')?.remove();quickClose();oldNewGame();state.turnLimit=240;state.completedTurns=0;records();render();};
+window.newGame=function(){E('auditDecision')?.remove();quickClose();oldNewGame();state.turnLimit=DEVELOPER_RULES.turnLimit;state.completedTurns=0;records();render();};
 const host=document.querySelector('.company-panel');
 if(host&&!E('developerStrategy')){const panel=document.createElement('section');panel.id='developerStrategy';panel.className='eco-summary';host.appendChild(panel);}
 const css=document.createElement('style');

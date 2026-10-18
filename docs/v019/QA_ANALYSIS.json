@@ -1,0 +1,53 @@
+{
+  "games": 1000,
+  "recordsSha256": "5bb2065fbce2a48d2781237b996d52b7548b628e19272ff49357c6f4e8bb3d55",
+  "identicalComparison": true,
+  "endings": {
+    "tender": 805,
+    "territory": 166,
+    "developer": 29
+  },
+  "byPlayers": [
+    {
+      "players": 3,
+      "limit": 147,
+      "total": 250
+    },
+    {
+      "players": 4,
+      "limit": 207,
+      "total": 250
+    },
+    {
+      "players": 5,
+      "limit": 221,
+      "total": 250
+    },
+    {
+      "players": 6,
+      "limit": 230,
+      "total": 250
+    }
+  ],
+  "limit": {
+    "games": 805,
+    "playerPositions": 3754,
+    "ownershipChainPossible": 390,
+    "averageCompletedProjects": 15.240993788819877,
+    "averageReadyBuildings": 8.436024844720498,
+    "averageTenants": 5.66583850931677,
+    "failedGates": {
+      "projects": 2879,
+      "sales": 3647,
+      "cash": 1872,
+      "ready": 864,
+      "zones": 2849,
+      "medium": 3005
+    },
+    "unfinished": 4934,
+    "missingCard": 4104,
+    "missingCardAndEmptyStock": 312,
+    "hasCardButUnaffordable": 342
+  },
+  "interpretation": "Terminal correlations, not causal proof. Listed costs exclude profession discounts. No human duration or strategic diversity measured."
+}
