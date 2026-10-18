@@ -1,0 +1,29 @@
+name: QA v0.19 independent seat/profession economics
+on:
+  pull_request:
+    paths:
+      - 'tests/qa-v019-seat-professions.cjs'
+      - 'docs/qa/**'
+      - '.github/workflows/qa-v019.yml'
+  workflow_dispatch:
+jobs:
+  qa-v019-seats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run seed-fixed v0.19 game-engine profession/seat experiment
+        env:
+          QA_GAMES: 1000
+          QA_REPORT_DIR: qa-results/v019-professions
+        run: node tests/qa-v019-seat-professions.cjs
+      - name: Upload raw campaigns and normalized summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-v019-profession-seat-campaigns
+          path: qa-results/v019-professions/
+          if-no-files-found: warn
