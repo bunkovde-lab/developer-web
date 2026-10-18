@@ -1,6 +1,13 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
+const {execFileSync}=require('node:child_process');
+const {createHash}=require('node:crypto');
+let sourceCommit=process.env.GITHUB_SHA;
+if(!sourceCommit){try{sourceCommit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();}catch{sourceCommit='unversioned';}}
+const sourceFiles=['index.html','balance.js','marketplace.js','pace.js','auction-competition.js','city-requests.js','game-rework-v016.js'];
+const engineSha256=createHash('sha256');
+for(const file of sourceFiles)engineSha256.update(file+'\0').update(fs.readFileSync(file));
 const html=fs.readFileSync('index.html','utf8');
 const legacy=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert(legacy,'Legacy inline script must exist');
@@ -106,5 +113,5 @@ const sizeReports=[3,4,5,6].map(n=>{
    networkStockouts:rows.reduce((s,x)=>s+x.networkStockouts,0)};
 });
 const allTurns=raw.map(x=>x.completedTurns);
-const summary={kind:"actual-engine-vm",commit:process.env.GITHUB_SHA||"local",rules:"HTML v0.17.0 baseline 34dfaadc1cf5ffd79f6e0360634bf18dab71e59b",games:raw.length,seeds:"202610180+player_count*100000+trial",complete:raw.length,meanTurns:Number(mean(allTurns).toFixed(2)),medianTurns:median(allTurns),byPlayerCount:sizeReports,limitations:["all bots use the same existing AI, no human strategy archetypes", "headless Node VM; no full Chromium interaction", "real human time, deal negotiation, exact cumulative rent/sales split not measured"]};
+const summary={kind:"actual-engine-vm",commit:sourceCommit,rules:"HTML "+(html.match(/HTML · (v[0-9.]+)/)?.[1]||"unknown"),engineSha256:engineSha256.digest("hex"),games:raw.length,seeds:"202610180+player_count*100000+trial",complete:raw.length,meanTurns:Number(mean(allTurns).toFixed(2)),medianTurns:median(allTurns),byPlayerCount:sizeReports,limitations:["all bots use the same existing AI, no human strategy archetypes", "headless Node VM; no full Chromium interaction", "real human time, deal negotiation, exact cumulative rent/sales split not measured"]};
 console.log('QA_BASELINE_SUMMARY '+JSON.stringify(summary));

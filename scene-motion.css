@@ -156,3 +156,47 @@
  .board .map-plot.scene-full-parcel .plot-progress{font-size:clamp(6px,1.5vw,10px);padding:1px 2px}
  .board.zoom-map .map-plot.scene-full-parcel .plot-progress{font-size:clamp(9px,2.2vw,13px)}
 }
+
+/* Work integration: three reserved bands, one source of dynamic text.
+   Crop the existing 320px artwork to x=20..300, y=65..275. Source files stay intact.
+   Explicit sizes work with CSS image rendering on Android (SVG view fragments do not). */
+.board.zoom-map{z-index:900}
+body.city-zoom-open{overflow:hidden}
+.board .map-plot.scene-full-parcel{container-type:inline-size}
+.board .map-plot.scene-full-parcel::before{
+ inset:21% 0 26%;background-size:114.2857% 152.381%;background-position:50% 59.0909%;
+}
+.board .map-plot.scene-full-parcel[data-scene-owner="-1"] .plot-id,
+.board .map-plot.scene-full-parcel .plot-id,
+.board .map-plot .plot-type{
+ position:absolute!important;top:2px;height:auto!important;width:auto!important;
+ clip-path:none!important;overflow:hidden;white-space:nowrap;
+ padding:0 2px;margin:0;line-height:1.2;font-size:clamp(8px,17cqw,12px);
+ color:#fff1cc;background:#091e30;z-index:3;border-radius:2px;
+}
+.board .map-plot.scene-full-parcel .plot-id{left:2px;right:auto;max-width:27%}
+.board .map-plot .plot-type{right:2px;max-width:64%;font-weight:700}
+.board .map-plot.scene-full-parcel .plot-progress{
+ bottom:1px;padding:1px 0;border:0;font-size:clamp(8px,17cqw,12px);line-height:1.2;
+}
+.board .map-plot.scene-full-parcel .plot-hint,
+.board .map-plot.scene-full-parcel .plot-tactics{display:none}
+.board .map-plot.scene-lease:after{top:24%;right:2px}
+.board .map-plot .scene-network-pin{top:25%;left:2px}
+.board.zoom-map .map-plot.scene-full-parcel::before{inset:20px 0 51px}
+.board.zoom-map .map-plot.scene-full-parcel .plot-id,
+.board.zoom-map .map-plot .plot-type{font-size:12px;top:3px}
+.board.zoom-map .map-plot.scene-full-parcel .plot-progress{bottom:34px;font-size:12px;padding:0}
+.board.zoom-map .map-plot .plot-progress[data-price="true"]::after{content:" тыс."}
+.board.zoom-map .map-plot.scene-full-parcel .plot-hint,
+.board.zoom-map .map-plot.scene-full-parcel .plot-tactics{
+ display:block;position:absolute!important;left:2px;right:2px;margin:0;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;
+ font-size:10px;line-height:13px;height:13px;color:#e3f3ef;background:#091e30;
+}
+.board.zoom-map .map-plot.scene-full-parcel .plot-hint{bottom:19px}
+.board.zoom-map .map-plot.scene-full-parcel .plot-tactics{bottom:3px}
+.board.zoom-map .city-lots{grid-template-rows:repeat(4,minmax(116px,1fr))}
+@media(max-width:600px){
+ .board.zoom-map .city-lots{grid-template-rows:repeat(8,minmax(116px,1fr))}
+}

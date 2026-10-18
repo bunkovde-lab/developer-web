@@ -66,7 +66,28 @@ window.developerSound=Object.freeze({
  play, getVolume:()=>volume, isMuted:()=>muted,
  setVolume:v=>{if(!Number.isFinite(v))return;volume=Math.max(0,Math.min(1,v));try{localStorage.setItem('developer-v18-volume',String(volume))}catch{}}
 });
-function toggleZoom(next){zoomOpen=typeof next==='boolean'?next:!zoomOpen;const board=$v('board');if(board)board.classList.toggle('zoom-map',zoomOpen);if(zoomOpen){const city=board?.querySelector('.city-map');if(city&&!$v('v10ZoomClose')){const x=document.createElement('button');x.type='button';x.id='v10ZoomClose';x.textContent='✕ Закрыть город';x.onclick=()=>toggleZoom(false);city.prepend(x);}}const control=$v('v10Zoom');if(control){control.textContent=zoomOpen?'✕ Свернуть город':'🔎 Увеличить город';control.setAttribute('aria-expanded',String(zoomOpen));}}
+function toggleZoom(next){
+ const wasOpen=zoomOpen;
+ zoomOpen=typeof next==='boolean'?next:!zoomOpen;
+ const board=$v('board'),city=board?.querySelector('.city-map');
+ if(board)board.classList.toggle('zoom-map',zoomOpen);
+ document.body.classList.toggle('city-zoom-open',zoomOpen);
+ if(city){
+  if(zoomOpen){
+   city.setAttribute('role','dialog');city.setAttribute('aria-modal','true');city.setAttribute('aria-label','План города');
+   if(!$v('v10ZoomClose')){
+    const x=document.createElement('button');x.type='button';x.id='v10ZoomClose';
+    x.textContent='✕ Закрыть город';x.onclick=()=>toggleZoom(false);city.prepend(x);
+   }
+   if(!wasOpen)$v('v10ZoomClose')?.focus({preventScroll:true});
+  }else{
+   city.removeAttribute('role');city.removeAttribute('aria-modal');city.removeAttribute('aria-label');
+   if(wasOpen)$v('v10Zoom')?.focus({preventScroll:true});
+  }
+ }
+ const control=$v('v10Zoom');
+ if(control){control.textContent=zoomOpen?'✕ Свернуть город':'🔎 Увеличить город';control.setAttribute('aria-expanded',String(zoomOpen));}
+}
 function prettyTrack(){
  const cells=document.querySelectorAll('#board>.cell');
  for(let i=0;i<cells.length;i++){
@@ -91,11 +112,15 @@ function decoratePlots(){
   const stage=lot.project?.stage||0,built=stage===4,owned=lot.owner>=0;
   const icon=el.querySelector('.plot-stage');
   if(icon)icon.textContent=Number.isInteger(lot.reservedFor)?'▣':!owned?(ZONE_GRID[i]==='UNIQUE'?'★':'◇'):STAGE_ICONS[stage]||'🏢';
+  const type=el.querySelector('.plot-type')||document.createElement('span');
+  type.className='plot-type';type.textContent=zoneOf(i).short;
+  if(!type.isConnected)el.appendChild(type);
   const label=el.querySelector('.plot-zone');
   if(label)label.textContent=Number.isInteger(lot.reservedFor)?'Секция комплекса':!owned?zoneOf(i).short:sectorLabel(lot,lot.owner);
   el.dataset.status=Number.isInteger(lot.reservedFor)?'reserved':!owned?'free':built?'completed':lot.investor?'investor':'construction';el.dataset.zone=ZONE_GRID[i];
   const steps=el.querySelector('.plot-progress')||document.createElement('span');steps.className='plot-progress';
-  steps.textContent=Number.isInteger(lot.reservedFor)?'СЕКЦИЯ':owned?(built?'ГОТОВО':stage+'/4 ЭТАПОВ'):lot.price+' тыс.';
+  steps.textContent=Number.isInteger(lot.reservedFor)?'СЕКЦИЯ':owned?stage+'/4':String(lot.price);
+  steps.dataset.price=String(!owned&&!Number.isInteger(lot.reservedFor));
   if(!steps.isConnected)el.appendChild(steps);
   if(owned){
    const hint=el.querySelector('.plot-hint')||document.createElement('small');hint.className='plot-hint';
@@ -110,7 +135,7 @@ function decoratePlots(){
   el.setAttribute('aria-label',context);
  }
  const cap=document.querySelector('.city-title');
- if(cap)cap.textContent='ДЕВЕЛОПЕР · ПЛАН ГОРОДА';
+ if(cap)cap.textContent='ПЛАН ГОРОДА · ЦЕНЫ В ТЫС.';
  if(zoomOpen)toggleZoom(true);
 }
 function maxCluster(){
@@ -148,7 +173,21 @@ function visualRender(){
 const original=window.render;
 window.render=function(){original();visualRender();};
 window.v10ToggleZoom=toggleZoom;
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&zoomOpen)toggleZoom(false);});
+document.addEventListener('keydown',e=>{
+ if(!zoomOpen)return;
+ const passport=$v('plotCardOverlay');
+ if(passport&&!passport.hidden){
+  if(e.key==='Escape'){closePlotCard();document.querySelector('.city-map .map-plot.chosen')?.focus({preventScroll:true});}
+  return;
+ }
+ if(e.key==='Escape'){toggleZoom(false);return;}
+ if(e.key==='Tab'){
+  const nodes=[...document.querySelectorAll('.city-map button:not(:disabled)')];
+  const first=nodes[0],last=nodes[nodes.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}
+ }
+});
 document.addEventListener('pointerdown',e=>{
  const btn=e.target.closest('button');if(!btn||btn.disabled||btn.id==='v10Sound')return;
  if(btn.id==='roll'){play('dice');return;}

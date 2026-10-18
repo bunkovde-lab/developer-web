@@ -196,7 +196,7 @@ function report(before,now){
 function validImg(key,css){
  const path=urlFor(key);if(!path)return null;
  const img=document.createElement('img');img.className=css;img.alt='';img.setAttribute('aria-hidden','true');
- img.decoding='async';img.loading='lazy';img.src=path;return img;
+ img.decoding='async';img.loading=css==='scene-card-art'?'lazy':'eager';img.src=path;return img;
 }
 function paint(){
  if(painting)return;
@@ -218,9 +218,10 @@ function paint(){
     if(stageNode){
      const art=validImg(key,'scene-stage-art');
      if(art){
-      const fallback=stageNode.textContent;
+      const fallback=Number.isInteger(lot.reservedFor)?'▣':lot.owner<0?'◇':labels[stage]||'🏢';
       stageNode.replaceChildren(art);stageNode.classList.add('scene-art-stage');
       art.onerror=()=>{
+       if(!art.isConnected)return;
        stageNode.classList.remove('scene-art-stage');stageNode.textContent=fallback;
        // Keep the original semantic icon legible if an SVG file is unavailable.
        el.classList.remove('scene-full-parcel');el.style.removeProperty('--scene-parcel-art');
@@ -230,6 +231,7 @@ function paint(){
     el.dataset.sceneOwner=lot.owner;
     el.classList.toggle('scene-lease',!!lot.tenant);
     const connections=lot.project?.connections?.length||0;
+    if(!connections)el.querySelector('.scene-network-pin')?.remove();
     if(connections>0&&!el.querySelector('.scene-network-pin')){
      const x=validImg('icon.network','scene-network-pin');
      if(x)el.appendChild(x);
@@ -244,11 +246,13 @@ function paint(){
     const key='track.'+String(i+1).padStart(2,'0');
     const art=validImg(key,'scene-track-art');
     if(art){
-     const fallback=n.textContent;
+     const fallback=n.textContent||n.dataset.sceneFallback||'◆';
+     n.dataset.sceneFallback=fallback;
      n.replaceChildren(art);n.classList.add('scene-art-track');
      el.classList.add('scene-full-track');
      el.style.setProperty('--scene-track-tile-art','url("'+urlFor(key)+'")');
      art.onerror=()=>{
+      if(!art.isConnected)return;
       n.classList.remove('scene-art-track');n.textContent=fallback;
       el.classList.remove('scene-full-track');el.style.removeProperty('--scene-track-tile-art');
      };
@@ -261,6 +265,8 @@ function paint(){
    group.querySelectorAll('.hand-card').forEach((el,i)=>{
     const c=items[i],key=deck==='network'?'card.network.'+c?.type:deck==='government'?null:assetCard(c);
     const art=validImg(key,'scene-card-art');
+    // Paint may run repeatedly without a core re-render (opening a hand, for example).
+    el.querySelectorAll('.scene-card-art').forEach(img=>img.remove());
     if(art)el.prepend(art);
    });
   });
