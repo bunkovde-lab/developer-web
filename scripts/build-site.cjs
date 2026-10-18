@@ -50,3 +50,15 @@ const details = [
 ];
 fs.writeFileSync(path.join(output, 'BUILD_INFO.txt'), details.join('\n') + '\n');
 console.log('Built ' + outName + '/ — ' + details.join('; '));
+// Verifiable browser bundle, independent of the hosting provider's source commit.
+const crypto=require('node:crypto');
+const hashes={};
+function hashDirectory(dir,prefix=''){
+ for(const entry of fs.readdirSync(dir,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name))){
+  const relative=prefix+entry.name,absolute=path.join(dir,entry.name);
+  if(entry.isDirectory())hashDirectory(absolute,relative+'/');
+  else if(!['BUILD_MANIFEST.json','BUILD_INFO.txt'].includes(relative))hashes[relative]=crypto.createHash('sha256').update(fs.readFileSync(absolute)).digest('hex');
+ }
+}
+hashDirectory(output);
+fs.writeFileSync(path.join(output,'BUILD_MANIFEST.json'),JSON.stringify({version:html.match(/name="developer-version" content="([^"]+)"/)?.[1]||'legacy',sourceSha:process.env.GITHUB_SHA||process.env.CF_PAGES_COMMIT_SHA||'local',status:'USER TEST — not stable',files:hashes},null,2)+'\n');

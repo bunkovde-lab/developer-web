@@ -14,6 +14,8 @@ jobs:
           node-version: '22'
       - name: Preserved mechanics and modular architecture
         run: node tests/feature-contract.cjs && node tests/architecture.cjs
+      - name: Static package provenance and SVG completeness
+        run: node tests/build-package.cjs
       - name: Game mechanics and syntax smoke tests
         run: node tests/smoke.cjs
       - name: Spatial map, explicit land auction and development rules

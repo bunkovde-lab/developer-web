@@ -24,7 +24,7 @@ function update(next){
  view=next;if(next.status==='lobby'){document.body.classList.add('studio-lobby');return;}
  document.body.classList.remove('studio-lobby');
  $('studioActor').textContent=next.status==='finished'?'Партия завершена':next.actor.bot?'Ход соперника · '+next.actor.name:'Ваш ход';
- $('studioCell').textContent=next.event+(next.rolled?' · действия: '+next.remaining:' · ожидается бросок');
+ $('studioCell').textContent=next.status==='finished'?'Итоговая оценка и победитель — под картой':next.event+(next.rolled?' · действия: '+next.remaining:' · ожидается бросок');
  $('studioProgressLabel').textContent=next.turnLimit?(next.completedTurns+' / '+next.turnLimit+' ходов'):'Свободная партия';
  $('studioProgress').value=next.completedTurns;$('studioProgress').max=next.turnLimit||1;
  $('studioNet').textContent=fmt(next.company.score);$('studioDebt').textContent=fmt(next.company.debt);

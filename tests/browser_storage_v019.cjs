@@ -10,6 +10,7 @@ await page.evaluate(()=>showSessionMenu());
 const download=page.waitForEvent('download');await page.locator('#backupExport').click();assert.equal((await download).suggestedFilename(),'developer-v019-save.json');
 const portable=await page.evaluate(()=>DeveloperStorage.export());assert.equal(JSON.parse(portable).version,'0.19');
 const unchanged=await page.evaluate(()=>{const slot=localStorage.getItem(STORAGE_KEY);try{DeveloperStorage.import('{"players":[]}')}catch{}return slot===localStorage.getItem(STORAGE_KEY)});assert(unchanged,'Invalid import leaves saved data untouched');
+assert(await page.evaluate(()=>{const slot=localStorage.getItem(STORAGE_KEY),data=JSON.parse(DeveloperStorage.export());data.state.players[0].name='<img src=x onerror=alert(1)>';try{DeveloperStorage.import(JSON.stringify(data))}catch{}return slot===localStorage.getItem(STORAGE_KEY)}),'Markup import is rejected without replacing the slot');
 await page.locator('#backupFile').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{"players":[]}')});assert.match(await page.locator('#backupStatus').textContent(),/отклонён/);
 await page.locator('#backupFile').setInputFiles({name:'save.json',mimeType:'application/json',buffer:Buffer.from(portable)});await page.waitForFunction(()=>document.getElementById('sessionOverlay').hidden);
 assert.equal(await page.evaluate(()=>state.players[0].money),987);

@@ -15,6 +15,9 @@ on:
       - 'scene-motion.css'
       - 'game-rework-v016.js'
       - 'assets/**'
+      - 'game/**'
+      - 'styles/**'
+      - 'ui/**'
       - 'scripts/build-site.cjs'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
@@ -37,7 +40,7 @@ jobs:
         with:
           node-version: '22'
       - uses: actions/configure-pages@v5
-      - name: Build stable release and isolated v0.18.1-rc1 preview
+      - name: Build pinned stable/rc1 and isolated v0.19 preview
         shell: bash
         run: |
           set -euo pipefail
@@ -53,15 +56,20 @@ jobs:
           mkdir -p site
           cp -R "$stable/dist/." site/
 
-          # GitHub Pages shares an origin across paths; testers must use a
-          # private browser profile to avoid mixing v0.18 save slots with rc1.
-          GITHUB_SHA="$GITHUB_SHA" PR_NUMBER=15 node scripts/build-site.cjs --out dist
-          test -f dist/scene-motion.js
-          test -f dist/tests/browser_rc1_stability.cjs || test -f tests/browser_rc1_stability.cjs
-          test "$(node -p "require('./assets/svg/manifest.json').version")" = 1
-          grep -q 'v0.18.1-rc1' dist/index.html
+          # Preserve the previously integrated RC1 exactly; v0.19 owns a separate save slot.
+          rc1_sha="c86df7daac15172fcea3afdc2a94a7ca0265b468"
+          git fetch --no-tags --depth=1 origin "$rc1_sha"
+          rc1="$(mktemp -d)"
+          git archive "$rc1_sha" | tar -x -C "$rc1"
+          (cd "$rc1"; GITHUB_SHA="$rc1_sha" PR_NUMBER=15 node scripts/build-site.cjs --out dist)
           mkdir -p site/previews/v0181-rc1
-          cp -R dist/. site/previews/v0181-rc1/
+          cp -R "$rc1/dist/." site/previews/v0181-rc1/
+
+          GITHUB_SHA="$GITHUB_SHA" node scripts/build-site.cjs --out dist
+          grep -q 'v0.19-test' dist/index.html
+          test -f dist/game/runtime.js
+          mkdir -p site/previews/v019
+          cp -R dist/. site/previews/v019/
 
           # Maintain the old preview address for existing Android feedback.
           mkdir -p site/previews/v018
@@ -70,14 +78,15 @@ jobs:
           {
             "release": "v0.18.1-rc1",
             "status": "TEST ONLY - not stable",
-            "source_sha": "$GITHUB_SHA",
+            "source_sha": "$rc1_sha",
             "stable_source_sha": "$stable_sha",
             "preview_path": "/developer-web/previews/v0181-rc1/"
           }
           EOF
           touch site/.nojekyll
           echo "Stable root from $stable_sha" >> "$GITHUB_STEP_SUMMARY"
-          echo "RC1 preview: $GITHUB_SHA at https://bunkovde-lab.github.io/developer-web/previews/v0181-rc1/" >> "$GITHUB_STEP_SUMMARY"
+          echo "RC1 preview: $rc1_sha at https://bunkovde-lab.github.io/developer-web/previews/v0181-rc1/" >> "$GITHUB_STEP_SUMMARY"
+          echo "v0.19 test: $GITHUB_SHA at https://bunkovde-lab.github.io/developer-web/previews/v019/" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

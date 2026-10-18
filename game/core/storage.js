@@ -55,6 +55,17 @@ if(!loaded||!Array.isArray(loaded.players)||loaded.players.length<2||loaded.play
 // Import is explicit and validated before replacing the v0.19 slot. Older versions keep their slot.
 function importSavedGame(raw){
  const envelope=JSON.parse(raw),candidate=envelope?.format==='developer-save'?envelope.state:envelope;
+ // Legacy dialogs interpolate imported strings into attributes and HTML. Portable
+ // files must contain plain game data, never markup or executable attributes.
+ let visited=0;
+ function plain(value,depth=0){
+  if(depth>40||++visited>100000)throw Error('Слишком сложное сохранение');
+  if(typeof value==='string'&&/[<>"']/.test(value))throw Error('Сохранение содержит неподдерживаемую разметку');
+  if(value&&typeof value==='object')for(const [key,child]of Object.entries(value)){
+   if(['__proto__','prototype','constructor'].includes(key))throw Error('Недопустимое поле сохранения');plain(child,depth+1);
+  }
+ }
+ plain(candidate);
  const serialized=JSON.stringify(candidate);validateSavedGame(serialized);
  const previous=readStoredValue(STORAGE_KEY);
  localStorage.setItem(STORAGE_KEY,serialized);
