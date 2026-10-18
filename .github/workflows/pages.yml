@@ -36,15 +36,15 @@ jobs:
         with:
           node-version: '22'
       - uses: actions/configure-pages@v5
-      # Publish PR #8 as a test-only subdirectory; never replace the stable
+      # Publish visual fix PR #11 as a test-only subdirectory; never replace stable
       # root game or merge experimental gameplay into main for this preview.
-      - name: Assemble independent v0.18 preview from PR #8
+      - name: Assemble independent v0.18 SVG fix preview from PR #11
         shell: bash
         run: |
           set -euo pipefail
-          preview_sha="$(git ls-remote origin refs/pull/8/head | awk '{print $1}')"
+          preview_sha="$(git ls-remote origin refs/pull/11/head | awk '{print $1}')"
           if [[ ! "$preview_sha" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "PR #8 head cannot be resolved" >&2
+            echo "PR #11 head cannot be resolved" >&2
             exit 1
           fi
           git fetch --no-tags --depth=1 origin "$preview_sha"
@@ -54,11 +54,11 @@ jobs:
           cp scripts/build-site.cjs "$staging/scripts/build-site.cjs"
           (
             cd "$staging"
-            GITHUB_SHA="$preview_sha" PR_NUMBER=8 node scripts/build-site.cjs --out dist
+            GITHUB_SHA="$preview_sha" PR_NUMBER=11 node scripts/build-site.cjs --out dist
           )
           mkdir -p previews/v018
           cp -R "$staging/dist/." previews/v018/
-          printf 'Preview of PR #8, source commit %s\n' "$preview_sha" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Preview of PR #11, source commit %s\n' "$preview_sha" >> "$GITHUB_STEP_SUMMARY"
           test -f previews/v018/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
