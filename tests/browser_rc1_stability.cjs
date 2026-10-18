@@ -14,14 +14,14 @@ async function ready(){for(let i=0;i<60;i++){try{await new Promise((ok,fail)=>{c
  await page.clock.runFor(380);
  assert.equal(await page.evaluate(()=>state.turn),0,'Old bot end-turn cannot skip a human turn in a new game');
  const stored=await page.evaluate(()=>{persistState();return JSON.stringify(state)});
- await page.evaluate(raw=>{state.turn=1;state.players[1].pos=0;state.rolled=false;bot();localStorage.setItem('developer-html-save',raw);resumeSavedGame();},stored);
+ await page.evaluate(raw=>{state.turn=1;state.players[1].pos=0;state.rolled=false;bot();localStorage.setItem(STORAGE_KEY,raw);resumeSavedGame();},stored);
  await page.clock.runFor(380);
  assert.equal(await page.evaluate(()=>state.turn),0,'Old bot end-turn cannot advance a restored session');
  await page.evaluate(()=>{newGame();closeSessionMenu();Math.random=()=>0;state.turn=1;state.players[1].pos=0;bot();});
  await page.clock.runFor(380);
  assert.equal(await page.evaluate(()=>state.completedTurns),1,'One bot callback counts exactly one completed turn');
  for(const bad of ['null','{}','{"plots":null}',stored.replace('"money":1250','"money":null'),JSON.stringify({...JSON.parse(stored),players:JSON.parse(stored).players.map(p=>({...p,cards:{}}))})]){
-  const same=await page.evaluate(raw=>{const before=state;localStorage.setItem('developer-html-save',raw);resumeSavedGame();return state===before},bad);
+  const same=await page.evaluate(raw=>{const before=state;localStorage.setItem(STORAGE_KEY,raw);resumeSavedGame();return state===before},bad);
   assert.equal(same,true,'Malformed save cannot replace the active session');
  }
  assert.deepEqual(errors,[]);

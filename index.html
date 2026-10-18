@@ -318,7 +318,7 @@
 <button type="button" onclick="save()">💾 Сохранить</button>
 <button type="button" onclick="load()">📂 Загрузить</button>
 </div>
-<button class="lobby-online" disabled title="Нужен сервер синхронизации">Пригласить игрока по ссылке — скоро</button>
+<section class="studio-backup"><h3>Резервная копия партии</h3><p>v0.19 использует отдельное сохранение. Прежняя версия не перезаписывается. Файл можно перенести на другое устройство.</p><div class="menu-options"><button type="button" id="backupExport">Скачать JSON</button><button type="button" id="backupImport">Открыть JSON</button><button type="button" id="backupLegacy">Импорт v0.18</button></div><input type="file" id="backupFile" accept=".json,application/json" hidden><p id="backupStatus" role="status"></p></section><button class="lobby-online" disabled title="Нужен сервер синхронизации">Пригласить игрока по ссылке — скоро</button>
 <p class="auction-hint">Локальная версия: 1 человек и 2–5 ботов. Для покупки земли необходимо участвовать в аукционах; готовых участков при старте нет.</p>
 </div>
 </div>
@@ -389,6 +389,7 @@
 </script>
 <script src="game/runtime.js?v=190">
 </script>
+<script src="ui/storage.js?v=190"></script>
 <script src="ui/studio.js?v=190">
 </script>
 <script src="game/core/bootstrap.js?v=190">

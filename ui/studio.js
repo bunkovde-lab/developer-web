@@ -35,6 +35,9 @@ function update(next){
  for(const button of document.querySelectorAll('#plotCardProjects button[onclick^="playStageCard"]'))button.disabled=!next.canAct;
  document.querySelectorAll('#log > div').forEach((row,i)=>{row.classList.add('studio-event');row.dataset.event=/продал|покуп|торг|обмен/.test(row.textContent)?'trade':/этап|стро|ввод|введ/.test(row.textContent)?'build':'general';row.style.setProperty('--event-order',i);});
  if(portfolioOpen)portfolio();
+ for(const button of document.querySelectorAll('.actions button,#sceneControls button,#v10Zoom')){
+  if(!button.children.length)button.textContent=button.textContent.replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu,'').trim();
+ }
  decorateDock();
 }
 function decorateDock(){
@@ -46,7 +49,11 @@ function decorateDock(){
  }
 }
 window.DeveloperStudio=Object.freeze({openPortfolio,closePortfolio});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&portfolioOpen){e.stopPropagation();closePortfolio();}});
+document.addEventListener('keydown',e=>{
+ if(!portfolioOpen)return;
+ if(e.key==='Escape'){e.stopPropagation();closePortfolio();}
+ if(e.key==='Tab'){const focus=[...$('portfolioOverlay').querySelectorAll('button:not(:disabled)')],first=focus[0],last=focus.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+});
 $('portfolioClose').onclick=closePortfolio;
 
 $('studioRules').onclick=()=>{$('studioGuide').hidden=!$('studioGuide').hidden;$('studioRules').setAttribute('aria-expanded',String(!$('studioGuide').hidden));};

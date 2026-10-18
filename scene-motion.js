@@ -163,7 +163,7 @@ function report(before,now){
    const prior=new Map(old.cards.map(c=>[c.id,c])),current=new Map(p.cards.map(c=>[c.id,c]));
    for(const [id,c]of current)if(!prior.has(id)){
     emit('card:received',{player:i,deck:c.deck});
-    triggerToast('Новая карта · '+c.deck,'card',assetCard(c));
+    triggerToast('Новая карта · '+({utilities:'проект',permits:'разрешение',construction:'строительство',commissioning:'ввод',investor:'инвестор',tenant:'арендатор',buyer:'покупатель',network:'сети'}[c.deck]||c.deck),'card',assetCard(c));
    }
    for(const [id,c]of prior)if(!current.has(id))emit('card:played',{player:i,deck:c.deck});
   }
