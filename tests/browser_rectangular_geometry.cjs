@@ -61,6 +61,7 @@ function expectedTrack(){
   assert(geometry.city.h/geometry.board.h>.64,'Inner city fills vertical building area');
   assert(geometry.globalWidth<=geometry.viewportWidth+2,'No page-wide horizontal overflow');
   assert.equal(await page.locator('#board .map-plot').count(),24);
+  await page.screenshot({path:'ui-snapshots/geometry-v020-debug-'+viewport.width+'x'+viewport.height+'.png',fullPage:true});
   const target=page.locator('#board > .cell');
   // Check every ring square through the real hit-test stack after scrolling into view.
   for(let i=0;i<32;i++){
@@ -68,10 +69,10 @@ function expectedTrack(){
    const hit=await target.nth(i).evaluate(el=>{
     const r=el.getBoundingClientRect(),x=Math.max(0,Math.min(innerWidth-1,r.x+r.width/2)),y=Math.max(0,Math.min(innerHeight-1,r.y+r.height/2));
     const top=document.elementFromPoint(x,y);
-    return {label:el.getAttribute('aria-label'),covered:!(top===el||el.contains(top)),nearViewport:r.left>=-1&&r.right<=innerWidth+1};
+    return {label:el.getAttribute('aria-label'),covered:!(top===el||el.contains(top)),nearViewport:r.left>=-1&&r.right<=innerWidth+1, topTag:top?.tagName,topClass:top?.className,rect:{x:r.x,y:r.y,w:r.width,h:r.height},viewport:[innerWidth,innerHeight],point:[x,y],scrollLeft:document.querySelector('.game-field').scrollLeft};
    });
    assert.match(hit.label,new RegExp('клетка '+(i+1)+'$'),'Track identity '+i);
-   assert.equal(hit.covered,false,'Ring square '+i+' must not be visually covered');
+   assert.equal(hit.covered,false,'Ring square '+i+' must not be visually covered: '+JSON.stringify(hit));
   }
   // Click all 24 parcels and confirm the actual game inspect dialog opens.
   for(let i=0;i<24;i++){
