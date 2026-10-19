@@ -117,6 +117,8 @@
 }
 .cabinet-main .stats .turn-counter{display:block}
 .cabinet-main .turn-counter b{white-space:nowrap}
+.cabinet-main .turn-counter-detail{display:block;color:#b9cce1;line-height:1.1;font-size:10px}
+.cabinet-main .turn-counter-detail b{font-size:11px;white-space:nowrap}
 .board-pan-hint{display:none;margin:0;padding:7px 9px;color:#c5d7df;font-size:12px;line-height:1.3;text-align:center}
 .board-zoom-action{align-self:flex-end}
 @media (min-width:921px){
