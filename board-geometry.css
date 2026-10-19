@@ -149,13 +149,16 @@
    Preserve the actual geometry and ≥54px board squares instead of scaling down. */
 @media (max-width:560px) and (orientation:portrait){
  .wrap{width:100%;padding:6px 7px}
- .game-field{display:block;width:100%;overflow-x:auto;overflow-y:visible;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#568e96 #182c38}
+ .game-field{display:block!important;width:100%;overflow-x:auto;overflow-y:visible;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#568e96 #182c38;align-items:stretch!important;text-align:left}
  .board,.board:not(.zoom-map){
   min-width:660px;
   width:660px;
   max-width:none;
   aspect-ratio:11 / 7;
-  margin:0;
+  margin:0!important;
+  margin-inline:0!important;
+  align-self:flex-start!important;
+  justify-self:start!important;
  }
  .board-pan-hint{display:block;position:sticky;left:0;width:min(100%,380px);max-width:calc(100vw - 14px)}
  .board-zoom-action{display:block;position:sticky;left:0;margin:6px 0;min-width:170px;min-height:46px}
