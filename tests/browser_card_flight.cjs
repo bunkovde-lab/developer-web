@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict'),http=require('node:http'),{spawn}=require('node:child_process'),{chromium}=require('playwright');
+const server=spawn('python3',['-m','http.server','8917','--bind','127.0.0.1'],{stdio:'ignore'});
+(async()=>{let browser;try{for(let n=0;n<60;n++){try{await new Promise((ok,no)=>http.get('http://127.0.0.1:8917',r=>{r.resume();ok()}).on('error',no));break}catch{await new Promise(r=>setTimeout(r,100))}}
+ browser=await chromium.launch();const page=await browser.newPage({viewport:{width:1366,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8917',{waitUntil:'networkidle'});await page.evaluate(()=>{newGame();closeSessionMenu();DeveloperMotion.setMode('normal')});await page.waitForSelector('#deckShelf');
+ for(const f of ['utilities','work']){
+  await page.evaluate(f=>{if(f==='work'){state.pendingCard={special:true,playerIndex:0,title:'Работа',description:'Проверка',effect:'Город платит',workCard:{lot:0,status:'empty',base:50,requested:50,from:-1,municipal:true}};showCard();}else drawCard(f)},f);
+  await page.waitForSelector('.card-back-reveal');assert.equal(await page.locator('.event-card').getAttribute('data-flight-family'),f);const before=await page.evaluate(()=>JSON.stringify(state));await page.locator('.card-back-reveal').click();assert.equal(await page.locator('.card-back-reveal').count(),0);assert.equal(await page.evaluate(()=>JSON.stringify(state)),before,'Revealing must not change game state');await page.locator('#cardOverlay .event-card > button').click();await page.waitForFunction(()=>document.querySelector('#cardOverlay').hidden);assert.equal(await page.locator('.card-travel-ghost').count(),1);await page.waitForFunction(()=>!document.querySelector('.card-travel-ghost'));
+ }
+ const result=await page.evaluate(async()=>Promise.all(DeveloperCardLibrary.families().map(async f=>({f:f.id,ok:(await fetch(DeveloperCardFlight.back(f.id))).ok}))));assert(result.every(r=>r.ok));assert.deepEqual(errors,[]);console.log('CARD FLIGHT PASSED: face down, reveal, no state changes, return and inventory flight, 16 backs');
+}catch(e){console.error(e);process.exitCode=1}finally{await browser?.close();server.kill()}})();
