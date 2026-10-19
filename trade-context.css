@@ -146,6 +146,11 @@
   }
   /* Keep the live 660px-wide city scroll area tappable above the short picker.
      The picker itself scrolls independently; primary actions stay docked. */
+  /* A top floating drawer leaves the actual land grid beneath it tappable.
+     Bottom anchoring obscured every parcel after the action cabinet was scrolled into view. */
+  #landSelectOverlay:not([hidden]){
+    inset:max(4px,env(safe-area-inset-top)) 6px auto auto;
+  }
   #landSelectOverlay .auction-box{max-height:24dvh}
   #landSelectOverlay .auction-city-map{max-height:10dvh}
   #landSelectOverlay .land-selection-actions{
