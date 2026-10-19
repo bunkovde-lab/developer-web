@@ -15,6 +15,7 @@ on:
       - 'board-geometry.css'
       - 'trade-context.css'
       - 'tests/browser_trade_context.cjs'
+      - 'tests/browser_market_board.cjs'
       - 'pace.js'
       - 'game-rework-v016.js'
       - 'assets/**'
@@ -54,6 +55,8 @@ jobs:
         run: node tests/browser_marketplace.cjs
       - name: Live-board auction and Deal close across five touchscreen viewports
         run: node tests/browser_trade_context.cjs
+      - name: Live strategic map beside card trading workstation
+        run: node tests/browser_market_board.cjs
       - name: City request and land-card barter browser flow
         run: node tests/browser_city_requests.cjs
       - name: Responsive visual and audio UI
