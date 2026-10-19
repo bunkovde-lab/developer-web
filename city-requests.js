@@ -87,7 +87,14 @@ function showCityRequestResult(title,message){
  $c('cityRequestDismiss').textContent=active?'Вернуть запрос в колоду':'Закрыть';
  box.hidden=false;
 }
-function closeCityDeal(){const box=$c('cityRequestOverlay');if(box)box.hidden=true;}
+function closeCityDeal(){
+ // Deal choice and municipal request are separate overlays; both must dismiss.
+ for(const id of ['cityDealOverlay','cityRequestOverlay']){
+  const box=$c(id);if(!box)continue;
+  if(document.activeElement&&box.contains?.(document.activeElement))document.activeElement.blur?.();
+  box.hidden=true;
+ }
+}
 function revealCityRequest(){
  closeCityDeal();drawCityRequest();
 }
@@ -109,7 +116,7 @@ function takeCityOffer(){closeCityDeal();revealCityRequest();}
 function tradeOnDeal(){closeCityDeal();window.openTradeMarket?.();}
 function clearDealModals(){if($c('cityDealOverlay'))$c('cityDealOverlay').hidden=true;if($c('cityRequestOverlay'))$c('cityRequestOverlay').hidden=true;}
 function addUI(){
- const root=document.createElement('div');root.id='cityDealOverlay';root.className='auction-overlay';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.innerHTML='<div class="auction-box city-deal-box"><h2>🤝 Клетка «Сделка»</h2><p id="cityDealStatus"></p><div class="city-deal-actions"><button type="button" onclick="tradeOnDeal()">🤝 Торговать с игроками</button><button type="button" id="cityDealDraw" onclick="takeCityOffer()">📋 Взять запрос города</button></div><button type="button" onclick="closeCityDeal()">Закрыть</button></div>';
+ const root=document.createElement('div');root.id='cityDealOverlay';root.className='auction-overlay';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.innerHTML='<div class="auction-box city-deal-box"><h2>🤝 Клетка «Сделка»</h2><p id="cityDealStatus"></p><div class="city-deal-actions"><button type="button" onclick="tradeOnDeal()">🤝 Торговать с игроками</button><button type="button" id="cityDealDraw" onclick="takeCityOffer()">📋 Взять запрос города</button></div><button type="button" id="cityDealClose" onclick="closeCityDeal()">Закрыть</button></div>';
  document.body.appendChild(root);
  const result=document.createElement('div');result.id='cityRequestOverlay';result.className='auction-overlay';result.hidden=true;result.setAttribute('role','dialog');result.setAttribute('aria-modal','true');result.innerHTML='<div class="auction-box city-request-box"><h2 id="cityRequestTitle">📋 Запрос города</h2><p id="cityRequestInfo"></p><div id="cityRequestForm"><label>Карта на продажу<select id="cityRequestCard"></select></label><button type="button" onclick="fulfillCityRequest(Number(document.getElementById(\'cityRequestCard\').value))">💰 Продать городу</button></div><button type="button" id="cityRequestDismiss" onclick="refuseCityRequest()">Вернуть запрос в колоду</button></div>';
  document.body.appendChild(result);
@@ -125,6 +132,11 @@ window.endTurn=function(){
  clearDealModals();originalEndTurn();
 };
 window.newGame=function(){clearDealModals();originalNew();};
+document.addEventListener('keydown',event=>{
+ if(event.key!=='Escape')return;
+ if(!$c('cityRequestOverlay')?.hidden){refuseCityRequest();event.preventDefault();}
+ else if(!$c('cityDealOverlay')?.hidden){closeCityDeal();event.preventDefault();}
+});
 Object.assign(window,{drawCityRequest,fulfillCityRequest,refuseCityRequest,cityRequestBot,openCityDeal,closeCityDeal,tradeOnDeal,takeCityOffer});
 addUI();
 const toolbar=document.querySelector('.company-panel .actions');
