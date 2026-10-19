@@ -120,9 +120,9 @@ function diceEffect(total){
 // Draw the *visible* piece independently of the frequently rebuilt board DOM.
 // The underlying player's position is already authoritative; only the arriving
 // token is masked until its travelling counterpart reaches the final cell.
-function cellPos(cells,index){
+function cellPos(cells,index,origin){
  const r=cells[index]?.getBoundingClientRect();
- return r?{x:r.left+r.width/2,y:r.top+r.height/2}:null;
+ return r?{x:r.left+r.width/2-origin.left,y:r.top+r.height/2-origin.top}:null;
 }
 function maskMovingTokens(){
  const cells=$('board')?.querySelectorAll(':scope > .cell');
@@ -148,10 +148,12 @@ function finishMove(player,move){
 function moveToken(player,from,to,total){
  if(!enabled()||from===to||!Number.isInteger(from)||!Number.isInteger(to))return;
  const board=$('board'),cells=board?.querySelectorAll(':scope > .cell');
- if(!cells||cells.length!==32||!document.body)return;
+ const host=board?.closest('.game-field');
+ if(!cells||cells.length!==32||!host)return;
  const count=Number.isInteger(total)&&total>=2&&total<=12?total:(to-from+32)%32;
  if(count<1||count>32||(from+count)%32!==to)return;
- const points=Array.from({length:count+1},(_,step)=>cellPos(cells,(from+step)%32));
+ const origin=host.getBoundingClientRect();
+ const points=Array.from({length:count+1},(_,step)=>cellPos(cells,(from+step)%32,origin));
  if(points.some(point=>!point))return;
  const prior=activeMoves.get(player);
  if(prior){activeMoves.delete(player);prior.animation?.cancel();prior.piece.remove();ghosts.delete(prior.piece);}
@@ -160,9 +162,9 @@ function moveToken(player,from,to,total){
  piece.setAttribute('aria-hidden','true');
  piece.style.background=(typeof colors!=='undefined'?colors[player]:['#f1bf65','#68d9b5','#e77ca6','#82aefe','#c48ff4','#ff846d'][player%6]);
  piece.style.left=points[0].x+'px';piece.style.top=points[0].y+'px';
- // Placing the piece outside #board makes it survive subsequent render() calls
- // while the previous turn's animations are still playing.
- document.body.appendChild(piece);ghosts.add(piece);
+ // Anchor to the persistent game field: scroll remains aligned with the board,
+ // and core board.innerHTML replacements cannot remove the travelling pawn.
+ host.appendChild(piece);ghosts.add(piece);
  const first=points[0];
  const keyframes=points.map((point,step)=>({
   offset:step/count,
@@ -374,7 +376,6 @@ if(board&&typeof MutationObserver!=='undefined'){
 controls();
 // Recompute the route on the next actual move if the viewport geometry changes.
 window.addEventListener('resize',()=>{if(activeMoves.size)cleanup();},{passive:true});
-window.addEventListener('scroll',()=>{if(activeMoves.size)cleanup();},{passive:true,capture:true});
 if(typeof state!=='undefined'&&state?.players){previous=read();previousSession=state;schedulePaint();}
 fetch('assets/svg/manifest.json',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error('No SVG library');return r.json()}).then(data=>{
  if(!data||data.version!==1||!data.assets||typeof data.assets!=='object')throw Error('Invalid SVG manifest');
