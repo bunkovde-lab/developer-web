@@ -18,8 +18,10 @@ async function ready(){
 (async()=>{let browser;try{
  await ready();browser=await chromium.launch({headless:true});
  for(const viewport of [
+  {width:320,height:568},{width:360,height:640},
   {width:390,height:844},{width:768,height:1024},{width:1024,height:768},
-  {width:1366,height:900},{width:844,height:390}
+  {width:1280,height:720},{width:1366,height:900},{width:1666,height:900},
+  {width:844,height:390}
  ]){
   const page=await browser.newPage({viewport,hasTouch:true});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -34,6 +36,35 @@ async function ready(){
   await page.locator('#buy').click();
   assert.equal(await page.locator('#landSelectOverlay').isVisible(),true,'Auction chooser visible');
   assert.equal(await page.locator('#board').isVisible(),true,'Actual board remains visible');
+  // Regression for owner's 1666×900 screenshot: legacy visual.css had !important
+  // rules forcing a ~990px-wide or full-screen auction box off the right edge.
+  const assertPickerFits=async phase=>{
+   const dimensions=await page.evaluate(()=>{
+    const box=document.querySelector('#landSelectOverlay .auction-box');
+    const overlay=document.getElementById('landSelectOverlay');
+    const rect=box.getBoundingClientRect();
+    const buttons=['landSelectClose','landCancel','landBidStart'].map(id=>{
+      const node=document.getElementById(id),r=node.getBoundingClientRect();
+      return {id,left:r.left,right:r.right,top:r.top,bottom:r.bottom,visible:r.width>0&&r.height>0};
+    });
+    return {box:{left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,width:rect.width,height:rect.height},
+     overlayWidth:overlay.getBoundingClientRect().width,
+     viewport:{width:innerWidth,height:innerHeight},
+     scrollOverflow:box.scrollWidth-box.clientWidth,buttons};
+   });
+   const {box,viewport,buttons}=dimensions;
+   assert(box.left>=-1&&box.right<=viewport.width+1,phase+': panel must stay inside horizontal viewport '+JSON.stringify(dimensions));
+   assert(box.top>=-1&&box.bottom<=viewport.height+1,phase+': panel must stay inside vertical viewport '+JSON.stringify(dimensions));
+   assert(box.width<=315,phase+': modal must NOT inherit 990px old width');
+   assert(box.height<=270,phase+': modal must NOT inherit 100dvh/96dvh old height');
+   assert(dimensions.scrollOverflow<=2,phase+': panel content may not overflow horizontally');
+   for(const button of buttons){
+    assert(button.visible,phase+': '+button.id+' must be visible');
+    assert(button.left>=-1&&button.right<=viewport.width+1,phase+': '+button.id+' clipped horizontally');
+    assert(button.top>=-1&&button.bottom<=viewport.height+1,phase+': '+button.id+' clipped vertically');
+   }
+  };
+  await assertPickerFits('before parcel selection');
   assert.equal(await page.locator('#landSelectOverlay .auction-city-map').count(),0,'Duplicate city map removed');
   assert.equal(await page.locator('#landBrowse').count(),0,'Only actual 24-plot city map exists');
   assert.match(await page.locator('#landSelectTitle').innerText(),/Выбор участка на поле/);
@@ -53,6 +84,7 @@ async function ready(){
   assert.equal(await page.evaluate(()=>chosenLand),0,'Live parcel click must select lot 1');
   assert.equal(await page.locator('#board .map-plot.auction-target').count(),1,'Only the selected lot is highlighted');
   assert.equal(await page.locator('#landBidStart').isDisabled(),false);
+  await assertPickerFits('after parcel selection');
   assert.deepEqual(await page.evaluate(()=>({money:state.players.map(p=>p.money),owners:state.plots.map(p=>p.owner),turns:state.completedTurns})),original,'Browsing land cannot mutate economics');
   await page.locator('#landBidStart').click();
   assert.equal(await page.locator('#landSelectOverlay').isHidden(),true);
