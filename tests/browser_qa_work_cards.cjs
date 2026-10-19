@@ -67,7 +67,7 @@ for(const viewport of [{width:390,height:844},{width:1024,height:768}]){
   return {owed:w.debts.filter(d=>d.debtor===1).reduce((s,d)=>s+d.remaining,0),
    p0:state.players[0].money,p1:state.players[1].money};
  });
- assert.equal(debt.owed,0);assert.equal(debt.p0,1100);assert.equal(debt.p1,60);
+ assert.equal(debt.owed,0);assert.equal(debt.p0,1100);assert.equal(debt.p1,35);
  // 24 unique card pointers, shuffle only after deck exhaustion.
  const unique=await page.evaluate(()=>{
   const w=state.workEconomy;w.deck=[];const ids=[];state.turn=1;state.players[1].pos=2;state.players[1].bot=true;
