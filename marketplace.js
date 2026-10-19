@@ -150,6 +150,12 @@ function renderTradeMarket(){
  $m("marketConfirm").disabled=!ctx.valid||!tradeAllowed()||!Number.isSafeInteger(offered)||(ctx.mode!=="swap"&&offered<0);
  $m("marketConfirm").textContent=ui.mode==="buy"?"Предложить покупку":ui.mode==="sell"?"Предложить продажу":"Предложить обмен";
  $m("marketHistory").innerHTML=historyMarkup();
+ highlightMarketLand();
+}
+function highlightMarketLand(){
+ const selected=ui.mode==="sell"?findCard(0,ui.mine):ui.remote?findCard(ui.remote.owner,ui.remote.id):null;
+ const lot=selected?.kind==="land"?selected.plotIndex:-1;
+ document.querySelectorAll?.('#board .map-plot').forEach((tile,i)=>tile.classList.toggle('market-target',i===lot));
 }
 function cardInventorySummary(i){const p=state.players[i];return cardsOf(p).length+" карт · "+format(p.money);}
 function marketSetMode(mode){if(!["buy","sell","swap"].includes(mode))return;ui.mode=mode;ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
@@ -227,7 +233,7 @@ function openTradeMarket(){
  $m("marketSearch").value=ui.query;
  renderTradeMarket();
 }
-function closeTradeMarket(){$m("tradeOverlay").hidden=true;}
+function closeTradeMarket(){$m("tradeOverlay").hidden=true;document.querySelectorAll?.('#board .map-plot.market-target').forEach(tile=>tile.classList.remove('market-target'));}
 function setupUI(){
  const overlay=$m("tradeOverlay");
  if(!overlay)return;
@@ -245,6 +251,7 @@ function setupUI(){
  '<div class="mk-history"><h4>Последние сделки</h4><div id="marketHistory"></div></div></aside></div>'+
  '<footer class="mk-footer">Торги доступны только после попадания на клетки «Рынок», «Инженерные сети» и «Сделка», и лишь в свой ход. Каждый вид клетки имеет собственный ассортимент. Госконтракты не продаются. В настоящем мультиплеере закрытые руки будут приватны — торговаться можно будет только выставленными картами.</footer></div>';
  overlay.setAttribute("aria-label","Карточная торговая площадка");
+ overlay.setAttribute("aria-modal","false");
  const style=document.createElement("style");style.textContent=`
 #tradeOverlay{z-index:2000;align-items:center;padding:10px}
 #tradeOverlay .mk-shell{box-sizing:border-box;width:min(1240px,99vw);max-height:97dvh;overflow:auto;color:#eaf2fc;border:1px solid #9a7b45;border-radius:19px;background:#112239;box-shadow:0 20px 90px #000c;font-family:system-ui,Arial}
@@ -321,7 +328,69 @@ function setupUI(){
 #tradeOverlay .mk-list{grid-template-columns:1fr}
 #tradeOverlay .mk-card{min-height:116px}
 #tradeOverlay .mk-owner>span:last-child{font-size:9px}
-}`;
+}
+/* v0.20 live-board market: nonmodal trading workstation rather than screen mask.
+   Operational catalog, quote and transaction functions remain unchanged. */
+#tradeOverlay:not([hidden]){
+ display:block;
+ position:fixed;
+ inset:8px 8px 8px auto;
+ width:min(44vw,570px);
+ height:calc(100dvh - 16px);
+ padding:0;
+ background:transparent;
+ pointer-events:none;
+ z-index:2100;
+}
+#tradeOverlay .mk-shell{
+ width:100%;
+ height:100%;
+ max-height:100%;
+ pointer-events:auto;
+ border-radius:12px;
+ background:linear-gradient(140deg,#10253afc,#132a41f8);
+ box-shadow:0 12px 60px #000d;
+}
+#tradeOverlay .mk-layout{grid-template-columns:minmax(0,1fr)}
+#tradeOverlay .mk-catalog{border-right:0;border-bottom:1px solid #506a7c}
+#tradeOverlay .mk-trade{border-top:1px solid #6f748077}
+#tradeOverlay .mk-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+#tradeOverlay .mk-list{grid-template-columns:repeat(2,minmax(0,1fr));max-height:28dvh}
+#tradeOverlay .mk-header{padding:12px 14px}
+#tradeOverlay .mk-header h2{font-size:19px}
+#tradeOverlay .mk-footer{font-size:10px;line-height:1.4}
+#board .map-plot.market-target{
+ outline:3px solid #dfb364!important;
+ outline-offset:-3px;
+ box-shadow:0 0 0 2px #132a3b,0 0 24px #e4bd68aa!important;
+ position:relative;
+ z-index:8;
+}
+@media(max-width:920px){
+ #tradeOverlay:not([hidden]){
+  width:min(51vw,440px);
+  right:5px;top:5px;bottom:5px;
+  height:calc(100dvh - 10px);
+ }
+ #tradeOverlay .mk-list{grid-template-columns:1fr;max-height:25dvh}
+ #tradeOverlay .mk-catalog,#tradeOverlay .mk-trade{padding:10px}
+ #tradeOverlay .mk-header h2{font-size:16px}
+}
+@media(max-width:560px){
+ #tradeOverlay:not([hidden]){width:66vw;right:4px;top:4px;bottom:4px;height:calc(100dvh - 8px)}
+ #tradeOverlay .mk-header{padding:7px 9px}
+ #tradeOverlay .mk-header p{display:none}
+ #tradeOverlay .mk-eyebrow{font-size:8px}
+ #tradeOverlay .mk-header h2{font-size:15px}
+ #tradeOverlay .mk-filters{grid-template-columns:1fr;gap:5px}
+ #tradeOverlay .mk-filters label.mk-search{grid-column:1}
+ #tradeOverlay .mk-stats{padding:5px;gap:3px}
+ #tradeOverlay .mk-stats span{padding:4px}
+ #tradeOverlay .mk-list{max-height:19dvh}
+ #tradeOverlay .mk-card{min-height:108px}
+ #tradeOverlay .mk-footer{display:none}
+}
+`;
  document.head.appendChild(style);
 }
 function renderIfOpen(){if(state&&!$m("tradeOverlay")?.hidden)renderTradeMarket();}
