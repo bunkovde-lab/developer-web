@@ -13,7 +13,8 @@ for(const file of sourceFiles)engineSha256.update(file+'\0').update(fs.readFileS
 const html=fs.readFileSync('index.html','utf8');
 const legacy=require('./helpers/core-source.cjs').coreSource();
 assert(legacy,'Modular core source must exist');
-const extension=fs.readFileSync('balance.js','utf8');
+const extension=fs.readFileSync('balance.js','utf8').replace('Object.assign(window,{newGame,drawCard', 'window.__qaBotUnits={ensureEconomy,botBuildAndConnect,botTradeFromPeers,returnMarketCard};Object.assign(window,{newGame,drawCard');
+assert(extension.includes('window.__qaBotUnits='),'QA hook injection failed');
 new vm.Script(legacy,{filename:'index.html'});
 new vm.Script(extension,{filename:'balance.js'});
 class El {
@@ -71,6 +72,8 @@ const MODE=process.env.QA_POLICY_MODE||'mixed',GAMES=Number(process.env.QA_GAMES
 assert(['mixed','control'].includes(MODE));assert(Number.isInteger(GAMES)&&GAMES%4===0&&GAMES>=20);
 const NAMES=['rent','flip','territory','trade','general'],round=x=>Number(x.toFixed(2));
 const POLICY=String.raw`
+const {ensureEconomy,botBuildAndConnect,botTradeFromPeers,returnMarketCard}=window.__qaBotUnits;
+
 function qaTenant(){
  const p=current(),lot=state.plots.find(l=>l.owner===state.turn&&l.project?.stage===4&&!l.tenant&&!l.investor);
  const c=p.marketCards?.find(c=>c.type==='tenant');if(!lot||!c)return false;
