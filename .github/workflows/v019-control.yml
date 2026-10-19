@@ -1,0 +1,33 @@
+name: v0.19 pinned control package
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/v019-control.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  v019-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rebuild pinned Work + QA v0.19 without main v0.20 economy
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha="7f22188a37be4dbad5e4b181d381894bec115e7c"
+          git fetch --no-tags --depth=1 origin "$sha"
+          src="$(mktemp -d)"
+          git archive "$sha" | tar -x -C "$src"
+          cd "$src"
+          GITHUB_SHA="$sha" node scripts/build-site.cjs --out dist
+          node tests/build-package.cjs
+          test -f dist/BUILD_MANIFEST.json
+          test -f dist/game/runtime.js
+          grep -q 'v0.19-test' dist/index.html
+          node -e "const m=require('./dist/BUILD_MANIFEST.json');if(m.sourceSha!=='$sha'||m.version!=='v0.19-test')process.exit(1)"
