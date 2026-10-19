@@ -340,7 +340,7 @@ function setupUI(){
  padding:0;
  background:transparent;
  pointer-events:none;
- z-index:2100;
+ z-index:1180;
 }
 #tradeOverlay .mk-shell{
  width:100%;
