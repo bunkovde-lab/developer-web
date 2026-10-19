@@ -146,7 +146,7 @@ window.resolveSpecialCell=function(...args){
 };
 // Wrapper composition: execute the real previous action (including all finance logic),
 // then distinguish true external asset liquidation from transfers and bankruptcies.
-for(const name of ['sell','applyMarketCard','playStageCard','bot','runPropertySale'])wrapSale(name);
+for(const name of ['sell','applyMarketCard','playStageCard','bot','runPropertySale','governmentAction'])wrapSale(name);
 const oldNew=window.newGame;
 window.newGame=function(...args){const v=oldNew.apply(this,args);ensure();return v;};
 const oldEnd=window.endTurn;
