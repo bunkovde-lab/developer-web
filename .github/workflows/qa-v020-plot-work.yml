@@ -1,0 +1,40 @@
+name: QA four-player Work economy v0.20
+on:
+  push:
+    branches: [qa/v020-plot-work-economy]
+  pull_request:
+    paths:
+      - 'tests/qa-v020-plot-work.cjs'
+      - '.github/workflows/qa-v020-plot-work.yml'
+  workflow_dispatch:
+jobs:
+  work-economy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [baseline, candidate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Smoke test of the unchanged 4-player engine
+        env:
+          QA_WORK_MODE: ${{ matrix.mode }}
+          QA_GAMES: 20
+          QA_REPORT_DIR: qa-results/work-smoke-${{ matrix.mode }}
+        run: node tests/qa-v020-plot-work.cjs
+      - name: Run 1000 seeded four-player campaigns
+        env:
+          QA_WORK_MODE: ${{ matrix.mode }}
+          QA_GAMES: 1000
+          QA_REPORT_DIR: qa-results/work-full-${{ matrix.mode }}
+        run: node tests/qa-v020-plot-work.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-work-four-players-${{ matrix.mode }}
+          path: qa-results/work-full-${{ matrix.mode }}/
+          if-no-files-found: warn
