@@ -49,7 +49,7 @@ async function wait(){
    assert.match(tileVisual.trackArt,/track-01-start\.svg/,'track SVG fills the tile');
    assert(tileVisual.nestedTrackWidth<=2,'no miniature track card inside track cell');
    const status=await page.evaluate(()=>DeveloperMotion.status());
-   assert.equal(status.assetCount,266,'all artist manifest assets');
+   assert.equal(status.assetCount,Object.keys(require('../assets/svg/manifest.json').assets).length,'all artist manifest assets');
    assert.equal(status.errors,0,'no scene errors');
    assert.equal(await page.locator('#sceneControls [data-mode]').count(),3);
 
