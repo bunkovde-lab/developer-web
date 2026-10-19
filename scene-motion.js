@@ -276,7 +276,7 @@ function paint(){
    slots.forEach((el,i)=>{
     const lot=state.plots[i];if(!lot)return;
     const stage=lot.project?.stage||0,zone=String(lot.zone||'').toLowerCase();
-    const key=lot.owner<0?'lot.'+String(i+1).padStart(2,'0'):stage===4?'building.'+zone:'stage.'+stage;
+    const key=lot.owner<0?'lot.'+String(i+1).padStart(2,'0'):stage===4?'building.'+zone:(urlFor('premium.stage.'+zone+'.'+stage)?'premium.stage.'+zone+'.'+stage:'stage.'+stage);
     const stageNode=el.querySelector('.plot-stage');
     const parcel=urlFor('lot.'+String(i+1).padStart(2,'0'));
     const tileArt=urlFor(key)||parcel;
@@ -437,7 +437,7 @@ controls();
 window.addEventListener('resize',()=>{if(activeMoves.size)cleanup();},{passive:true});
 window.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener?.('change',event=>{if(event.matches)cleanup();});
 if(typeof state!=='undefined'&&state?.players){previous=read();previousSession=state;schedulePaint();}
-fetch('assets/svg/manifest.json',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error('No SVG library');return r.json()}).then(data=>{
+fetch('assets/svg/manifest.json?v=20001',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error('No SVG library');return r.json()}).then(data=>{
  if(!data||data.version!==1||!data.assets||typeof data.assets!=='object')throw Error('Invalid SVG manifest');
  for(const [key,path]of Object.entries(data.assets)){
   if(typeof path==='string'&&/^assets\/svg\/[a-z0-9/_-]+\.svg$/.test(path)&&!path.includes('..'))manifest[key]=path;

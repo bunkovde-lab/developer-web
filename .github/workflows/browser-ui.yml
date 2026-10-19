@@ -49,6 +49,8 @@ jobs:
         run: |
           npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium
+      - name: Premium design, non-mutation, responsive screens and live city fixture
+        run: node tests/browser_premium.cjs
       - name: Final 11x7 board geometry, every touch target, 5 devices and before-after screenshots
         run: node tests/browser_rectangular_geometry.cjs
       - name: Run mobile marketplace browser test
@@ -81,5 +83,5 @@ jobs:
         if: always()
         with:
           name: developer-v010-screenshots
-          path: ui-snapshots/*.png
+          path: ui-snapshots/
           if-no-files-found: ignore
