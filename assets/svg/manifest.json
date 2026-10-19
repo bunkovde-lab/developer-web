@@ -399,6 +399,14 @@
     "legacy.back-tax": "assets/svg/cards/back-tax.svg",
     "legacy.back-crisis": "assets/svg/cards/back-crisis.svg",
     "legacy.back-permits": "assets/svg/cards/back-permits.svg",
-    "legacy.back-network": "assets/svg/cards/back-network.svg"
+    "legacy.back-network": "assets/svg/cards/back-network.svg",
+    "ui.engraved.cards": "assets/svg/ui/engraved-cards.svg",
+    "ui.engraved.menu": "assets/svg/ui/engraved-menu.svg",
+    "ui.engraved.save": "assets/svg/ui/engraved-save.svg",
+    "ui.engraved.load": "assets/svg/ui/engraved-load.svg",
+    "ui.engraved.sound": "assets/svg/ui/engraved-sound.svg",
+    "ui.engraved.play": "assets/svg/ui/engraved-play.svg",
+    "ui.engraved.city": "assets/svg/ui/engraved-city.svg",
+    "ui.engraved.players": "assets/svg/ui/engraved-players.svg"
   }
 }
