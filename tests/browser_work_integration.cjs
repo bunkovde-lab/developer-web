@@ -41,7 +41,7 @@ function labelGeometry(){
    assert.deepEqual(await page.evaluate(labelGeometry),[],'Compact metadata must not overlap');
    assert.equal(await page.locator('.plot-type').count(),24,'One HTML zone per parcel');
    const crop=await page.locator('.map-plot').first().evaluate(e=>getComputedStyle(e,'::before').backgroundSize);
-   assert.equal(crop,'114.286% 152.381%','Legacy SVG captions/frames cropped from architectural view');
+   assert.equal(crop,'100% 100%','Premium 384×320 artwork fills its own parcel; metadata remains dynamic DOM');
    await page.screenshot({path:out+'/work-'+width+'.png',fullPage:true});
    await page.locator('.hand-quick-item[data-hand-type="utilities"]').click();
    const cards=await page.locator('#handGroups .hand-card').count();assert(cards>0);

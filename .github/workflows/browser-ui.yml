@@ -49,6 +49,15 @@ jobs:
         run: |
           npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium
+      - name: Capture pinned pre-design baseline for before-after comparison
+        shell: bash
+        run: |
+          baseline="$(mktemp -d)"
+          git fetch --depth=1 origin f91ac3102eb6796a72f216aca443dc964082824e
+          git archive f91ac3102eb6796a72f216aca443dc964082824e | tar -x -C "$baseline"
+          (cd "$baseline" && NODE_PATH="$GITHUB_WORKSPACE/node_modules" node tests/browser_rectangular_geometry.cjs)
+          mkdir -p ui-snapshots/before
+          cp "$baseline"/ui-snapshots/*.png ui-snapshots/before/
       - name: Premium design, non-mutation, responsive screens and live city fixture
         run: node tests/browser_premium.cjs
       - name: Final 11x7 board geometry, every touch target, 5 devices and before-after screenshots

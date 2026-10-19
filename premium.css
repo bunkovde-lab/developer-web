@@ -80,3 +80,9 @@ button:disabled{opacity:.43!important;filter:saturate(.35)}
 @media(min-width:921px){.layout{grid-template-columns:minmax(0,1fr) clamp(260px,25vw,330px)!important}}
 @media(max-width:560px) and (orientation:portrait){body>header{padding:12px!important;gap:8px;flex-wrap:wrap}body>header small{font-size:8px!important}.wrap{padding:8px!important}.secondary-panels{grid-template-columns:1fr!important}.premium-company strong{font-size:20px}}
 @media(orientation:landscape) and (max-width:920px){.layout{grid-template-columns:minmax(0,1fr) 215px!important}.wrap{padding:8px!important}body>header{padding:8px 12px!important}.premium-company{padding:8px 80px 8px 8px}.premium-company strong{font-size:18px}.cabinet-main .stats .pill b{font-size:16px!important}}
+.event-card.work-card .work-card-rules h3{color:#705421!important}
+.event-card.work-card .work-card-rules li{color:#263d45!important}
+.event-card.work-card .work-card-rules li.active{background:#d4dfcb!important;color:#163d2e!important;border-color:#5f8b67!important}
+.event-card.work-card .work-card-rules li.active::before{color:#315d40!important}
+.board.zoom-map .map-plot.scene-full-parcel .plot-hint{bottom:20%!important}
+.board.zoom-map .map-plot.scene-full-parcel .plot-tactics{bottom:34%!important}
