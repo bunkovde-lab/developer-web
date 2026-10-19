@@ -22,3 +22,4 @@
 .event-card-illustration{display:block;width:100%;height:120px;object-fit:cover;border:1px solid #ad9766;border-radius:6px;margin:9px 0}
 .event-card.work-card .event-card-illustration{height:90px}
 @media(max-height:500px){.event-card-illustration{height:70px}.event-card.work-card .event-card-illustration{display:none}}
+.auction-box>.tcg-number,.city-request-box>.tcg-number{color:#f1dfaa;border-bottom-color:#ad945f;margin-bottom:10px}
