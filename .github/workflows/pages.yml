@@ -15,6 +15,7 @@ on:
       - 'scene-motion.css'
       - 'board-geometry.css'
       - 'game-rework-v016.js'
+      - 'work-economy-v020.js'
       - 'assets/**'
       - 'scripts/build-site.cjs'
       - '.github/workflows/pages.yml'
@@ -38,7 +39,7 @@ jobs:
         with:
           node-version: '22'
       - uses: actions/configure-pages@v5
-      - name: Build stable release and isolated v0.18.1-rc1 preview
+      - name: Build stable v0.18, pinned RC1 geometry, and experimental QA v0.20 preview
         shell: bash
         run: |
           set -euo pipefail
@@ -54,15 +55,34 @@ jobs:
           mkdir -p site
           cp -R "$stable/dist/." site/
 
-          # GitHub Pages shares an origin across paths; testers must use a
-          # private browser profile to avoid mixing v0.18 save slots with rc1.
-          GITHUB_SHA="$GITHUB_SHA" PR_NUMBER=15 node scripts/build-site.cjs --out dist
-          test -f dist/scene-motion.js
-          test -f dist/tests/browser_rc1_stability.cjs || test -f tests/browser_rc1_stability.cjs
-          test "$(node -p "require('./assets/svg/manifest.json').version")" = 1
-          grep -q 'v0.18.1-rc1' dist/index.html
+          # Preserve the last geometry-reviewed RC1 separately from new QA balance.
+          rc_sha="0a6c0f1bcc95ac628ffd9a2e355addcca8973f53"
+          git fetch --no-tags --depth=1 origin "$rc_sha"
+          rc="$(mktemp -d)"
+          git archive "$rc_sha" | tar -x -C "$rc"
+          (
+            cd "$rc"
+            GITHUB_SHA="$rc_sha" node scripts/build-site.cjs --out dist
+          )
           mkdir -p site/previews/v0181-rc1
-          cp -R dist/. site/previews/v0181-rc1/
+          cp -R "$rc/dist/." site/previews/v0181-rc1/
+
+          # v0.20 QA is experimental: preserve both previous public links.
+          GITHUB_SHA="$GITHUB_SHA" PR_NUMBER=28 node scripts/build-site.cjs --out dist
+          test -f dist/work-economy-v020.js
+          grep -q 'v0.20.0-qa1' dist/index.html
+          test "$(node -p "require('./assets/svg/manifest.json').version")" = 1
+          mkdir -p site/previews/v020-qa
+          cp -R dist/. site/previews/v020-qa/
+          cat >site/previews/v020-qa/QA_SOURCE.json <<EOF
+          {
+            "release": "v0.20.0-qa1",
+            "status": "EXPERIMENTAL - four-player QA calibration pending owner acceptance",
+            "source_sha": "$rc_sha",
+            "qa_research_pr": 28,
+            "preview_path": "/developer-web/previews/v020-qa/"
+          }
+          EOF
 
           # Maintain the old preview address for existing Android feedback.
           mkdir -p site/previews/v018
@@ -78,7 +98,8 @@ jobs:
           EOF
           touch site/.nojekyll
           echo "Stable root from $stable_sha" >> "$GITHUB_STEP_SUMMARY"
-          echo "RC1 preview: $GITHUB_SHA at https://bunkovde-lab.github.io/developer-web/previews/v0181-rc1/" >> "$GITHUB_STEP_SUMMARY"
+          echo "Pinned RC1 preview: $rc_sha at https://bunkovde-lab.github.io/developer-web/previews/v0181-rc1/" >> "$GITHUB_STEP_SUMMARY"
+          echo "Experimental QA v0.20: $GITHUB_SHA at https://bunkovde-lab.github.io/developer-web/previews/v020-qa/" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
