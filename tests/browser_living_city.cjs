@@ -59,7 +59,7 @@ async function wait(){
     state.plots[0].project={stage:1,size:0};window.render();
    });
    await page.waitForTimeout(130);
-   assert.match(await page.locator('.map-plot').first().locator('.scene-stage-art').getAttribute('src'),/stage-1\.svg$/);
+   assert.match(await page.locator('.map-plot').first().locator('.scene-stage-art').getAttribute('src'),/premium\/stage-j1-1\.svg$/);
    assert.equal(await page.locator('.map-plot').first().getAttribute('data-scene-owner'),'0');
    assert.equal(await page.locator('.map-plot').first().getAttribute('data-status'),'construction');
    const obstructed=await page.evaluate(()=>{
@@ -80,11 +80,11 @@ async function wait(){
    assert.deepEqual(await page.evaluate(()=>({money:state.players[0].money,dice:state.dice,position:state.players[0].pos})),one,'UI configuration cannot mutate state');
    await page.evaluate(()=>{state.plots[0].project.stage=2;window.render()});
    await page.waitForTimeout(90);
-   assert.match(await page.locator('.map-plot').first().locator('.scene-stage-art').getAttribute('src'),/stage-2\.svg$/);
+   assert.match(await page.locator('.map-plot').first().locator('.scene-stage-art').getAttribute('src'),/premium\/stage-j1-2\.svg$/);
    assert.equal((await page.locator('#sceneNotices .scene-toast').count()),0,'off never produces new toasts');
    await page.evaluate(()=>{DeveloperMotion.setMode('normal');state.plots[0].project.stage=3;window.render()});
    await page.waitForTimeout(80);
-   assert.match(await page.locator('.map-plot').first().locator('.scene-stage-art').getAttribute('src'),/stage-3\.svg$/);
+   assert.match(await page.locator('.map-plot').first().locator('.scene-stage-art').getAttribute('src'),/premium\/stage-j1-3\.svg$/);
    const anim=await page.evaluate(()=>DeveloperMotion.status());
    assert(anim.emitted>=3,'state differences create read-only visual events');
    assert(anim.animations>0,'normal mode performs motion');

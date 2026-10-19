@@ -1,0 +1,15 @@
+{
+  "inline_engine_identical": true,
+  "inline_sha256": "ec3a4da77570a6c63aefd370768ff89618b57229c364fd040ebc8c8f1f58a6b9",
+  "mechanics_files": {
+    "balance.js": true,
+    "marketplace.js": true,
+    "pace.js": true,
+    "auction-competition.js": true,
+    "city-requests.js": true,
+    "game-rework-v016.js": true,
+    "work-economy-v020.js": true
+  },
+  "build_bytes": 1956756,
+  "svg_count": 377
+}
