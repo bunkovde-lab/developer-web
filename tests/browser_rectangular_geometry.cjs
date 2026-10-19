@@ -81,9 +81,9 @@ function expectedTrack(){
    await page.evaluate(()=>{document.querySelector('#plotCardOverlay').hidden=true;});
   }
   // Capture the actual, unchanged art and controls with the new rectangular map.
-  await page.evaluate(()=>{window.render();});
+  await page.evaluate(()=>{window.render();document.querySelector('.game-field').scrollLeft=0;window.scrollTo(0,0);});
   await page.screenshot({path:'ui-snapshots/geometry-v020-'+viewport.width+'x'+viewport.height+'.png',fullPage:true});
-  await page.locator('#board').screenshot({path:'ui-snapshots/geometry-v020-board-'+viewport.width+'x'+viewport.height+'.png'});
+  await page.locator(viewport.width<660?'.game-field':'#board').screenshot({path:'ui-snapshots/geometry-v020-board-'+viewport.width+'x'+viewport.height+'.png'});
   // Game state and boarding match the same original 32-position logic.
   await page.evaluate(()=>{DeveloperMotion.setMode('normal');state.players[0].pos=30;state.rolled=false;state.pendingCard=null;state.auction=null;state.constructionDeckChoice=null;render();});
   const route=await page.evaluate(()=>{
@@ -106,7 +106,7 @@ function expectedTrack(){
   await page.evaluate(()=>document.querySelector('.scene-moving-token').getAnimations()[0].finish());
   await page.waitForFunction(()=>!DeveloperMotion.status().awaitingArrival);
   assert.equal(await page.locator('#constructionDeckOverlay').isVisible(),true,'Event opens after arrival');
-  await page.evaluate(()=>DeveloperMotion.skip());
+  await page.evaluate(()=>{DeveloperMotion.skip();document.querySelector('#constructionDeckOverlay').hidden=true;});
   // Zoom is a real touch action, not a screenshot mock.
   await page.locator('#v10Zoom').click();
   assert.equal(await page.locator('#board').evaluate(el=>el.classList.contains('zoom-map')),true);
