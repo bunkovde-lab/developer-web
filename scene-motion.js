@@ -11,7 +11,7 @@ const reduced=()=>!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matc
 const enabled=()=>mode!=='off'&&!reduced();
 let manifest=Object.create(null),assetsReady=false;
 let previous=null,previousSession=null,observer=null,painting=false,paintScheduled=false;
-const animations=new Set(),ghosts=new Set();
+const animations=new Set(),ghosts=new Set(),activeMoves=new Map();
 const counters={renderPasses:0,emitted:0,animations:0,cancelled:0,errors:0};
 const eventNamesSafe=new Set(['lot:acquired','lot:released','build:stage','card:received','card:played','move','money','win','auction:start','auction:result','deal','lease']);
 const labels=['▫','📐','📑','🏗','🏢'];
@@ -70,10 +70,13 @@ function watchAnimation(node,frames,opt){
  }catch{counters.errors++;}
 }
 function cleanup(){
+ // Never leave a destination token invisible after Skip, new game or a resize.
+ activeMoves.clear();
  for(const a of animations){try{a.cancel()}catch{}}
  animations.clear();
  for(const g of ghosts)g.remove();
  ghosts.clear();
+ document.querySelectorAll('.scene-token-in-flight').forEach(el=>el.classList.remove('scene-token-in-flight'));
  counters.cancelled++;
  document.querySelectorAll('.scene-toast,.scene-cash-delta,.scene-dice-pair').forEach(x=>x.remove());
 }
@@ -114,31 +117,70 @@ function diceEffect(total){
  watchAnimation(n,[{transform:'rotate(-22deg) scale(.6)',opacity:.2},{transform:'rotate(12deg) scale(1.12)',opacity:1},{transform:'none',opacity:1}],550);
  window.setTimeout(()=>n.remove(),duration(1450));
 }
-function cellPos(board,index){
- const cell=board?.querySelectorAll(':scope > .cell')[index];
- if(!cell)return null;
- const r=cell.getBoundingClientRect(),b=board.getBoundingClientRect();
- return {x:r.left+r.width*.5-b.left,y:r.top+r.height*.5-b.top};
+// Draw the *visible* piece independently of the frequently rebuilt board DOM.
+// The underlying player's position is already authoritative; only the arriving
+// token is masked until its travelling counterpart reaches the final cell.
+function cellPos(cells,index){
+ const r=cells[index]?.getBoundingClientRect();
+ return r?{x:r.left+r.width/2,y:r.top+r.height/2}:null;
+}
+function maskMovingTokens(){
+ const cells=$('board')?.querySelectorAll(':scope > .cell');
+ document.querySelectorAll('.scene-token-in-flight').forEach(el=>el.classList.remove('scene-token-in-flight'));
+ if(!cells||cells.length!==32||typeof state==='undefined'||!state?.players)return;
+ for(const [player,move] of activeMoves){
+  if(state!==move.session||state.players[player]?.pos!==move.to)continue;
+  const arrivals=Array.from(cells[move.to].querySelectorAll('.tokens .token'));
+  // Original HTML emits token elements in ascending player index order.
+  const rank=state.players.slice(0,player).filter(p=>p.pos===move.to).length;
+  arrivals[rank]?.classList.add('scene-token-in-flight');
+ }
+}
+function finishMove(player,move){
+ animations.delete(move.animation);
+ ghosts.delete(move.piece);
+ move.piece.remove();
+ if(activeMoves.get(player)===move){
+  activeMoves.delete(player);
+  maskMovingTokens();
+ }
 }
 function moveToken(player,from,to,total){
  if(!enabled()||from===to||!Number.isInteger(from)||!Number.isInteger(to))return;
- const board=$('board');if(!board||!board.isConnected)return;
- const nodes=board.querySelectorAll(':scope > .cell');
- if(nodes.length!==32)return;
- const steps=Number.isInteger(total)&&total>=2&&total<=12?total:(to-from+32)%32;
- if(steps===0||steps>32)return;
- const points=Array.from({length:steps+1},(_,i)=>cellPos(board,(from+i)%32));
- if(points.some(p=>!p))return;
- const ghost=document.createElement('div');ghost.className='scene-moving-token';ghost.setAttribute('aria-hidden','true');
- ghost.style.background=(typeof colors!=='undefined'?colors[player]:['#f1bf65','#68d9b5','#e77ca6','#82aefe','#c48ff4','#ff846d'][player%6]);
- ghost.style.left=points[0].x+'px';ghost.style.top=points[0].y+'px';
- board.appendChild(ghost);ghosts.add(ghost);
- if(ghost.animate){
-  const first=points[0];const kf=points.map((p,i)=>({offset:i/steps,transform:'translate(calc(-50% + '+Math.round(p.x-first.x)+'px),calc(-50% + '+Math.round(p.y-first.y)+'px)) scale('+(i===steps?1.3:1)+')'}));
-  const time=duration(steps*84);
-  const a=ghost.animate(kf,{duration:time,easing:'linear',fill:'forwards'});animations.add(a);counters.animations++;
-  a.finished.catch(()=>{}).finally(()=>{animations.delete(a);ghost.remove();ghosts.delete(ghost)});
- }else{ghost.remove();ghosts.delete(ghost);}
+ const board=$('board'),cells=board?.querySelectorAll(':scope > .cell');
+ if(!cells||cells.length!==32||!document.body)return;
+ const count=Number.isInteger(total)&&total>=2&&total<=12?total:(to-from+32)%32;
+ if(count<1||count>32||(from+count)%32!==to)return;
+ const points=Array.from({length:count+1},(_,step)=>cellPos(cells,(from+step)%32));
+ if(points.some(point=>!point))return;
+ const prior=activeMoves.get(player);
+ if(prior){activeMoves.delete(player);prior.animation?.cancel();prior.piece.remove();ghosts.delete(prior.piece);}
+ const piece=document.createElement('i');
+ piece.className='scene-moving-token';piece.dataset.player=String(player);
+ piece.setAttribute('aria-hidden','true');
+ piece.style.background=(typeof colors!=='undefined'?colors[player]:['#f1bf65','#68d9b5','#e77ca6','#82aefe','#c48ff4','#ff846d'][player%6]);
+ piece.style.left=points[0].x+'px';piece.style.top=points[0].y+'px';
+ // Placing the piece outside #board makes it survive subsequent render() calls
+ // while the previous turn's animations are still playing.
+ document.body.appendChild(piece);ghosts.add(piece);
+ const first=points[0];
+ const keyframes=points.map((point,step)=>({
+  offset:step/count,
+  transform:'translate3d('+Math.round(point.x-first.x)+'px, '+Math.round(point.y-first.y)+'px, 0px) translate(-50%, -50%)'
+ }));
+ try{
+  if(typeof piece.animate!=='function')throw Error('Animation API unavailable');
+  const animation=piece.animate(keyframes,{
+   duration:duration(count*165),easing:'linear',fill:'forwards'
+  });
+  const move={piece,animation,to,session:state};
+  activeMoves.set(player,move);animations.add(animation);counters.animations++;
+  maskMovingTokens();
+  animation.finished.catch(()=>{}).finally(()=>finishMove(player,move));
+ }catch{
+  piece.remove();ghosts.delete(piece);
+  maskMovingTokens();
+ }
 }
 function report(before,now){
  if(!before||before.session!==now.session)return;
@@ -284,6 +326,9 @@ function cycle(){
  if(previousSession!==now.session){cleanup();previous=now;previousSession=now.session;schedulePaint();return;}
  if(previous)report(previous,now);
  previous=now;
+ // Core render replaces .tokens on every action, even when the piece is
+ // mid-flight. Always mask the new destination node until arrival.
+ maskMovingTokens();
  schedulePaint();
 }
 function controls(){
@@ -313,7 +358,7 @@ function controls(){
  host.appendChild(panel);
 }
 window.DeveloperMotion=Object.freeze({
- status:()=>({...counters,mode,reduced:reduced(),assetsReady,assetCount:Object.keys(manifest).length,activeAnimations:animations.size,activeGhosts:ghosts.size}),
+ status:()=>({...counters,mode,reduced:reduced(),assetsReady,assetCount:Object.keys(manifest).length,activeAnimations:animations.size,activeGhosts:ghosts.size,movingPlayers:activeMoves.size}),
  setMode:v=>{if(!(v in DURATION))return false;mode=v;try{localStorage.setItem(storageKey,v)}catch{}if(mode==='off')cleanup();document.querySelectorAll('#sceneControls [data-mode]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.mode===mode)));return true;},
  skip:cleanup,refresh:()=>{cycle();paint();}
 });
@@ -327,6 +372,9 @@ if(board&&typeof MutationObserver!=='undefined'){
  observer.observe(board,{childList:true});
 }
 controls();
+// Recompute the route on the next actual move if the viewport geometry changes.
+window.addEventListener('resize',()=>{if(activeMoves.size)cleanup();},{passive:true});
+window.addEventListener('scroll',()=>{if(activeMoves.size)cleanup();},{passive:true,capture:true});
 if(typeof state!=='undefined'&&state?.players){previous=read();previousSession=state;schedulePaint();}
 fetch('assets/svg/manifest.json',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error('No SVG library');return r.json()}).then(data=>{
  if(!data||data.version!==1||!data.assets||typeof data.assets!=='object')throw Error('Invalid SVG manifest');
