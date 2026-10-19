@@ -45,7 +45,8 @@ function expectedTrack(){
   assert.deepEqual(geometry.track,expectedTrack(),'Every ring index preserves cyclic clockwise order');
   assert.equal(geometry.cells.length,32);
   assert.equal(geometry.plots.length,24);
-  assert(geometry.plotAria.every(x=>x&&x.includes('этап')||x&&x.includes('Свободен')), 'All 24 parcel identities stay accessible');
+  assert(geometry.plotAria.every(x=>typeof x==='string'&&x.trim().length>=8),'All parcels retain named screen-reader labels');
+  assert.equal(new Set(geometry.plotAria).size,24,'All 24 parcel labels are distinct');
   assert.equal(geometry.hud,false,'No extra top status bar');
   assert.match(geometry.progress,/0\s*\/\s*240/,'Turn limit lives inside the cabinet');
   assert.equal(geometry.svgTiles,32,'All existing track SVGs are still installed');
