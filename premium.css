@@ -110,3 +110,16 @@ button:disabled{opacity:.43!important;filter:saturate(.35)}
 #developerStrategy{margin:0!important;border-color:#8f8058!important;background:#102630!important}
 .secondary-panels{grid-template-columns:1fr 1fr 1fr!important}
 @media(max-width:760px){.secondary-panels{grid-template-columns:1fr!important}}
+.cabinet-main .actions button{grid-column:auto!important;order:0!important}
+.cabinet-main .actions #roll{order:-2!important}
+.cabinet-main .actions #end{order:-1!important}
+.cabinet-main .actions #marketTradeBtn{grid-column:auto!important}
+.cabinet-main .actions>.pill{grid-column:1/-1!important;padding:4px 7px!important;min-height:22px!important;font-size:10px!important}
+.cabinet-main .stats .turn-counter-detail b{display:inline!important;font-size:10px!important}
+.cabinet-main .stats .turn-counter-detail{font-size:9px!important}
+.premium-company span{font-size:9px;line-height:1.2;display:block}
+@media(min-width:921px){
+ .cabinet-main .stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .cabinet-main .stats .pill{font-size:9px!important}
+ .cabinet-main .actions button{font-size:10px!important}
+}
