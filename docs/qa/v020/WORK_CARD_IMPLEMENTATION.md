@@ -24,4 +24,4 @@ Separate preview URL /developer-web/previews/v020-qa/; unchanged v0.18 stable ro
 
 ## Known QA decisions pending
 
-Numerical rates, the new fifth ready-vacant case, and payoff rules are provisional. Four-player candidate results do not establish balance for 3/5/6 or real humans. The municipal net-worth scoring does not yet subtract Work payables / add receivables. No physical Android testing or final balance acceptance has been performed. Do not label stable.
+Numerical rates, the new fifth ready-vacant case, and payoff rules are provisional. Four-player candidate results do not establish balance for 3/5/6 or real humans. Municipal net-worth scoring includes outstanding Work payables/receivables as liabilities/assets, without altering victory thresholds. No physical Android testing or final balance acceptance has been performed. Do not label stable.
