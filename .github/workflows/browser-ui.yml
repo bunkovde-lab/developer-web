@@ -22,6 +22,7 @@ on:
       - 'tests/browser_living_city.cjs'
       - 'tests/browser_work_integration.cjs'
       - 'tests/browser_rc1_stability.cjs'
+      - 'tests/browser_smooth_tokens.cjs'
       - 'tests/browser_marketplace.cjs'
       - 'tests/browser_city_requests.cjs'
       - '.github/workflows/browser-ui.yml'
@@ -56,6 +57,8 @@ jobs:
         run: node tests/browser_work_integration.cjs
       - name: RC1 stale timers, storage failures and full browser campaigns
         run: node tests/browser_rc1_stability.cjs
+      - name: Smooth player pawns across all real track squares and accessibility modes
+        run: node tests/browser_smooth_tokens.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
