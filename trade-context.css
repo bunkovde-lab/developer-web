@@ -166,7 +166,7 @@
   }
   #landSelectOverlay .auction-box{max-height:70dvh}
   #landSelectOverlay .auction-box h2{font-size:13px}
-  #landSelectOverlay .auction-city-map{display:none}
+  #landSelectOverlay .auction-city-map{display:block;max-height:12dvh;overflow:auto}
   #landSelectOverlay .auction-box p{font-size:11px;line-height:1.25}
   #landSelectOverlay .land-selection-actions{display:grid;grid-template-columns:1fr;gap:5px}
   #landSelectOverlay .land-selection-actions button{font-size:11px;padding:7px 4px}
