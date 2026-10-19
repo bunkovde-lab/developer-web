@@ -3,6 +3,7 @@
 const clean=s=>s.replace(/[\p{Extended_Pictographic}\uFE0F\u200D\u20E3]/gu,'').replace(/^[\s☰●⚠]+/,'').trimStart();
 const icon=(name)=>'assets/svg/ui/engraved-'+name+'.svg';
 function decorate(){
+ const menu=document.getElementById('sessionOverlay');if(menu){const walker=document.createTreeWalker(menu,NodeFilter.SHOW_TEXT);let t;while((t=walker.nextNode())){const s=clean(t.textContent);if(s!==t.textContent)t.textContent=s;}}
  const scope=document.querySelectorAll('#sessionOpen,#sessionOverlay button,#sessionOverlay h2,#lobbySlots>div,.hand-dock-title strong,#handDialogTitle,#plotCardTitle,#plotCardProjects b,#plotCardProjects button,#plotCardProjects strong');
  for(const n of scope){for(const t of [...n.childNodes])if(t.nodeType===3){const s=clean(t.textContent);if(s!==t.textContent)t.textContent=s;}}
  for(const n of document.querySelectorAll('.hand-dock-title strong,#handDialogTitle,#sessionOpen,#sessionTitle,#sessionOverlay button:not(.profession-choice),#lobbySlots>div')){
