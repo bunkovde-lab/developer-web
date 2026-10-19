@@ -58,6 +58,8 @@ jobs:
           (cd "$baseline" && NODE_PATH="$GITHUB_WORKSPACE/node_modules" node tests/browser_rectangular_geometry.cjs)
           mkdir -p ui-snapshots/before
           cp "$baseline"/ui-snapshots/*.png ui-snapshots/before/
+      - name: User economic rules, empty-stock negotiation and neighbour rent cards
+        run: node tests/browser_rules_v021.cjs
       - name: Card geometry, engraved menu and compact land card
         run: node tests/browser_card_polish.cjs
       - name: Face-down card flight, reveal and destination decks

@@ -142,7 +142,7 @@ function finalizeInvestorSale(lotIndex){
  p.money+=sellerPayout;
  p.saleRevenue=(Number(p.saleRevenue)||0)+sellerPayout; // realised seller receipt: once, regardless of human/AI
  note('🏢 '+p.name+': инвестиционный проект «'+lot.name+'» введён и автоматически продан за '+salePrice+' тыс. Инвестору перечислено '+investorPayout+', девелоперу '+sellerPayout+' тыс. Аренда недоступна.');
- transferLargeSection(lotIndex,-1);lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;
+ municipalizePlot(lotIndex);
  if(!p.bot){const overlay=$('plotCardOverlay');if(overlay)overlay.hidden=true;showResolvedCard('🏢 Инвестиционный объект продан','Здание продано автоматически в момент ввода в эксплуатацию. Сдать его в аренду нельзя.','Цена продажи: '+salePrice+' тыс. · инвестору: '+investorPayout+' тыс. · вам: '+sellerPayout+' тыс.');}
  return true;
 }
@@ -285,7 +285,7 @@ function botBuyLand(){
  const already=state.plots.filter(l=>l.owner===i).length;
  if(already>=(state.players.length>=5?5:7))return false;
  ensureLandDeck();
- const options=state.plots.map((lot,index)=>({index,lot})).filter(x=>x.lot.owner<0).map(x=>({...x,t:territoryAnalysis(x.index,i)}));
+ const options=state.plots.map((lot,index)=>({index,lot})).filter(x=>x.lot.owner<0&&!x.lot.cityOwned).map(x=>({...x,t:territoryAnalysis(x.index,i)}));
  options.sort((a,b)=>b.t.score-a.t.score||a.lot.price-b.lot.price||a.index-b.index);
  // Tactical land acquisition: expand an existing orthogonal group or take a contested gap.
  const candidate=options.find(x=>{
@@ -415,7 +415,7 @@ function botBusiness(){
 
  // AI portfolio strategy: recycle isolated buildings rather than permanently filling the city.
  const completed=lots.filter(x=>x.lot.project?.stage===4&&!Number.isInteger(x.lot.reservedFor));
- const freeLand=state.plots.filter(x=>x.owner<0).length;
+ const freeLand=state.plots.filter(x=>x.owner<0&&!x.cityOwned).length;
  const isolated=completed.map(x=>({...x,links:neighborsBySide(x.i).filter(j=>state.plots[j].owner===playerIndex&&state.plots[j].project?.stage===4).length}))
   .filter(x=>x.links<=1&&(x.lot.project.size===0||completed.length>=4));
  const rotate=completed.length>=3&&(freeLand<=6||p.money<450||(p.completedProjects||0)>=5);
@@ -425,8 +425,7 @@ function botBusiness(){
   const percent=buyer?buyer.card.percent:88,proceeds=Math.round(marketBase(lot,'buyer')*percent/100);
   if(buyer){p.marketCards=p.marketCards.filter(c=>c.id!==buyer.id);returnMarketCard(buyer);}
   p.money+=proceeds;p.saleRevenue=(Number(p.saleRevenue)||0)+proceeds;
-  transferLargeSection(i,-1);
-  lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;
+  municipalizePlot(i);
   if(state.econMetrics)state.econMetrics.botAssetSales=(state.econMetrics.botAssetSales||0)+1;
   note('🏷 '+p.name+' продал '+lot.name+' за '+proceeds+' тыс. для реинвестирования.');
   return true;

@@ -3,3 +3,4 @@ preview/
 ui-snapshots/
 node_modules/
 .openai/*.local.*
+audit-results/

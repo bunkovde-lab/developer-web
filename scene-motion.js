@@ -277,7 +277,7 @@ function paint(){
    slots.forEach((el,i)=>{
     const lot=state.plots[i];if(!lot)return;
     const stage=lot.project?.stage||0,zone=String(lot.zone||'').toLowerCase();
-    const key=lot.owner<0?'lot.'+String(i+1).padStart(2,'0'):stage===4?'building.'+zone:(urlFor('premium.stage.'+zone+'.'+stage)?'premium.stage.'+zone+'.'+stage:'stage.'+stage);
+    const key=lot.owner<0&&!lot.cityOwned?'lot.'+String(i+1).padStart(2,'0'):stage===4?'building.'+zone:(urlFor('premium.stage.'+zone+'.'+stage)?'premium.stage.'+zone+'.'+stage:'stage.'+stage);
     const stageNode=el.querySelector('.plot-stage');
     const parcel=urlFor('lot.'+String(i+1).padStart(2,'0'));
     const tileArt=urlFor(key)||parcel;
