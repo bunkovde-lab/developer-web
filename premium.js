@@ -2,8 +2,8 @@
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
-const icons={roll:'start',buy:'auction',build:'build',sell:'buyer',propertySale:'city',end:'permit'};
-const names={roll:'Бросить кубики',buy:'Аукцион земли',build:'Строительство',sell:'Продать объект',propertySale:'Предложить объект игрокам',end:'Завершить ход'};
+const icons={roll:'start',buy:'auction',build:'build',sell:'buyer',propertySale:'city',end:'permit',marketTradeBtn:'deal',cityDealButton:'permit'};
+const names={roll:'Бросить кубики',buy:'Аукцион земли',build:'Строительство',sell:'Продать объект',propertySale:'Предложить объект игрокам',end:'Завершить ход',marketTradeBtn:'Торговая площадка',cityDealButton:'Запрос города / сделка'};
 function enhance(){
  if(typeof state==='undefined'||!state)return;
  document.body.classList.add('premium-edition');
@@ -13,11 +13,6 @@ function enhance(){
   b.replaceChildren(img,document.createTextNode(names[id]));b.dataset.premiumIcon='1';
  }
 
- const familyIcons={utilities:'permit',permits:'audit',construction:'build',commissioning:'city',network:'network',investor:'investor',tenant:'tenant',buyer:'buyer',government:'city'};
- document.querySelectorAll('#handQuick [data-hand-type]').forEach(b=>{
-  const slot=b.querySelector('.hand-quick-icon');if(!slot)return;
-  const img=document.createElement('img');img.src='assets/svg/premium/icon-'+(familyIcons[b.dataset.handType]||'event')+'.svg';img.alt='';img.width=28;img.height=28;slot.replaceChildren(img);
- });
  const stats=document.querySelector('.cabinet-main .stats');
  if(stats&&!$('premiumDebt')){const item=document.createElement('div');item.className='pill';item.innerHTML='Обязательства, тыс.<b id="premiumDebt"></b>';stats.append(item);}
  const debt=(state.workEconomy?.debts||[]).filter(d=>d.debtor===state.turn).reduce((sum,d)=>sum+(Number(d.remaining)||0),0)+(state.players[state.turn].investments||[]).reduce((sum,d)=>sum+(Number(d.unpaid)||0),0);
@@ -45,13 +40,39 @@ function enhance(){
   }
  }
  document.querySelectorAll('#board .map-plot').forEach((el,i)=>{
+  const lot=state.plots[i];
+  el.dataset.premiumOwner=String(lot.owner);
+  el.querySelectorAll('.premium-owner,.premium-neighbors').forEach(n=>n.remove());
+  if(lot.owner>=0){
+   const label=document.createElement('span');label.className='premium-owner';
+   label.style.setProperty('--owner-color',colors[lot.owner]);
+   const medallion=document.createElement('img');medallion.src='assets/svg/premium/pawn-'+(lot.owner+1)+'.svg';medallion.alt='';
+   const name=document.createElement('span');name.textContent=state.players[lot.owner]?.name||('Игрок '+(lot.owner+1));
+   label.append(medallion,name);el.append(label);
+  }
   const t=territoryAnalysis(i,state.turn);if(!t.own&&!t.blocking)return;
   const badge=document.createElement('span');badge.className='premium-neighbors';badge.textContent=(t.own?'Связи '+t.own:'')+(t.blocking?' · блок '+t.blocking:'');badge.setAttribute('aria-hidden','true');el.append(badge);
  });
 }
-const original=window.render;window.render=function(){original.apply(this,arguments);enhance();};
+let fitPending=false;
+function fitBoard(){
+ fitPending=false;const board=$('board'),field=document.querySelector('.game-field');
+ if(!board||!field||board.classList.contains('zoom-map'))return;
+ const top=field.getBoundingClientRect().top+(window.scrollY||0);
+ const height=window.visualViewport?.height||window.innerHeight;
+ const available=Math.max(110,height-top-52);
+ const width=Math.max(200,Math.min(field.clientWidth,available*11/7));
+ board.style.setProperty('--premium-fit-width',width.toFixed(2)+'px');
+}
+function scheduleFit(){if(fitPending)return;fitPending=true;requestAnimationFrame(fitBoard);}
+window.addEventListener('resize',scheduleFit,{passive:true});
+window.visualViewport?.addEventListener('resize',scheduleFit,{passive:true});
+if(typeof ResizeObserver!=='undefined'){const field=document.querySelector('.game-field');if(field)new ResizeObserver(scheduleFit).observe(field);}
+window.addEventListener('load',scheduleFit,{once:true});
+window.PremiumUI=Object.freeze({fit:scheduleFit});
+const original=window.render;window.render=function(){original.apply(this,arguments);enhance();scheduleFit();};
 let pending=false;const board=$('board');if(board)new MutationObserver(records=>{
  if(pending||!records.some(r=>r.target===board))return;pending=true;queueMicrotask(()=>{pending=false;enhance();});
 }).observe(board,{childList:true});
-enhance();
+enhance();scheduleFit();
 })();

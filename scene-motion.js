@@ -185,6 +185,7 @@ function moveToken(player,from,to,total){
  piece.className='scene-moving-token';piece.dataset.player=String(player);
  piece.setAttribute('aria-hidden','true');
  piece.style.background=(typeof colors!=='undefined'?colors[player]:['#f1bf65','#68d9b5','#e77ca6','#82aefe','#c48ff4','#ff846d'][player%6]);
+ piece.style.backgroundImage='url(assets/svg/premium/pawn-'+(player+1)+'.svg)';
  piece.style.left=points[0].x+'px';piece.style.top=points[0].y+'px';
  // Anchor to the persistent game field: scroll remains aligned with the board,
  // and core board.innerHTML replacements cannot remove the travelling pawn.

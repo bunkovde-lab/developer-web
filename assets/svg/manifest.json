@@ -377,6 +377,12 @@
     "premium.icon.buyer": "assets/svg/premium/icon-buyer.svg",
     "premium.icon.permit": "assets/svg/premium/icon-permit.svg",
     "premium.icon.event": "assets/svg/premium/icon-event.svg",
-    "premium.icon.start": "assets/svg/premium/icon-start.svg"
+    "premium.icon.start": "assets/svg/premium/icon-start.svg",
+    "premium.pawn.1": "assets/svg/premium/pawn-1.svg",
+    "premium.pawn.2": "assets/svg/premium/pawn-2.svg",
+    "premium.pawn.3": "assets/svg/premium/pawn-3.svg",
+    "premium.pawn.4": "assets/svg/premium/pawn-4.svg",
+    "premium.pawn.5": "assets/svg/premium/pawn-5.svg",
+    "premium.pawn.6": "assets/svg/premium/pawn-6.svg"
   }
 }

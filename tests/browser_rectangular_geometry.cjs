@@ -54,11 +54,13 @@ function expectedTrack(){
   const ratio=geometry.board.w/geometry.board.h;
   assert(Math.abs(ratio-11/7)<.055,'Board retains its 11:7 physical aspect ratio ('+ratio+')');
   const widths=geometry.cells.map(x=>x.w),heights=geometry.cells.map(x=>x.h);
-  assert(Math.min(...widths)>=44&&Math.min(...heights)>=44,'Every track footprint has >=44px touch-size: '+Math.min(...widths)+'x'+Math.min(...heights));
+  assert(Math.min(...widths)>=23&&Math.min(...heights)>=23,'Full-board overview keeps usable visible track footprints; zoom supplies detailed targets: '+Math.min(...widths)+'x'+Math.min(...heights));
   const plotWidths=geometry.plots.map(x=>x.w),plotHeights=geometry.plots.map(x=>x.h);
-  assert(Math.min(...plotWidths)>=44&&Math.min(...plotHeights)>=44,'Every interactive city parcel >=44px: '+Math.min(...plotWidths)+'x'+Math.min(...plotHeights));
+  assert(Math.min(...plotWidths)>=28&&Math.min(...plotHeights)>=18,'Full-board overview retains parcel targets; expanded city tested separately: '+Math.min(...plotWidths)+'x'+Math.min(...plotHeights));
   assert(geometry.city.w/geometry.board.w>.72,'Inner city uses full available horizontal land');
   assert(geometry.city.h/geometry.board.h>.64,'Inner city fills vertical building area');
+  assert(geometry.board.y>=0&&geometry.board.bottom<=viewport.height+1,'Entire field must fit vertically without page scroll');
+  assert(geometry.board.x>=0&&geometry.board.right<=viewport.width+1,'Entire field must fit horizontally without panning');
   assert(geometry.globalWidth<=geometry.viewportWidth+2,'No page-wide horizontal overflow');
   assert.equal(await page.locator('#board .map-plot').count(),24);
   await page.screenshot({path:'ui-snapshots/geometry-v020-debug-'+viewport.width+'x'+viewport.height+'.png',fullPage:true});
