@@ -25,7 +25,7 @@ async function online(){for(let i=0;i<60;i++){try{await new Promise((ok,fail)=>{
    if(!piece)return null;
    const animation=piece.getAnimations()[0];animation.pause();
    return {from,to:5,keyframes:animation.effect.getKeyframes(),duration:animation.effect.getTiming().duration,
-    isBody:piece.parentElement===document.body,
+    inField:piece.parentElement?.classList.contains('game-field'),
     pieces:document.querySelectorAll('.scene-moving-token').length,
     invisibles:document.querySelectorAll('.scene-token-in-flight').length,
     destTokens:document.querySelectorAll('#board > .cell:nth-child(6) .token').length};
@@ -33,7 +33,7 @@ async function online(){for(let i=0;i<60;i++){try{await new Promise((ok,fail)=>{
   assert(route,'Moving pawn must be visible when the state position changes');
   assert.equal(route.from,0);
   assert.equal(route.pieces,1,'One animated pawn, not two');
-  assert.equal(route.isBody,true,'Animation must not be destroyed on board render');
+  assert.equal(route.inField,true,'Moving piece stays anchored to the scrollable game field across rerenders');
   assert.equal(route.keyframes.length,6,'Five rolls travel through five adjacent ring cells');
   assert.equal(route.destTokens,2,'Two players sharing destination still have independent tokens');
   assert.equal(route.invisibles,1,'Only arriving player token hidden (no teleport)');
