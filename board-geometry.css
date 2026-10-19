@@ -1,0 +1,192 @@
+/* DEVELOPER / geometry contract v0.20
+   11 × 7 grid: 32 ordered perimeter spaces around a 9 × 5-cell interior.
+   24 existing parcels remain 6 × 4 and retain their authoritative indices.
+   Presentation/layout only: no modifications to economics or game state. */
+:root{--board-cols:11;--board-rows:7;--board-shape:11 / 7;--board-gutter:clamp(2px,.26vw,4px);--asphalt:#102936;--street-edge:#6d9599}
+.layout{align-items:start}
+.game-field{position:relative;min-width:0;width:100%;display:flex;flex-direction:column;align-items:stretch}
+.board,
+.board:not(.zoom-map){
+ width:100%;
+ max-width:none;
+ max-height:none;
+ min-width:0;
+ min-height:0;
+ aspect-ratio:var(--board-shape);
+ display:grid;
+ grid-template-columns:repeat(var(--board-cols),minmax(0,1fr));
+ grid-template-rows:repeat(var(--board-rows),minmax(0,1fr));
+ gap:var(--board-gutter);
+ margin:0 auto;
+ padding:clamp(3px,.55vw,8px);
+ border-width:clamp(2px,.27vw,4px);
+ border-radius:clamp(9px,1.1vw,16px);
+ background:linear-gradient(130deg,#173747,#102b39 44%,#142b3e);
+ box-shadow:0 12px 40px #010a15b3,inset 0 0 0 2px #846b4933;
+}
+.board > .cell{
+ box-sizing:border-box;
+ min-width:0;
+ min-height:0;
+ width:100%;
+ height:100%;
+ padding:clamp(1px,.28vw,4px);
+ border-radius:clamp(3px,.4vw,7px);
+ overflow:hidden;
+ align-self:stretch;
+ justify-self:stretch;
+ touch-action:manipulation;
+}
+.board > .cell b{max-width:100%;font-size:clamp(8px,.74vw,11px);line-height:1.13;overflow-wrap:anywhere}
+.board > .cell .track-index{font-size:clamp(7px,.6vw,10px)}
+.board > .cell .tokens{display:flex;flex-wrap:wrap;gap:2px;align-items:center;justify-content:center}
+.board > .cell .token{height:clamp(7px,.75vw,11px);width:clamp(7px,.75vw,11px)}
+.board > .city-map{
+ grid-column:2 / 11;
+ grid-row:2 / 7;
+ width:100%;
+ height:100%;
+ min-width:0;
+ min-height:0;
+ margin:0;
+ padding:clamp(4px,.56vw,9px);
+ display:flex;
+ flex-direction:column;
+ gap:clamp(2px,.27vw,4px);
+ overflow:hidden;
+ border:1px solid var(--street-edge);
+ border-radius:clamp(4px,.6vw,10px);
+ background:linear-gradient(155deg,#143947,#14313f 70%,#0d2633);
+}
+.board > .city-map .city-title{
+ flex:0 0 auto;
+ margin:0;
+ line-height:1.2;
+ font-size:clamp(10px,.95vw,15px);
+ min-height:0;
+ text-align:center;
+}
+.board > .city-map .city-lots{
+ flex:1 1 auto;
+ min-width:0;
+ min-height:0;
+ display:grid;
+ grid-template-columns:repeat(6,minmax(0,1fr));
+ grid-template-rows:repeat(4,minmax(0,1fr));
+ place-items:stretch;
+ align-items:stretch;
+ gap:clamp(2px,.42vw,6px);
+ padding:clamp(2px,.35vw,5px);
+ background:linear-gradient(90deg,transparent 49.6%,#6b95992c 50%,transparent 50.4%),
+            linear-gradient(0deg,transparent 49.6%,#6b95992c 50%,transparent 50.4%),
+            var(--asphalt);
+ border:1px solid #54707d5c;
+ border-radius:6px;
+ overflow:hidden;
+}
+.board > .city-map .city-lots > .map-plot{
+ width:100%;
+ height:100%;
+ max-width:none;
+ max-height:none;
+ min-width:0;
+ min-height:0;
+ aspect-ratio:auto;
+ margin:0;
+ border-radius:clamp(3px,.38vw,6px);
+ padding:0;
+ touch-action:manipulation;
+}
+.board > .city-map .map-key{
+ flex:0 0 auto;
+ margin:0;
+ line-height:1.1;
+ font-size:clamp(7px,.58vw,10px);
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+}
+.board .map-plot.scene-full-parcel .plot-id,
+.board .map-plot.scene-full-parcel .plot-type{
+ top:2px;
+ max-width:65%;
+}
+.board .map-plot.scene-full-parcel .plot-progress{
+ font-size:clamp(9px,.8vw,13px);
+ min-height:12px;
+}
+.cabinet-main .stats .turn-counter{display:block}
+.cabinet-main .turn-counter b{white-space:nowrap}
+.board-pan-hint{display:none;margin:0;padding:7px 9px;color:#c5d7df;font-size:12px;line-height:1.3;text-align:center}
+.board-zoom-action{align-self:flex-end}
+@media (min-width:921px){
+ .layout{display:grid;grid-template-columns:minmax(0,1fr) clamp(270px,27vw,350px);gap:clamp(8px,1vw,15px)}
+ .board{width:100%;max-width:none;max-height:none}
+ .cabinet-main .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* Portrait devices: preserve large cells and put the cabinet below the board. */
+@media (max-width:920px) and (orientation:portrait){
+ .layout{display:flex;flex-direction:column;gap:9px}
+ .game-field{width:100%;overflow-x:visible}
+ .company-panel{width:100%;position:static}
+ .board{width:100%;max-height:none}
+ .cabinet-main .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .board-zoom-action{align-self:flex-end}
+}
+/* Small landscape touchscreen: keep cabinet visible alongside a correctly
+   proportioned field; scrolling vertically is preferable to deforming cells. */
+@media (orientation:landscape) and (max-width:920px){
+ .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(215px,26vw);gap:8px}
+ .game-field{min-width:0;width:100%}
+ .company-panel{width:100%;position:static}
+ .board{width:100%;max-height:none}
+ .cabinet-main .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .board > .cell b{font-size:clamp(7px,.89vw,9px)}
+}
+/* A 390px screen physically cannot fit eleven 48px targets without panning.
+   Preserve the actual geometry and ≥54px board squares instead of scaling down. */
+@media (max-width:560px) and (orientation:portrait){
+ .wrap{width:100%;padding:6px 7px}
+ .game-field{display:block;width:100%;overflow-x:auto;overflow-y:visible;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#568e96 #182c38}
+ .board,.board:not(.zoom-map){
+  min-width:660px;
+  width:660px;
+  max-width:none;
+  aspect-ratio:11 / 7;
+  margin:0;
+ }
+ .board-pan-hint{display:block;position:sticky;left:0;width:min(100%,380px);max-width:calc(100vw - 14px)}
+ .board-zoom-action{display:block;position:sticky;left:0;margin:6px 0;min-width:170px;min-height:46px}
+ .board > .cell b{font-size:9px}
+ .board > .city-map .city-title{font-size:13px}
+ .board > .city-map .map-key{display:block;font-size:8px}
+ .board > .city-map .map-plot.scene-full-parcel .plot-progress{font-size:10px}
+ .cabinet-main .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* The city-zoom overlay keeps its original functionality, independently of
+   the base 11×7 geometry. The preview grid is 6×4, 3×8 on narrow devices. */
+.board.zoom-map{z-index:900}
+.board.zoom-map > .city-map{
+ position:fixed!important;
+ inset:2.5dvh 2vw!important;
+ grid-column:auto!important;
+ grid-row:auto!important;
+ width:96vw!important;
+ height:95dvh!important;
+ max-width:none!important;
+ max-height:none!important;
+ overflow:auto!important;
+ padding:clamp(10px,2vw,22px)!important;
+}
+.board.zoom-map .city-lots{overflow:auto;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(4,minmax(116px,1fr));gap:clamp(6px,1vw,13px)}
+.board.zoom-map .city-lots > .map-plot{min-height:116px;height:100%;width:100%}
+@media(max-width:600px){
+ .board.zoom-map > .city-map{
+  inset:0!important;width:100vw!important;height:100dvh!important;
+  border-radius:0!important;
+ }
+ .board.zoom-map .city-lots{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(8,minmax(116px,1fr))}
+}
+@media(prefers-reduced-motion:reduce){
+ .board > .cell{transition:none!important}
+}
