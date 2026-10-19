@@ -136,10 +136,13 @@
   inset:auto max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) auto;
 }
 #landSelectOverlay .auction-box{
-  pointer-events:auto;
+  /* Transparent hit testing: the floating instructions must never eat a plot tap. */
+  pointer-events:none;
   max-height:min(48dvh,345px);
   padding:13px;
 }
+#landSelectOverlay .land-selection-actions button,
+#landSelectOverlay .pc-top button{pointer-events:auto;}
 #landSelectOverlay .pc-top{display:flex;gap:6px;align-items:center;justify-content:space-between}
 #landSelectOverlay .pc-top h2{font-size:clamp(14px,1.35vw,18px);line-height:1.25;margin:0}
 #landSelectOverlay .pc-top button{min-width:44px;min-height:44px;padding:7px 11px;flex:0 0 auto}
