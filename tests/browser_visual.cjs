@@ -46,10 +46,21 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    }
    assert.equal(await page.locator('#sessionOverlay').isHidden(),true);
    assert.equal(await page.evaluate(()=>state.plots.every(l=>l.owner===-1)),false,'Fixture assigns one parcel only');
-   if(viewport.width>760){
+   if(viewport.width>920||(viewport.width>760&&viewport.width>viewport.height)){
     const boardRect=await page.locator('#board').boundingBox();
     const cabinetRect=await page.locator('.company-panel').boundingBox();
-    assert(Math.abs(boardRect.y-cabinetRect.y)<12,'Board and cabinet must start at the same height');
+    assert(Math.abs(boardRect.y-cabinetRect.y)<12,'Board and cabinet start together on landscape layout');
+   }else if(viewport.width>=761&&viewport.height>viewport.width){
+    const boardRect=await page.locator('#board').boundingBox();
+    const cabinetRect=await page.locator('.company-panel').boundingBox();
+    const layoutInfo=await page.evaluate(()=>({
+     display:getComputedStyle(document.querySelector('.layout')).display,
+     direction:getComputedStyle(document.querySelector('.layout')).flexDirection,
+     gameField:document.querySelector('.game-field').getBoundingClientRect().toJSON(),
+     cabinet:document.querySelector('.company-panel').getBoundingClientRect().toJSON(),
+     board:document.querySelector('#board').getBoundingClientRect().toJSON()
+    }));
+    assert(cabinetRect.y>=boardRect.y+boardRect.height-2,'Portrait tablet cabinet is below the board: '+JSON.stringify(layoutInfo));
    }
    assert.equal(await page.locator('#board .cell').count(),32,'Ring must have 32 named spaces');
    assert.equal(await page.locator('#board .map-plot').count(),24,'Center must show 24 parcels');

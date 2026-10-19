@@ -12,6 +12,7 @@ on:
       - 'visual.css'
       - 'scene-motion.js'
       - 'scene-motion.css'
+      - 'board-geometry.css'
       - 'pace.js'
       - 'game-rework-v016.js'
       - 'assets/**'
@@ -24,6 +25,7 @@ on:
       - 'tests/browser_rc1_stability.cjs'
       - 'tests/browser_smooth_tokens.cjs'
       - 'tests/browser_arrival_events.cjs'
+      - 'tests/browser_rectangular_geometry.cjs'
       - 'tests/browser_marketplace.cjs'
       - 'tests/browser_city_requests.cjs'
       - '.github/workflows/browser-ui.yml'
@@ -42,6 +44,8 @@ jobs:
         run: |
           npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium
+      - name: Final 11x7 board geometry, every touch target, 5 devices and before-after screenshots
+        run: node tests/browser_rectangular_geometry.cjs
       - name: Run mobile marketplace browser test
         run: node tests/browser_marketplace.cjs
       - name: City request and land-card barter browser flow
