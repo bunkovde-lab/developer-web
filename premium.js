@@ -60,7 +60,9 @@ function fitBoard(){
  if(!board||!field||board.classList.contains('zoom-map'))return;
  const top=field.getBoundingClientRect().top+(window.scrollY||0);
  const height=window.visualViewport?.height||window.innerHeight;
- const available=Math.max(110,height-top-52);
+ const shelf=document.getElementById('deckShelf');
+ const reserve=shelf&&height>=600?shelf.getBoundingClientRect().height+60:52;
+ const available=Math.max(110,height-top-reserve);
  const width=Math.max(200,Math.min(field.clientWidth,available*11/7));
  board.style.setProperty('--premium-fit-width',width.toFixed(2)+'px');
 }

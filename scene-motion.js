@@ -17,7 +17,7 @@ const counters={renderPasses:0,emitted:0,animations:0,cancelled:0,errors:0};
 const eventNamesSafe=new Set(['lot:acquired','lot:released','build:stage','card:received','card:played','move','move:arrived','money','win','auction:start','auction:result','deal','lease']);
 const labels=['▫','📐','📑','🏗','🏢'];
 const deckKeys=new Set(['utilities','permits','construction','commissioning','network','investor','tenant','buyer']);
-function urlFor(key){return Object.prototype.hasOwnProperty.call(manifest,key)?manifest[key]:null;}
+function urlFor(key){return Object.prototype.hasOwnProperty.call(manifest,key)?manifest[key]+(key.startsWith('track.')?'?design=3':''):null;}
 function duration(ms){return Math.max(1,Math.round(ms*DURATION[mode]));}
 function assetCard(card){
  if(!card)return null;

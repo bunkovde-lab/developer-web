@@ -255,7 +255,7 @@ function attach(){
 }
 attach();
 if(active()){ensure();window.render();}
-window.DeveloperWork=Object.freeze({status:()=>active()?{
+window.DeveloperWork=Object.freeze({catalog:()=>ZONE_GRID.map((zone,lot)=>({lot,base:BASE[zone]||BASE.J1})),status:()=>active()?{
  version:VERSION,remaining:ensure().deck.length,draws:ensure().draws,reshuffles:ensure().reshuffles,
  sold:ensure().sold.slice(),debts:ensure().debts.map(d=>({...d})),
  totals:{...ensure().totals},last:ensure().last}:null});

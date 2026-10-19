@@ -58,6 +58,8 @@ jobs:
           (cd "$baseline" && NODE_PATH="$GITHUB_WORKSPACE/node_modules" node tests/browser_rectangular_geometry.cjs)
           mkdir -p ui-snapshots/before
           cp "$baseline"/ui-snapshots/*.png ui-snapshots/before/
+      - name: Numbered card library, visible deck shelf, reference privacy and tax cell 11
+        run: node tests/browser_card_library.cjs
       - name: Premium design, non-mutation, responsive screens and live city fixture
         run: node tests/browser_premium.cjs
       - name: Final 11x7 board geometry, every touch target, 5 devices and before-after screenshots

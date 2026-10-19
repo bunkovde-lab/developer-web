@@ -85,7 +85,7 @@ function labelGeometry(){
   }
   const page=await browser.newPage({viewport:{width:390,height:844}});
   await page.route('**/assets/svg/premium/stage-*-1.svg',r=>r.fulfill({status:404,body:'missing'}));
-  await page.route('**/assets/svg/track/track-01-start.svg',r=>r.fulfill({status:404,body:'missing'}));
+  await page.route('**/assets/svg/track/track-01-start.svg*',r=>r.fulfill({status:404,body:'missing'}));
   await page.goto(url,{waitUntil:'networkidle'});await page.waitForFunction(()=>window.DeveloperMotion?.status().assetsReady);
   await page.evaluate(fixture);
   await page.waitForFunction(()=>!document.querySelectorAll('.map-plot')[1].classList.contains('scene-full-parcel'));

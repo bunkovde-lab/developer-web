@@ -50,7 +50,7 @@ assert.equal(run('state.auction'),null);
 assert.equal(run('state.auctionHistory.length'),1);
 assert(run('state.auctionHistory[0].history.length>=2'));
 run('closeAuctionResult()');
-run('newGame();state.rolled=true;state.players[0].pos=8;state.players[0].money=1000;');
+run('newGame();state.rolled=true;state.players[0].pos=10;state.players[0].money=1000;');
 run('resolveSpecialCell()');
 assert.equal(run('state.auditPending.owner'),0);
 assert.equal(run('state.pendingCard!==null'),true);
