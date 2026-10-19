@@ -24,3 +24,5 @@
 #plotCardOverlay .pc-strategy small{width:100%;font-size:9px;letter-spacing:.05em}.pc-strategy span{padding:4px 6px;background:#173644;color:#f5e6c1;border-radius:3px}
 #plotCardOverlay .pc-foot{font-size:9px;line-height:1.4;color:#5c624e;border-top:1px solid #b69d66;padding-top:7px;margin-top:8px}
 @media(max-width:600px){.deck-reference-grid{max-width:none!important}.hand-groups{grid-template-columns:1fr!important}}
+
+#auctionError{font-size:12px;line-height:1.5;margin:8px 0;padding:8px;border:1px solid #8b805d;border-radius:5px;color:#e8dbb9}#auctionError[data-invalid="true"]{background:#502a28;color:#ffe1c3;border-color:#d69775}#auctionBid[aria-invalid="true"]{border:2px solid #df9c77!important}

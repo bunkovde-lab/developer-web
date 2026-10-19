@@ -148,6 +148,19 @@ function sealedResult(bid){
  if(a.humanBidder<0)closeAuctionResult();
  return true;
 }
+function bidFeedback(){
+ const a=state?.auction;if(!a?.sealed)return false;
+ const input=E('auctionBid'),money=state.players[a.humanBidder].money,bid=Number(input.value);
+ let message='';
+ if(money<a.minBid)message='Для участия нужно '+format(a.minBid)+'. Ваш капитал: '+format(money)+'. Можно отказаться от участия.';
+ else if(!Number.isSafeInteger(bid)||input.value==='')message='Введите целую сумму от '+format(a.minBid)+' до '+format(money)+'.';
+ else if(bid>money)message='Недостаточно средств: ставка '+format(bid)+', ваш капитал '+format(money)+'. Уменьшите ставку.';
+ else if(bid<a.minBid)message='Ставка ниже стартовой цены. Минимум: '+format(a.minBid)+'.';
+ input.setAttribute('aria-invalid',String(!!message));
+ E('auctionError').textContent=message||'Допустимая ставка: от '+format(a.minBid)+' до '+format(money)+'. Победитель платит свою ставку.';
+ E('auctionError').dataset.invalid=String(!!message);
+ return !message;
+}
 function sealedView(){
  const a=state?.auction;if(!a?.sealed)return;
  const participant=state.players[a.humanBidder],modal=E('auctionOverlay');
@@ -156,11 +169,13 @@ function sealedView(){
   ' · ваш капитал '+format(participant.money)+'. Ставки соперников будут раскрыты после вашего решения.';
  E('auctionBid').min=a.minBid;E('auctionBid').max=participant.money;
  E('auctionBid').value=a.minBid;E('auctionBid').disabled=participant.money<a.minBid;
+ E('auctionBid').oninput=bidFeedback;E('auctionBid').setAttribute('aria-describedby','auctionError');
+ const hint=modal.querySelector('.auction-hint');if(hint)hint.textContent='Одна закрытая ставка. Ставки соперников раскрываются после вашего решения.';
  const label=modal.querySelector('label[for="auctionBid"]');if(label)label.textContent='Ваша окончательная ставка';
  const buttons=modal.querySelectorAll('.auction-buttons button');
  if(buttons[0]){buttons[0].textContent='🔒 Подать ставку';buttons[0].disabled=participant.money<a.minBid;}
  if(buttons[1])buttons[1].textContent='Отказаться';
- E('auctionError').textContent='Первая цена: победитель платит собственную ставку. Минимум две действительные заявки.';
+ bidFeedback();
  modal.hidden=false;
 }
 function sealedStart(index,initiator){
@@ -195,7 +210,7 @@ window.submitAuctionBid=function(pass=false){
  const a=state?.auction;if(!a?.sealed)return false;
  if(pass)return sealedResult(null);
  const bid=Number(E('auctionBid').value),p=state.players[a.humanBidder];
- if(!Number.isSafeInteger(bid)||bid<a.minBid||bid>p.money){E('auctionError').textContent='Введите целую ставку от '+format(a.minBid)+' до '+format(p.money);return false;}
+ if(!bidFeedback()){E('auctionBid').focus?.();return false;}
  return sealedResult(bid);
 };
 // Fixed-length standard campaign: an adjudicated outcome if rivals block every four-lot chain.
