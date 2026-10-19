@@ -25,6 +25,8 @@ on:
       - 'tests/browser_rc1_stability.cjs'
       - 'tests/browser_smooth_tokens.cjs'
       - 'tests/browser_arrival_events.cjs'
+      - 'tests/browser_qa_work_cards.cjs'
+      - 'work-economy-v020.js'
       - 'tests/browser_rectangular_geometry.cjs'
       - 'tests/browser_marketplace.cjs'
       - 'tests/browser_city_requests.cjs'
@@ -66,6 +68,8 @@ jobs:
         run: node tests/browser_smooth_tokens.cjs
       - name: Landing event cards and auctions only after the pawn arrives
         run: node tests/browser_arrival_events.cjs
+      - name: Four-player Work cards, liquidity obligations and restored decks
+        run: node tests/browser_qa_work_cards.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

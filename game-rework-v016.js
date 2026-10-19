@@ -222,7 +222,11 @@ function finalValue(i){
  const legacyDebt=(p.investments||[]).reduce((sum,inv)=>sum+Math.max(0,Number(inv?.unpaid)||0),0);
  const gross=p.money+assets+rental*5+(Number(p.completedProjects)||0)*80+
    (Number(p.saleRevenue)||0)*.07+maxConnected*125;
- return Math.round(gross-projectClaims-legacyDebt);
+ // Work-card unpaid invoices are equity payables/receivables, not new money.
+ const workNet=(state.workEconomy?.debts||[]).reduce((sum,d)=>
+  sum+(d.creditor===i?Math.max(0,Number(d.remaining)||0):0)-
+      (d.debtor===i?Math.max(0,Number(d.remaining)||0):0),0);
+ return Math.round(gross-projectClaims-legacyDebt+workNet);
 }
 window.developerCompanyBalance=function(i){
  if(!live()||!Number.isInteger(i)||!state.players[i])return null;
