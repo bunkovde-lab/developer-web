@@ -56,6 +56,12 @@ def building(x,y,w,d,h,style=0):
    xx=x-w+d+6+j*14;yy=fy+oy-j*6.72
    out+=poly(f'{xx},{yy} {xx+8},{yy-3.84} {xx+8},{yy+6} {xx},{yy+10}', '#a3cbd1' if (j+floor)%4 else '#eed195','#344d60',.6)
  out+=poly(f'{x-15},{y+10} {x+12},{y+23} {x-1},{y+30} {x-27},{y+17}','#b9c6c5')
+ if style==1:
+  out+=poly(f'{lx-4},{cy} {x-5},{y-22} {rx+5},{y+d*.48-10} {x-w+d},{fy}', '#9b6e46','#dab582',2)
+  out+=f'<path d="M{x-5} {y-22}L{x-w+d} {fy}" stroke="#c29b6a" stroke-width="3"/>'
+ if style==2:
+  out+=poly(f'{lx+20},{cy+h-29} {lx+60},{cy+h-10} {lx+60},{cy+h+14} {lx+20},{cy+h-5}', '#34434a','#c4c2b0',2)
+  out+=f'<path d="M{lx+22} {cy+h-22}l35 17m-35-8l35 17" stroke="#88999b" stroke-width="2"/>'
  out+=f'<path d="M{x-20} {y+20}l20 10m-15-5v-9m8 13v-10" stroke="#e0e5da" stroke-width="2"/>'
  return out
 zones=['j1','ret','pk','od','jk4','unique'];zc=['#5b9165','#c49750','#78969b','#7887ac','#b87b68','#65a7a2']
@@ -72,12 +78,16 @@ def parcel(zone,stage=0,variant=0):
   out+='<path d="M103 229V128l101-48 88 45v105l-97 35z" fill="#b4a68a" stroke="#e1d3b3" stroke-width="3"/><path d="M104 154l90 43 98-47m-188 36l90 43 98-47M128 140v100m35-82v98m31-123v130m35-117v99m32-115v100" stroke="#765c40" stroke-width="7"/>'
   out+='<path d="M72 245V65h8v180M44 83h269L74 56zM270 83v85h-15v10h27v-10" stroke="#e6bb4e" fill="none" stroke-width="5"/><path d="M73 94l7 18-7 18 7 18-7 18 7 18-7 18" stroke="#b48125" stroke-width="2"/>'
  elif stage==4:
-  if zone=='j1':out+=building(179,111,72,89,80)+building(282,132,45,58,63)
+  if zone=='j1':out+=building(179,111,72,89,80,1)+building(282,132,45,58,63,1)
   elif zone=='ret':out+=building(205,112,110,112,85)+ '<path d="M100 175l109 52 103-49" stroke="#d2a251" stroke-width="12"/>'
   elif zone=='pk':out+=building(201,129,119,117,68,2)+'<path d="M250 149V74h14v82M276 161V93h13v73" stroke="#a07e67" stroke-width="8"/>'
   elif zone=='od':out+=building(208,50,76,85,156)+building(286,139,40,46,65)
   elif zone=='jk4':out+=building(167,56,66,73,152)+building(270,87,64,71,123)
   else:out+=building(203,88,108,106,104)+'<ellipse cx="202" cy="97" rx="64" ry="26" fill="#99baca" stroke="#ebe1bd" stroke-width="5"/><path d="M140 97h124m-60-24v48" stroke="#d9e1d8" stroke-width="3"/>'
+ # Parking and pedestrian approach, all within artwork safe area.
+ out+='<path d="M86 242h197" stroke="#b8b7a6" stroke-width="13"/><path d="M90 242h190" stroke="#3a494f" stroke-width="8"/>'
+ for cx,cc in [(108,'#e3dbc8'),(139,'#7f9da9'),(260,'#c1a387')]:
+  out+=f'<rect x="{cx}" y="237" width="21" height="9" rx="3" fill="{cc}" stroke="#253841"/><path d="M{cx+7} 238v7m7-7v7" stroke="#415763" stroke-width="2"/>'
  # Planted border: tree canopy clusters + trunks, always outside architecture footprint.
  for x,y in [(42,92),(49,166),(325,208),(312,239),(66,240),(335,98)]:
   out+=f'<ellipse cx="{x+3}" cy="{y+10}" rx="13" ry="5" fill="#233e2d" opacity=".6"/><path d="M{x} {y}v13" stroke="#604e32" stroke-width="3"/><circle cx="{x}" cy="{y-7}" r="12" fill="#304d34"/><circle cx="{x-3}" cy="{y-10}" r="9" fill="#597641"/><circle cx="{x-5}" cy="{y-13}" r="5" fill="#77944e"/>'
