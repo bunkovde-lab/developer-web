@@ -5,7 +5,7 @@ const {execFileSync}=require('node:child_process');
 const {createHash}=require('node:crypto');
 let sourceCommit=process.env.GITHUB_SHA;
 if(!sourceCommit){try{sourceCommit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();}catch{sourceCommit='unversioned';}}
-const sourceFiles=['index.html','balance.js','marketplace.js','pace.js','auction-competition.js','city-requests.js','game-rework-v016.js'];
+const sourceFiles=['index.html','balance.js','marketplace.js','pace.js','auction-competition.js','city-requests.js','game-rework-v016.js','work-economy-v020.js'];
 let engineWorkingTreeDirty=null;
 try{engineWorkingTreeDirty=execFileSync('git',['status','--porcelain','--',...sourceFiles],{encoding:'utf8'}).trim().length>0;}catch{}
 const engineSha256=createHash('sha256');
@@ -45,6 +45,7 @@ vm.runInContext(fs.readFileSync('pace.js','utf8'),sandbox,{filename:'pace.js',ti
 vm.runInContext(fs.readFileSync('auction-competition.js','utf8'),sandbox,{filename:'auction-competition.js',timeout:5000});
 vm.runInContext(fs.readFileSync('city-requests.js','utf8'),sandbox,{filename:'city-requests.js',timeout:5000});
 vm.runInContext(fs.readFileSync('game-rework-v016.js','utf8'),sandbox,{filename:'game-rework-v016.js',timeout:5000});
+vm.runInContext(fs.readFileSync('work-economy-v020.js','utf8'),sandbox,{filename:'work-economy-v020.js',timeout:5000});
 run('newGame()');
 assert.equal(run('state.paceVersion'),1);
 assert.equal(run('state.players.length'),6);
