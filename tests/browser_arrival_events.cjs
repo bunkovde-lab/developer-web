@@ -32,6 +32,7 @@ async function ready(){for(let i=0;i<60;i++){try{await new Promise((ok,fail)=>{c
    assert.equal(result.pos,(from+2)%32,'Authoritative state resolves immediately');
    assert.equal(result.path,3,'Pawn follows two intermediate ring steps');
    assert.equal(result.hidden,true,'Presentation gate set before event UI appears');
+   await page.waitForFunction(selector=>!document.querySelector(selector)?.hidden,dialog);
    const shown=await page.locator(dialog).evaluate(el=>({inDom:!el.hidden,visibility:getComputedStyle(el).visibility}));
    assert.equal(shown.inDom,true,dialog+': game logic has prepared the original modal');
    assert.equal(shown.visibility,'hidden',dialog+': modal is not visible during transit');
