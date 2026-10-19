@@ -86,3 +86,27 @@ button:disabled{opacity:.43!important;filter:saturate(.35)}
 .event-card.work-card .work-card-rules li.active::before{color:#315d40!important}
 .board.zoom-map .map-plot.scene-full-parcel .plot-hint{bottom:20%!important}
 .board.zoom-map .map-plot.scene-full-parcel .plot-tactics{bottom:34%!important}
+@media(max-width:760px) and (orientation:portrait){
+ .cabinet-main .actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .cabinet-main .actions button:not(#roll):not(#end){grid-column:1 / -1}
+ #roll{order:-2}#end{order:-1}
+}
+/* Keep the complete action cabinet inside a standard tablet viewport. */
+.company-panel{gap:8px!important;position:static!important}
+.premium-company{margin:0!important;min-height:74px;padding:9px 100px 9px 10px}
+.premium-company small{font-size:8px;letter-spacing:.07em}.premium-company strong{font-size:21px;margin:3px 0}
+.cabinet-main .stats .pill{min-height:0!important;padding:4px!important;line-height:1.15!important}
+.cabinet-main .stats .pill b{font-size:16px!important;margin-top:2px!important}
+.cabinet-main .stats .pill:nth-child(3) b{font-size:23px!important}
+.cabinet-main .stats{padding:5px 0!important;margin-bottom:6px!important}
+.cabinet-heading{padding-bottom:5px!important;margin-bottom:4px!important}
+.cabinet-main .actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important}
+.cabinet-main .actions button{padding:6px!important;font-size:10px!important;line-height:1.15!important;min-height:44px!important}
+.cabinet-main .actions #roll,.cabinet-main .actions #end{min-height:48px!important}
+.cabinet-main .actions #propertySale{grid-column:1 / -1}
+.cabinet-main .actions .premium-button-icon{width:17px;height:17px;margin-right:4px}
+.premium-assets>.premium-empty{grid-column:1 / -1}
+.premium-portfolio{margin:0!important}
+#developerStrategy{margin:0!important;border-color:#8f8058!important;background:#102630!important}
+.secondary-panels{grid-template-columns:1fr 1fr 1fr!important}
+@media(max-width:760px){.secondary-panels{grid-template-columns:1fr!important}}

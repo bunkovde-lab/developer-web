@@ -22,6 +22,8 @@ function enhance(){
  if(stats&&!$('premiumDebt')){const item=document.createElement('div');item.className='pill';item.innerHTML='Обязательства, тыс.<b id="premiumDebt"></b>';stats.append(item);}
  const debt=(state.workEconomy?.debts||[]).filter(d=>d.debtor===state.turn).reduce((sum,d)=>sum+(Number(d.remaining)||0),0)+(state.players[state.turn].investments||[]).reduce((sum,d)=>sum+(Number(d.unpaid)||0),0);
  if($('premiumDebt'))$('premiumDebt').textContent=String(debt);
+ const strategy=$('developerStrategy'),secondary=document.querySelector('.secondary-panels');
+ if(strategy&&secondary&&strategy.parentElement!==secondary)secondary.append(strategy);
  const cabinet=document.querySelector('.company-panel');
  if(cabinet&&!$('premiumCompany')){
   const company=document.createElement('section');company.className='premium-company';company.id='premiumCompany';
