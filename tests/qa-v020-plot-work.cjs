@@ -23,6 +23,11 @@ if(mode==='candidate'){
  assert(from>=0&&end>from,'Work branch patch target not found');
  legacy=legacy.slice(0,from)+"if(cell==='Работа'){qaWorkContract();}\n "+legacy.slice(end+2);
 }
+if(mode==='baseline'){
+ const originalWork="p.money+=pay;note('Работа: '+p.name+' получил '+pay+' тыс.');";
+ assert(legacy.includes(originalWork),'Baseline Work accounting hook missing');
+ legacy=legacy.replace(originalWork,"window.qaOldWorkCash=(window.qaOldWorkCash||0)+pay;window.qaOldWorkCount=(window.qaOldWorkCount||0)+1;"+originalWork);
+}
 new vm.Script(legacy,{filename:'index.html'});
 new vm.Script(extension,{filename:'balance.js'});
 class El {
@@ -76,7 +81,7 @@ const QA_JOB_POLICY="\n/* Research-only QA candidate, injected into isolated VM.
 
 run('window.render=function(){window.checkVictory()};');
 vm.runInContext(QA_JOB_POLICY,sandbox,{filename:'qa-work-plot-policy.js'});
-run('var _qaNote=note;window.qaOldWorkCash=0;note=function(t){let x=String(t);if(x.startsWith("Работа:")){let m=x.match(/получил\s+(\d+)\s+тыс/);if(m)window.qaOldWorkCash+=Number(m[1]);window.qaOldWorkCount=(window.qaOldWorkCount||0)+1;}_qaNote(t)}');
+run('window.qaOldWorkCash=0;window.qaOldWorkCount=0;')
 const count=Number(process.env.QA_GAMES||1000);
 assert(Number.isInteger(count)&&count>=10,'At least ten deterministic games required');
 const baseSeed=220261000;
