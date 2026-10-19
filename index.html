@@ -197,11 +197,11 @@ function auctionLotIndex(){
  return state.landDeck.length?state.landDeck[0]:-1;
 }
 let chosenLand=null;
-function closeLandSelection(){const el=$('landSelectOverlay');if(el)el.hidden=true;chosenLand=null;const board=$('board');if(board){board.removeAttribute('data-auction-picking');board.querySelectorAll('.map-plot').forEach(node=>{node.classList.remove('auction-target');node.removeAttribute('aria-pressed');});}}
+function closeLandSelection(){const el=$('landSelectOverlay');if(el)el.hidden=true;chosenLand=null;const board=$('board');if(board){board.removeAttribute?.('data-auction-picking');board.querySelectorAll?.('.map-plot')?.forEach(node=>{node.classList.remove('auction-target');node.removeAttribute('aria-pressed');});}}
 function openLandSelection(){
  if(!state||!state.rolled||current().bot||![1,9,18,24].includes(current().pos)||state.pendingCard||state.auction)return false;
  ensureLandDeck();chosenLand=null;
- $('landSelectOverlay').hidden=false;$('board')?.setAttribute('data-auction-picking','true');renderLandSelection();return true;
+ $('landSelectOverlay').hidden=false;$('board')?.setAttribute?.('data-auction-picking','true');renderLandSelection();return true;
 }
 function landAuctionOption(index){
  const lot=state.plots[index],zone=zoneOf(index),a=territoryAnalysis(index,state.turn);
@@ -220,7 +220,7 @@ function renderLandSelection(){
  $('landBidStart').disabled=!can;
  $('landSelectionInfo').textContent=can?'Выбрано: №'+(chosenLand+1)+' · '+lot.name+' · стартовая цена '+lot.price+' тыс. · разрешено: '+zoneOf(chosenLand).sizes.map(i=>['малый','средний','крупный'][i]).join(', '):
  'Выберите свободный участок прямо на основном поле или в списке. 🔗 свои соседи; ⛨ блокировка соперника.';
- $('board')?.querySelectorAll('.map-plot').forEach((node,i)=>{node.classList.toggle('auction-target',chosenLand===i);node.setAttribute('aria-pressed',String(chosenLand===i));});
+ $('board')?.querySelectorAll?.('.map-plot')?.forEach((node,i)=>{node.classList.toggle('auction-target',chosenLand===i);node.setAttribute('aria-pressed',String(chosenLand===i));});
 }
 function chooseAuctionLand(index){
  if(!state?.plots?.[index])return;
@@ -275,7 +275,7 @@ function showAuction(){
  document.querySelector('.auction-buttons button').disabled=!a.active[bidder]||next>player.money&&a.leader!==bidder;
  $('auctionError').textContent=a.history.slice(-5).join(' • ')||'Боты будут отвечать на ваши предложения.';
  $('auctionOverlay').hidden=false;
- $('board')?.querySelectorAll('.map-plot').forEach((node,i)=>node.classList.toggle('auction-target',i===a.lot));
+ $('board')?.querySelectorAll?.('.map-plot')?.forEach((node,i)=>node.classList.toggle('auction-target',i===a.lot));
 }
 function submitAuctionBid(pass=false){
  const a=state?.auction;if(!a)return;
@@ -324,7 +324,7 @@ function resolveAuction(){
 }
 function closeAuctionResult(){
  $('auctionOverlay').hidden=true;
- if($('landSelectOverlay').hidden)$('board')?.querySelectorAll('.map-plot.auction-target').forEach(node=>node.classList.remove('auction-target'));$('auctionBid').style.display='';
+ if($('landSelectOverlay').hidden)$('board')?.querySelectorAll?.('.map-plot.auction-target')?.forEach(node=>node.classList.remove('auction-target'));$('auctionBid').style.display='';
  $('auctionBid').disabled=false;
  document.querySelector('.auction-box label[for="auctionBid"]').style.display='';
  document.querySelector('.auction-buttons').style.display='';
