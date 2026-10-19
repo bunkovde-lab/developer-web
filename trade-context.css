@@ -144,7 +144,18 @@
   #propertySaleOverlay .auction-box{
     max-height:46dvh;
   }
+  /* Keep the live 660px-wide city scroll area tappable above the short picker.
+     The picker itself scrolls independently; primary actions stay docked. */
+  #landSelectOverlay .auction-box{max-height:24dvh}
   #landSelectOverlay .auction-city-map{max-height:10dvh}
+  #landSelectOverlay .land-selection-actions{
+    position:sticky;
+    bottom:-10px;
+    z-index:2;
+    padding:7px 0 3px;
+    background:#132c42;
+    border-top:1px solid #658b90;
+  }
 }
 @media(prefers-reduced-motion:reduce){
   #board .map-plot.auction-target{transition:none!important}
