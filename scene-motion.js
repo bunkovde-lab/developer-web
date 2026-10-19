@@ -81,7 +81,7 @@ function releaseArrival(visualize=true){
   for(const selector of ['#cardOverlay','#constructionDeckOverlay','#landSelectOverlay',
                           '#auctionOverlay','#exchangeOverlay','#auditDecision']){
    const dialog=document.querySelector(selector);
-   if(dialog&&!dialog.hidden)dialog.classList.add('scene-arrived-dialog');
+   if(enabled()&&dialog&&!dialog.hidden)dialog.classList.add('scene-arrived-dialog');
   }
   for(const [label,kind,key] of gate.notices)triggerToast(label,kind,key);
  }
