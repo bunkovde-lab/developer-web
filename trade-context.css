@@ -1,0 +1,151 @@
+/* PROGRAMM v0.20 · trading docks and live strategic map.
+   Presentation-only: no game rules, pricing, turn timing or economy changes. */
+#landSelectOverlay:not([hidden]),
+#auctionOverlay:not([hidden]),
+#dealOverlay:not([hidden]),
+#exchangeOverlay:not([hidden]),
+#propertySaleOverlay:not([hidden]){
+  position:fixed;
+  inset:auto max(9px, env(safe-area-inset-right)) max(9px, env(safe-area-inset-bottom)) auto;
+  width:min(410px,calc(100vw - 18px));
+  display:block;
+  padding:0;
+  background:transparent;
+  pointer-events:none;
+  z-index:1250;
+  overflow:visible;
+}
+#landSelectOverlay .auction-box,
+#auctionOverlay .auction-box,
+#dealOverlay .auction-box,
+#exchangeOverlay .auction-box,
+#propertySaleOverlay .auction-box{
+  position:relative;
+  isolation:isolate;
+  pointer-events:auto;
+  width:100%;
+  max-height:min(72dvh,680px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  margin:0;
+  padding:clamp(11px,1.2vw,17px);
+  border:2px solid #d5ad68;
+  border-radius:13px;
+  background:linear-gradient(145deg,#203b53f5,#0e2438f8);
+  box-shadow:0 15px 55px #020814df,0 0 0 1px #a78b5366;
+  backdrop-filter:blur(8px);
+}
+#landSelectOverlay .auction-box::before,
+#auctionOverlay .auction-box::before,
+#dealOverlay .auction-box::before,
+#exchangeOverlay .auction-box::before,
+#propertySaleOverlay .auction-box::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:url('assets/svg/ui/studio19-panel-auction.svg') center/cover no-repeat;
+  opacity:.075;
+  z-index:-1;
+  pointer-events:none;
+}
+#dealOverlay .auction-box::before,
+#exchangeOverlay .auction-box::before{
+  background-image:url('assets/svg/ui/studio19-panel-market.svg');
+}
+#landSelectOverlay h2::before,
+#auctionOverlay h2::before{
+  content:'';
+  display:inline-block;
+  vertical-align:-.25em;
+  width:1.25em;
+  height:1.25em;
+  margin-right:7px;
+  background:url('assets/svg/ui/studio19-emblem-auction.svg') center/contain no-repeat;
+}
+#landSelectOverlay .auction-box button,
+#auctionOverlay .auction-box button,
+#dealOverlay .auction-box button,
+#exchangeOverlay .auction-box button,
+#propertySaleOverlay .auction-box button{
+  min-height:44px;
+}
+#landSelectOverlay .auction-city-map{
+  max-height:min(23dvh,210px);
+  overflow:auto;
+  scrollbar-width:thin;
+  border:1px solid #789a9c66;
+  border-radius:8px;
+}
+#landSelectOverlay .land-browse{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:4px;
+}
+#landSelectOverlay .land-option{
+  min-height:58px;
+}
+#landSelectOverlay .land-option b,
+#landSelectOverlay .land-option strong{
+  font-size:clamp(9px,.8vw,12px);
+}
+#landSelectionInfo{
+  padding:8px 9px;
+  margin:8px 0;
+  border-left:3px solid #dbb36e;
+  background:#0a2037;
+  color:#eff5fa;
+  line-height:1.45;
+}
+#board[data-auction-picking='true'] .map-plot{
+  cursor:crosshair;
+}
+#board .map-plot.auction-target{
+  outline:3px solid #ffcf68!important;
+  outline-offset:-3px;
+  box-shadow:0 0 0 2px #091829,0 0 19px #ffcc67bb!important;
+  filter:brightness(1.14);
+  position:relative;
+  z-index:7;
+}
+#board .map-plot.auction-target:focus-visible{
+  outline:4px solid #f8f0d7!important;
+}
+@media(max-width:920px){
+  #landSelectOverlay:not([hidden]),
+  #auctionOverlay:not([hidden]),
+  #dealOverlay:not([hidden]),
+  #exchangeOverlay:not([hidden]),
+  #propertySaleOverlay:not([hidden]){
+    inset:auto 7px max(6px,env(safe-area-inset-bottom)) auto;
+    width:min(430px,calc(100vw - 14px));
+  }
+  #landSelectOverlay .auction-box,
+  #auctionOverlay .auction-box,
+  #dealOverlay .auction-box,
+  #exchangeOverlay .auction-box,
+  #propertySaleOverlay .auction-box{
+    max-height:51dvh;
+    padding:10px 12px;
+  }
+  #landSelectOverlay .auction-city-map{max-height:15dvh}
+}
+@media(max-width:560px) and (orientation:portrait){
+  #landSelectOverlay:not([hidden]),
+  #auctionOverlay:not([hidden]),
+  #dealOverlay:not([hidden]),
+  #exchangeOverlay:not([hidden]),
+  #propertySaleOverlay:not([hidden]){
+    width:calc(100vw - 12px);
+    inset:auto 6px max(4px,env(safe-area-inset-bottom)) auto;
+  }
+  #landSelectOverlay .auction-box,
+  #auctionOverlay .auction-box,
+  #dealOverlay .auction-box,
+  #exchangeOverlay .auction-box,
+  #propertySaleOverlay .auction-box{
+    max-height:46dvh;
+  }
+  #landSelectOverlay .auction-city-map{max-height:10dvh}
+}
+@media(prefers-reduced-motion:reduce){
+  #board .map-plot.auction-target{transition:none!important}
+}
