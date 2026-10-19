@@ -2,6 +2,9 @@ name: QA four-player Work economy v0.20
 on:
   push:
     branches: [qa/v020-plot-work-economy]
+    paths:
+      - 'tests/qa-v020-plot-work.cjs'
+      - '.github/workflows/qa-v020-plot-work.yml'
   pull_request:
     paths:
       - 'tests/qa-v020-plot-work.cjs'
