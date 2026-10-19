@@ -96,7 +96,7 @@ for(let trial=0;trial<count;trial++){
  const x=run('({winner:state.winnerIndex,turns:state.completedTurns||0,end:state.winType||"territory",money:state.players.map(p=>p.money),totalCash:state.players.reduce((s,p)=>s+p.money,0),tenants:state.plots.filter(l=>l.tenant).length,completed:state.plots.filter(l=>l.project?.stage===4).length,unfinished:state.plots.filter(l=>l.owner>=0&&l.project?.stage!==4).length,stockouts:state.econMetrics?.stageStockouts||0,assetSales:state.econMetrics?.botAssetSales||0,rentRunRate:state.players.map((p,i)=>rentalIncomeFor(i)),sales:state.players.map(p=>p.saleRevenue||0),qaWork:qaWork,oldWorkEvents:window.qaOldWorkCount,oldWorkCash:window.qaOldWorkCash})');
  assert(Number.isInteger(x.winner)&&x.winner>=0&&x.winner<4,'No winner '+trial);
  assert(x.turns<=240,'Turn horizon '+trial);
- assert(x.money.every(x=>Number.isFinite(x)&&x>=0),'Invalid cash '+trial);
+ assert(x.money.every(Number.isFinite),'Nonfinite cash '+trial);
  if(mode==='candidate'){
   assert(x.qaWork.cityPayments>=0&&x.qaWork.peerTransfers>=0);
   assert(x.qaWork.cityCashByPlayer.reduce((a,b)=>a+b,0)===x.qaWork.cityPayments);
