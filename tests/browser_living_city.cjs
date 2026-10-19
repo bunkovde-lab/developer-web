@@ -127,13 +127,13 @@ async function wait(){
    assert.equal(metrics.ui.errors,0,'no runtime failures from SVG or animation');
    assert.deepEqual(errors,[],'Uncaught browser error');
    console.log('LIVING CITY BROWSER PASSED '+viewport.width+'×'+viewport.height+
-    ' SVG=266; 24 lots; 32 ring; stages1-4; save/motion/accessibility; render off='+metrics.off+'ms, normal='+metrics.normal+'ms');
+    ' SVG='+status.assetCount+'; 24 lots; 32 ring; stages1-4; save/motion/accessibility; render off='+metrics.off+'ms, normal='+metrics.normal+'ms');
    await page.close();
   }
   // Asset failures must degrade to the original fully playable HTML board.
   const missing=await browser.newPage({viewport:{width:390,height:844}});
   const jsErrors=[];missing.on('pageerror',e=>jsErrors.push(e.message));
-  await missing.route('**/assets/svg/manifest.json',r=>r.fulfill({status:404,body:'asset-missing'}));
+  await missing.route('**/assets/svg/manifest.json*',r=>r.fulfill({status:404,body:'asset-missing'}));
   await missing.goto(url,{waitUntil:'networkidle'});
   await missing.evaluate(()=>{window.newGame();window.closeSessionMenu();window.render();});
   assert.equal(await missing.locator('#board > .cell').count(),32);
