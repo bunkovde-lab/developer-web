@@ -4,7 +4,7 @@ Status: experimental balance; game source at main after QA and CI gate. QA resea
 
 ## Implemented model
 
-24 shuffled parcel-linked cards without repeats until all 24 are drawn, on five existing Work ring squares; all 24 parcel IDs stable with 11x7 board.
+24 shuffled parcel-linked cards on five existing Work ring squares; after EACH draw, the drawn card is returned and all remaining cards are reshuffled. Thus repeated draws (including consecutive ones) are possible. All 24 parcel IDs remain stable with the 11x7 board.
 Empty parcel or owned without project: city pays drawer 155/175/195/210/225/250 (J1/RET/PK/OD/JK4/UNIQUE), in thousands.
 Construction stages 1-3: owner pays drawer 35/65/100 according to project size; paired reservedFor parcel inherits primary project.
 Commissioned property with tenant: drawer pays owner 80% of effective tenantIncomeForLot, capped at 125. Regular rental payout at START remains unchanged.
@@ -25,3 +25,10 @@ Separate preview URL /developer-web/previews/v020-qa/; unchanged v0.18 stable ro
 ## Known QA decisions pending
 
 Numerical rates, the new fifth ready-vacant case, and payoff rules are provisional. Four-player candidate results do not establish balance for 3/5/6 or real humans. Municipal net-worth scoring includes outstanding Work payables/receivables as liabilities/assets, without altering victory thresholds. No physical Android testing or final balance acceptance has been performed. Do not label stable.
+
+## Owner-approved UX/deck correction (2026-10-19)
+
+- Any resolved Work card immediately returns to its physical deck and the deck is shuffled; no no-replacement guarantee is retained.
+- On the face of the card show five payment cases with the currently applied clause highlighted. The municipal/free lot is prominently distinguished from a privately owned lot; city-funded payments on other statuses carry a separate badge.
+- A v1 Work save migration reconstructs the complete 24-card deck without discarding Work debt, sales or transaction history. The save format becomes v2; a pending Work card survives reload with rules and municipal badge.
+- All amounts and financial transfers retain their QA values; no economic changes are made by this UX correction.

@@ -1,0 +1,21 @@
+/* Developer v0.20 Work: compact printed rules and conspicuous municipal events. */
+.event-card.work-card{width:min(96vw,555px);max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;text-align:left;padding:clamp(15px,2.5vw,23px)}
+.event-card.work-card .deck-label{text-align:center;letter-spacing:.08em}
+.event-card.work-card h2{text-align:center;font-size:clamp(18px,3vw,25px);margin:9px 0}
+.event-card.work-card #cardText{font-size:13px;line-height:1.5;margin:8px 0}
+.event-card.work-card .work-card-flag{padding:9px 10px;margin:12px 0 5px;border:1px solid #81b4c2;border-radius:8px;background:#193d4a;color:#dbf5fb;font-size:12px;letter-spacing:.04em;text-align:center;font-weight:800}
+.event-card.work-card.work-municipal{border-color:#ffdb81;box-shadow:0 0 0 2px #d49e3799,0 25px 65px #000b}
+.event-card.work-card.work-municipal .work-card-flag{color:#2a210d;border:2px solid #ffdc82;background:linear-gradient(135deg,#f5d17b,#eab45b);font-size:13px}
+.event-card.work-card .work-card-rules{margin:10px 0;border:1px solid #587d98;border-radius:10px;padding:11px;background:#0d2237}
+.event-card.work-card .work-card-rules h3{font-size:13px;letter-spacing:.04em;color:#ffdb96;margin:0 0 8px}
+.event-card.work-card .work-card-rules ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.event-card.work-card .work-card-rules li{border:1px solid transparent;border-radius:7px;padding:7px 9px;font-size:12px;line-height:1.45;color:#cbdceb}
+.event-card.work-card .work-card-rules li.active{color:#fff1ce;background:#514527;border-color:#eebf69;font-weight:750}
+.event-card.work-card .work-card-rules li.active::before{content:"▶ ДЕЙСТВУЕТ СЕЙЧАС  ·  ";font-size:10px;display:block;letter-spacing:.06em;color:#f9d78b}
+.event-card.work-card .effect{font-size:13px;line-height:1.5;margin:10px 0;white-space:pre-line}
+.event-card.work-card button{display:block;min-height:44px;margin:10px auto 0}
+@media(max-width:460px){
+ .event-card.work-card{max-height:94dvh;padding:13px}
+ .event-card.work-card .work-card-rules li{font-size:11.5px;padding:6px 8px}
+ .event-card.work-card .work-card-rules{padding:9px}
+}

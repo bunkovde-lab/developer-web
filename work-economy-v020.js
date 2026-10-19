@@ -5,25 +5,34 @@
 (function(){
 'use strict';
 const BASE={J1:155,RET:175,PK:195,OD:210,JK4:225,UNIQUE:250};
-const COST=[35,65,100],VERSION=1,MAX_RENT=125;
+const COST=[35,65,100],VERSION=2,MAX_RENT=125;
 const $=id=>document.getElementById(id);
 function active(){return typeof state!=='undefined'&&state&&Array.isArray(state.plots)&&state.plots.length===24;}
-function shuffle(){
- const cards=Array.from({length:24},(_,i)=>i);
+function shuffleDeck(cards){
  for(let i=cards.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cards[i],cards[j]]=[cards[j],cards[i]];}
  return cards;
 }
+function shuffle(){return shuffleDeck(Array.from({length:24},(_,i)=>i));}
 function ensure(){
  if(!active())return null;
  let w=state.workEconomy;
- if(!w||w.version!==VERSION){
-  w={version:VERSION,deck:[],draws:0,reshuffles:0,sold:[],debts:[],nextDebtId:1,
+ if(!w||![1,VERSION].includes(w.version)){
+  w={version:VERSION,deck:shuffle(),draws:0,reshuffles:1,sold:[],debts:[],nextDebtId:1,
    totals:{city:0,peer:0,unpaid:0,repaid:0,self:0},last:null};
   state.workEconomy=w;
  }
+ // v1 had a depleting deck. Restore every missing card while retaining debts,
+ // sale flags, history and balances in existing saved games.
+ if(w.version===1){
+  const remaining=Array.isArray(w.deck)?[...new Set(w.deck.filter(i=>Number.isInteger(i)&&i>=0&&i<24))]:[];
+  const missing=Array.from({length:24},(_,i)=>i).filter(i=>!remaining.includes(i));
+  w.deck=shuffleDeck(remaining.concat(missing));
+  w.version=VERSION;
+  w.reshuffles=(w.reshuffles||0)+1;
+ }
  if(!Array.isArray(w.sold))w.sold=[];
  if(!Array.isArray(w.debts))w.debts=[];
- if(!Array.isArray(w.deck)||w.deck.some(i=>!Number.isInteger(i)||i<0||i>=24)||new Set(w.deck).size!==w.deck.length)w.deck=[];
+ if(!Array.isArray(w.deck)||w.deck.some(i=>!Number.isInteger(i)||i<0||i>=24)||new Set(w.deck).size!==w.deck.length)w.deck=shuffle();
  if(!w.totals||typeof w.totals!=='object')w.totals={city:0,peer:0,unpaid:0,repaid:0,self:0};
  if(!Number.isInteger(w.nextDebtId)||w.nextDebtId<1)w.nextDebtId=1;
  return w;
@@ -119,6 +128,11 @@ function work(){
  let paid=requested,owed=0,self=false;
  if(from>=0){const x=transfer(from,to,requested,lotIndex,status);({paid,owed,self}=x);}
  else{state.players[actor].money+=requested;w.totals.city+=requested;}
+ // Played card immediately returns to the same physical deck; every next draw
+ // can select it again, including directly on the following Work square.
+ w.deck.push(lotIndex);
+ shuffleDeck(w.deck);
+ w.reshuffles++;
  w.draws++;
  const label={
   construction:'Подрядные работы на строящемся объекте',
@@ -135,10 +149,67 @@ function work(){
     (owed?' · задолженность '+owed+' тыс. (будет погашаться из следующих поступлений)':'');
  w.last={lot:lotIndex,origin,status,requested,paid,owed,from,to,self,round:state.round};
  note('💼 Работа · участок №'+(lotIndex+1)+' · '+label+'. '+explanation);
- if(!current().bot)showResolvedCard('💼 Работа · участок №'+(lotIndex+1)+' · '+(zoneOf(lotIndex)?.short||zone),
-  label+'. '+state.plots[lotIndex].name+'.'+(origin!==lotIndex?' Комплекс на участках №'+(origin+1)+' и №'+(lotIndex+1)+'.':''),
-  explanation+' В колоде осталось '+w.deck.length+' из 24 карт.');
+ if(!current().bot){
+  showResolvedCard('💼 Работа · участок №'+(lotIndex+1)+' · '+(zoneOf(lotIndex)?.short||zone),
+   label+'. '+state.plots[lotIndex].name+'.'+(origin!==lotIndex?' Комплекс на участках №'+(origin+1)+' и №'+(lotIndex+1)+'.':''),
+   explanation+' Карта возвращена в колоду и перемешана.');
+  if(state.pendingCard?.special){
+   state.pendingCard.workCard={lot:lotIndex,status,base,requested,from,municipal:status==='empty'&&lot.owner<0};
+   renderWorkCard(state.pendingCard.workCard);
+  }
+ }
 }
+function clearWorkCard(){
+ const root=$('cardOverlay')?.querySelector('.event-card');
+ if(root?.classList)root.classList.remove('work-card','work-municipal');
+ $('workCardFlag')?.remove();
+ $('workCardRules')?.remove();
+}
+function renderWorkCard(detail){
+ clearWorkCard();
+ const root=$('cardOverlay')?.querySelector('.event-card');
+ if(!root?.classList||!detail)return;
+ root.classList.add('work-card');
+ if(detail.municipal)root.classList.add('work-municipal');
+ $('cardDeck').textContent='💼 Колода «Работа» · участок №'+(detail.lot+1);
+ const flag=document.createElement('div');
+ flag.id='workCardFlag';flag.className='work-card-flag';
+ flag.textContent=detail.municipal?'🏛 ГОРОДСКОЙ УЧАСТОК':
+  detail.from<0?'🏛 СОБЫТИЕ ОПЛАЧИВАЕТ ГОРОД':'🏗 ВЗАИМОРАСЧЁТ МЕЖДУ ИГРОКАМИ';
+ root.insertBefore(flag,$('cardTitle'));
+ const rules=document.createElement('section');rules.id='workCardRules';rules.className='work-card-rules';
+ const heading=document.createElement('h3');heading.textContent='Условия карты';rules.appendChild(heading);
+ const list=document.createElement('ul');
+ const base=detail.base;
+ const terms=[
+  ['empty','Участок свободен или строительство не начато — город платит '+base+' тыс.'],
+  ['construction','Идёт строительство — владелец платит вытянувшему: малый объект 35, средний 65, крупный 100 тыс.'],
+  ['rent','Объект с арендатором — вытянувший платит собственнику 80% действующей аренды, максимум 125 тыс.'],
+  ['sold','Объект продан внешнему покупателю — город платит '+Math.round(base*.85)+' тыс. (85%).'],
+  ['vacant','Объект введён, но без арендатора — город платит '+Math.round(base*.55)+' тыс. (55%).']
+ ];
+ for(const [status,text] of terms){
+  const item=document.createElement('li');
+  item.textContent=text;
+  if(status===detail.status){item.className='active';item.setAttribute('aria-current','true');}
+  list.appendChild(item);
+ }
+ rules.appendChild(list);
+ root.insertBefore(rules,$('cardEffect'));
+}
+const oldShowCard=window.showCard;
+window.showCard=function(...args){
+ const result=oldShowCard.apply(this,args);
+ const workCard=state?.pendingCard?.special&&state.pendingCard.workCard;
+ if(workCard)renderWorkCard(workCard);else clearWorkCard();
+ return result;
+};
+const oldDismissCard=window.dismissCard;
+window.dismissCard=function(...args){
+ const result=oldDismissCard.apply(this,args);
+ clearWorkCard();
+ return result;
+};
 const oldResolve=window.resolveSpecialCell;
 window.resolveSpecialCell=function(...args){
  if(active()&&eventNames[current().pos]==='Работа')return work();
@@ -169,7 +240,7 @@ window.render=function(...args){
  if(info&&active()){
   const w=ensure(),debt=w.debts.filter(d=>d.remaining>0&&d.debtor===state.turn)
    .reduce((s,d)=>s+d.remaining,0);
-  info.textContent='💼 Работа: '+w.deck.length+'/24 карт · ваш долг по подрядным/арендным картам: '+debt+' тыс.';
+  info.textContent='💼 Работа: '+w.deck.length+'/24 карт · возврат и замешивание после каждого события · ваш долг: '+debt+' тыс.';
  }
  return result;
 };
@@ -185,7 +256,7 @@ function attach(){
 attach();
 if(active()){ensure();window.render();}
 window.DeveloperWork=Object.freeze({status:()=>active()?{
- version:1,remaining:ensure().deck.length,draws:ensure().draws,
+ version:VERSION,remaining:ensure().deck.length,draws:ensure().draws,reshuffles:ensure().reshuffles,
  sold:ensure().sold.slice(),debts:ensure().debts.map(d=>({...d})),
  totals:{...ensure().totals},last:ensure().last}:null});
 })();
