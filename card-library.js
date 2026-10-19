@@ -43,12 +43,14 @@ function refresh(){
 function open(f='all'){
  if(!ready)return;filter=f;$('deckSearch').value='';refresh();$('deckReference').hidden=false;$('deckClose').focus();
 }
-function close(){$('deckReference').hidden=true;document.querySelector('[data-reference-family="'+filter+'"]')?.focus({preventScroll:true});}
+function close(){$('deckReference').hidden=true;const target=!$('deckStacks').hidden&&document.querySelector('[data-reference-family="'+filter+'"]');(target||$('deckStudyAll')).focus({preventScroll:true});}
 function createUI(){
  const field=document.querySelector('.game-field');if(!field)return;
  const shelf=element('section','deck-shelf');shelf.id='deckShelf';shelf.setAttribute('aria-label','Открытый каталог всех колод');
- const head=element('div','deck-shelf-head');head.append(element('h2','','КОЛОДЫ КАРТ'));const all=element('button','','Изучить все · '+CATALOG.length);all.type='button';all.onclick=()=>open();head.append(all);shelf.append(head);
- const stacks=element('div','deck-stacks');
+ const head=element('div','deck-shelf-head');head.append(element('h2','','КОЛОДЫ КАРТ'));const all=element('button','','Изучить все · '+CATALOG.length);all.id='deckStudyAll';all.type='button';all.onclick=()=>open();head.append(all);shelf.append(head);
+ const stacks=element('div','deck-stacks');stacks.id='deckStacks';stacks.hidden=true;
+ const toggle=element('button','deck-shelf-toggle','Развернуть колоды');toggle.id='deckShelfToggle';toggle.type='button';toggle.setAttribute('aria-controls','deckStacks');toggle.setAttribute('aria-expanded','false');
+ toggle.onclick=()=>{stacks.hidden=!stacks.hidden;toggle.setAttribute('aria-expanded',String(!stacks.hidden));toggle.textContent=stacks.hidden?'Развернуть колоды':'Свернуть колоды';window.PremiumUI?.fit();};head.append(toggle);
  for(const f of FAMILIES){const b=element('button','deck-stack');b.type='button';b.dataset.referenceFamily=f.id;b.style.setProperty('--deck-color',f.color);b.setAttribute('aria-label','Изучить колоду «'+f.title+'»: '+f.count+' карт');const img=element('img','');img.src=artPath(CATALOG.find(c=>c.family===f.id).art);img.alt='';b.append(img,element('span','',f.title),element('b','',String(f.count)));b.onclick=()=>open(f.id);stacks.append(b);}
  shelf.append(stacks);field.append(shelf);
  const overlay=element('div','auction-overlay deck-reference');overlay.id='deckReference';overlay.hidden=true;overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-labelledby','deckReferenceTitle');

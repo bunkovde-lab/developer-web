@@ -23,3 +23,6 @@
 .event-card.work-card .event-card-illustration{height:90px}
 @media(max-height:500px){.event-card-illustration{height:70px}.event-card.work-card .event-card-illustration{display:none}}
 .auction-box>.tcg-number,.city-request-box>.tcg-number{color:#f1dfaa;border-bottom-color:#ad945f;margin-bottom:10px}
+
+/* A compact shelf leaves the viewport to the board until the catalog is needed. */
+#deckStacks[hidden]{display:none!important}.deck-shelf-head{gap:6px;flex-wrap:wrap;margin-bottom:0}.deck-shelf-head h2{margin-right:auto}.deck-stacks:not([hidden]){margin-top:6px}.deck-shelf-head #deckShelfToggle{min-height:36px!important}

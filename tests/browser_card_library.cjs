@@ -9,6 +9,12 @@ for(const viewport of [{width:390,height:844},{width:1024,height:768},{width:844
  const catalog=await page.evaluate(()=>({families:DeveloperCardLibrary.families(),cards:DeveloperCardLibrary.catalog(),ring:eventNames.slice()}));
  assert.equal(catalog.ring[8],'Работа');assert.equal(catalog.ring[10],'Налоговая проверка');assert.equal(catalog.cards.length,180);assert.equal(new Set(catalog.cards.map(c=>c.number)).size,180);assert.equal(catalog.families.length,16);
  assert.equal(catalog.cards.filter(c=>c.family==='work').length,24);assert(catalog.cards.every(c=>c.conditions&&c.effect&&c.title));
+ assert.equal(await page.locator('#deckStacks').isHidden(),true,'Decks start collapsed');
+ const collapsedWidth=await page.locator('#board').evaluate(el=>el.getBoundingClientRect().width);
+ await page.locator('#deckShelfToggle').click();await page.waitForFunction(()=>document.querySelector('#deckShelfToggle').getAttribute('aria-expanded')==='true');
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ const expandedWidth=await page.locator('#board').evaluate(el=>el.getBoundingClientRect().width);
+ assert(collapsedWidth>=expandedWidth-1,'Collapsed decks must preserve board area');
  const stateBefore=await page.evaluate(()=>JSON.stringify(state));
  await page.locator('[data-reference-family="work"]').click();assert.equal(await page.locator('#deckReferenceGrid .reference-card').count(),24);
  await page.screenshot({path:`ui-snapshots/card-library-work-${viewport.width}.png`,fullPage:true});
@@ -18,6 +24,10 @@ for(const viewport of [{width:390,height:844},{width:1024,height:768},{width:844
  assert.equal(await page.evaluate(()=>JSON.stringify(state)),stateBefore,'Reference must not alter cash, RNG-dependent deck order or hands');
  await page.locator('[data-hand-type="utilities"]').click();await page.waitForSelector('.tcg-hand-card[data-card-number]');assert.match(await page.locator('.tcg-number').first().innerText(),/ПР-/);await page.locator('#handClose').click();
  await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:`ui-snapshots/card-library-shelf-${viewport.width}.png`,fullPage:true});
+ await page.locator('#deckShelfToggle').click();assert.equal(await page.locator('#deckStacks').isHidden(),true);
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ assert((await page.locator('#board').evaluate(el=>el.getBoundingClientRect().width))>=expandedWidth-1);
+ await page.locator('#deckStudyAll').click();assert.equal(await page.locator('#deckReferenceGrid .reference-card').count(),180);await page.keyboard.press('Escape');assert.equal(await page.locator('#deckStudyAll').evaluate(el=>el===document.activeElement),true);
  assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);await page.close();
 }
 console.log('CARD LIBRARY PASSED: 16 public families, 180 stable numbers, tax cell 11, real hand cards, no state changes');
