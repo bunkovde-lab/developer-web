@@ -17,7 +17,7 @@ const counters={renderPasses:0,emitted:0,animations:0,cancelled:0,errors:0};
 const eventNamesSafe=new Set(['lot:acquired','lot:released','build:stage','card:received','card:played','move','move:arrived','money','win','auction:start','auction:result','deal','lease']);
 const labels=['▫','📐','📑','🏗','🏢'];
 const deckKeys=new Set(['utilities','permits','construction','commissioning','network','investor','tenant','buyer']);
-function urlFor(key){return Object.prototype.hasOwnProperty.call(manifest,key)?manifest[key]:null;}
+function urlFor(key){return Object.prototype.hasOwnProperty.call(manifest,key)?manifest[key]+(key.startsWith('track.')?'?design=3':''):null;}
 function duration(ms){return Math.max(1,Math.round(ms*DURATION[mode]));}
 function assetCard(card){
  if(!card)return null;
@@ -185,6 +185,7 @@ function moveToken(player,from,to,total){
  piece.className='scene-moving-token';piece.dataset.player=String(player);
  piece.setAttribute('aria-hidden','true');
  piece.style.background=(typeof colors!=='undefined'?colors[player]:['#f1bf65','#68d9b5','#e77ca6','#82aefe','#c48ff4','#ff846d'][player%6]);
+ piece.style.backgroundImage='url(assets/svg/premium/pawn-'+(player+1)+'.svg)';
  piece.style.left=points[0].x+'px';piece.style.top=points[0].y+'px';
  // Anchor to the persistent game field: scroll remains aligned with the board,
  // and core board.innerHTML replacements cannot remove the travelling pawn.
@@ -276,7 +277,7 @@ function paint(){
    slots.forEach((el,i)=>{
     const lot=state.plots[i];if(!lot)return;
     const stage=lot.project?.stage||0,zone=String(lot.zone||'').toLowerCase();
-    const key=lot.owner<0?'lot.'+String(i+1).padStart(2,'0'):stage===4?'building.'+zone:'stage.'+stage;
+    const key=lot.owner<0&&!lot.cityOwned?'lot.'+String(i+1).padStart(2,'0'):stage===4?'building.'+zone:(urlFor('premium.stage.'+zone+'.'+stage)?'premium.stage.'+zone+'.'+stage:'stage.'+stage);
     const stageNode=el.querySelector('.plot-stage');
     const parcel=urlFor('lot.'+String(i+1).padStart(2,'0'));
     const tileArt=urlFor(key)||parcel;
@@ -437,7 +438,7 @@ controls();
 window.addEventListener('resize',()=>{if(activeMoves.size)cleanup();},{passive:true});
 window.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener?.('change',event=>{if(event.matches)cleanup();});
 if(typeof state!=='undefined'&&state?.players){previous=read();previousSession=state;schedulePaint();}
-fetch('assets/svg/manifest.json',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error('No SVG library');return r.json()}).then(data=>{
+fetch('assets/svg/manifest.json?v=20001',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error('No SVG library');return r.json()}).then(data=>{
  if(!data||data.version!==1||!data.assets||typeof data.assets!=='object')throw Error('Invalid SVG manifest');
  for(const [key,path]of Object.entries(data.assets)){
   if(typeof path==='string'&&/^assets\/svg\/[a-z0-9/_-]+\.svg$/.test(path)&&!path.includes('..'))manifest[key]=path;

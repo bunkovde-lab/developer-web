@@ -1,0 +1,28 @@
+:root{--playing-card-width:320px;--playing-card-height:480px}
+/* The complete framed artwork follows each rectangular track cell. */
+.board:not(.zoom-map){overflow:hidden!important}
+.board .cell.scene-full-track{background-size:100% 100%!important;contain:layout paint;box-sizing:border-box!important}
+.board>.city-map{box-sizing:border-box!important}
+.engraved-icon{display:inline-block;width:25px;height:25px;object-fit:contain;vertical-align:middle;margin-right:8px;flex-shrink:0}
+.hand-dock-title strong{display:flex;align-items:center}.hand-dock-title .engraved-icon{width:23px;height:27px}
+#sessionOverlay .auction-box{border:2px solid #bca16b!important;background:linear-gradient(135deg,#213744,#091b27)!important}
+#sessionOverlay button .engraved-icon{width:23px;height:25px}#sessionOverlay .lobby-slots>div{display:flex;align-items:center}
+/* A single physical format for reference, hand, revealed and land cards. */
+.deck-reference-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--playing-card-width)),var(--playing-card-width)))!important;justify-content:center;align-items:start}
+.reference-card,#handGroups .tcg-hand-card,#cardOverlay .event-card,#plotCardOverlay .plot-card{box-sizing:border-box!important;width:var(--playing-card-width)!important;max-width:calc(100vw - 24px)!important;height:var(--playing-card-height)!important;max-height:calc(100dvh - 28px)!important;min-height:0!important;min-width:0!important;border:2px solid #c4a76d!important;border-radius:12px!important}
+.reference-card{display:flex;flex-direction:column}.reference-card-art{height:125px!important;flex-shrink:0;object-fit:cover}.reference-card-copy{overflow-y:auto;flex:1;min-height:0}.reference-card-foot,.reference-card-head{flex-shrink:0}
+#handGroups .tcg-hand-card{overflow-y:auto!important;flex-shrink:0}#handGroups .hand-stack{justify-items:center}#handGroups .tcg-hand-card .scene-card-art{height:125px!important;min-height:125px!important;flex-shrink:0}
+#cardOverlay .event-card{overflow-y:auto!important;padding:14px!important;position:relative}#cardOverlay .event-card.card-face-down{overflow:hidden!important}#cardOverlay .event-card .event-card-illustration{height:125px!important;object-fit:cover}#cardOverlay .event-card h2{font-size:21px!important}#cardOverlay .event-card p,#cardOverlay .event-card .effect{font-size:12px!important;line-height:1.45!important}
+#plotCardOverlay .plot-card{padding:12px!important;overflow-y:auto!important;background:linear-gradient(145deg,#f4e7c8,#d6c194)!important;color:#233b45!important;box-shadow:inset 0 0 0 3px #fff5,0 20px 60px #0009!important}
+#plotCardOverlay .pc-top{align-items:center;border-bottom:2px solid #ab8a4d;padding-bottom:7px}#plotCardOverlay h2{font-size:22px!important;color:#213a47!important;margin:0!important}#plotCardOverlay .pc-top button{width:36px;min-height:36px;padding:0;flex-shrink:0}
+#plotCardHero{width:100%;height:115px;object-fit:cover;display:block;margin:9px 0;border:1px solid #b39b64;border-radius:5px}
+#plotCardOverlay .pc-sub{font-size:11px;line-height:1.5;color:#40545a;margin:6px 0 10px}
+#plotCardOverlay .pc-projects{display:flex!important;flex-direction:column!important;gap:8px!important;align-items:stretch!important}
+#plotCardOverlay .pc-project,#plotCardOverlay .pc-buy-land{padding:9px!important;border:1px solid #b49a61!important;background:#ffffff29!important;border-radius:5px!important;box-shadow:none!important;min-height:0!important}
+#plotCardOverlay .pc-project strong{color:#213b47!important;font-family:Georgia,serif;font-size:17px}#plotCardOverlay .pc-project p{margin:7px 0;font-size:11px;line-height:1.45}#plotCardOverlay .pc-buy-land p{font-size:11px;line-height:1.45;margin:0 0 7px}
+#plotCardOverlay .pc-strategy{display:flex!important;flex-wrap:wrap;align-items:center;gap:5px;padding:8px 0!important;border:0!important;border-top:1px solid #a68e59!important;border-radius:0!important;background:transparent!important;color:#2d4851!important;font-size:11px;min-height:0!important}
+#plotCardOverlay .pc-strategy small{width:100%;font-size:9px;letter-spacing:.05em}.pc-strategy span{padding:4px 6px;background:#173644;color:#f5e6c1;border-radius:3px}
+#plotCardOverlay .pc-foot{font-size:9px;line-height:1.4;color:#5c624e;border-top:1px solid #b69d66;padding-top:7px;margin-top:8px}
+@media(max-width:600px){.deck-reference-grid{max-width:none!important}.hand-groups{grid-template-columns:1fr!important}}
+
+#auctionError{font-size:12px;line-height:1.5;margin:8px 0;padding:8px;border:1px solid #8b805d;border-radius:5px;color:#e8dbb9}#auctionError[data-invalid="true"]{background:#502a28;color:#ffe1c3;border-color:#d69775}#auctionBid[aria-invalid="true"]{border:2px solid #df9c77!important}

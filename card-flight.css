@@ -1,0 +1,5 @@
+.card-face-down{position:relative;min-height:min(460px,75dvh)!important;min-width:min(310px,78vw);perspective:900px}
+.card-face-down>:not(.card-back-reveal){visibility:hidden!important;pointer-events:none!important}
+.card-back-reveal{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;padding:0!important;border:0!important;overflow:hidden;background:#112b39!important;cursor:pointer}
+.card-back-reveal img{width:100%;height:100%;object-fit:fill;display:block}.card-back-reveal span{position:absolute;bottom:8%;left:5%;right:5%;padding:10px 5px;background:#071c2bea;color:#f7e4ad;font-size:14px;letter-spacing:.04em}
+.card-travel-ghost{position:fixed;z-index:20000;pointer-events:none;transform-origin:top left;overflow:hidden;border-radius:12px;box-shadow:0 12px 35px #0008}.card-travel-ghost img{width:100%;height:100%;object-fit:fill}

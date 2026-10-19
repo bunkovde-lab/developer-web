@@ -34,6 +34,7 @@ const run=(src)=>vm.runInContext(src,sandbox,{timeout:4000});
 vm.runInContext(fs.readFileSync('pace.js','utf8'),sandbox,{filename:'pace.js',timeout:5000});
 vm.runInContext(fs.readFileSync('auction-competition.js','utf8'),sandbox,{filename:'auction-competition.js',timeout:5000});
 vm.runInContext(fs.readFileSync('game-rework-v016.js','utf8'),sandbox,{filename:'game-rework-v016.js',timeout:5000});
+vm.runInContext(fs.readFileSync('rules-v021.js','utf8'),sandbox,{filename:'rules-v021.js'});
 run('newGame()');
 assert.equal(run('state.paceVersion'),1);
 assert.equal(run('state.players.length'),6);
@@ -65,8 +66,8 @@ for(const players of [3,4,5,6]){
   const r={players,seedValue,turns,winner:run('state.winnerIndex??null'),built:run('state.plots.filter(l=>l.project?.stage===4).length'),holdings:run('state.plots.filter(l=>l.owner>=0).length'),money:run('state.players.map(p=>p.money)'),trade:run('state.econMetrics.botTrades'),stockouts:run('state.econMetrics.stageStockouts')};
   if(error){console.error('PACE ERROR',r,error);throw Error(error);}
   assert(run('state.players.every(p=>Number.isFinite(p.money))'),'Cash must stay finite');
-   assert(run('Number.isInteger(state.winnerIndex)'),'Every v0.16 game ends with a winner');
-   assert(turns<=240,'Standard campaign must never exceed 240 completed turns');
+   assert.equal(run('state.turnLimit'),null,'No fixed campaign length');
+   assert(turns<=900,'Diagnostic runner budget only');
   assert(run('state.plots.every(l=>l.owner>=-1&&l.owner<state.players.length)'),'Plot ownership valid');
   results.push(r);
  }

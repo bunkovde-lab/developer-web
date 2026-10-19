@@ -156,7 +156,7 @@ console.log('EXTENDED FINANCING TESTS PASSED: sale, swap, two actions, investor 
 vm.runInContext(fs.readFileSync('marketplace.js','utf8'),sandbox,{filename:'marketplace.js',timeout:4000});
 run('newGame();state.rolled=true;state.turn=0;state.players[0].pos=7;state.players[0].cards.push({id:1501,deck:"permits",index:1});state.players[1].cards.push({id:1502,deck:"utilities",index:3});state.players[1].networkCards.push({id:1503,type:"gas"});state.players[2].marketCards.push({id:1504,type:"buyer",card:{percent:115}});');
 run('openTradeMarket()');
-assert.equal(run('marketplaceGetOffers().length'),1,'Deal cell lists construction cards only');
+assert.equal(run('marketplaceGetOffers().length'),3,'All card categories are available on Deal');
 assert(run('document.getElementById("marketListings").innerHTML.includes("Проектирование")'));
 run('marketSelectRemote(1,1502)');
 assert.equal(run('marketCommit()'),true);
@@ -168,13 +168,13 @@ run('marketSelectRemote(1,1531)');
 assert.equal(run('marketCommit()'),true);
 assert(run('state.players[0].networkCards.some(c=>c.id===1531)'));
 run('closeTradeMarket();newGame();state.rolled=true;state.players[0].pos=3;state.players[1].marketCards.push({id:1561,type:"tenant",card:{percent:110}});state.players[2].cards.push({id:1562,deck:"construction",index:0});openTradeMarket()');
-assert.equal(run('marketplaceGetOffers().length'),1,'Market cell lists investor, buyer and tenant');
+assert.equal(run('marketplaceGetOffers().length'),2,'Market also includes construction cards');
 run('marketSelectRemote(1,1561)');
 assert.equal(run('marketCommit()'),true);
 assert(run('state.players[0].marketCards.some(c=>c.id===1561)'));
 run('closeTradeMarket();state.players[0].pos=2;openTradeMarket()');
 assert.equal(run('marketCommit()'),false,'Trading forbidden on Work square');
-console.log('MARKETPLACE RULES PASSED: card types strictly scoped to landing squares');
+console.log('MARKETPLACE RULES PASSED: all categories and one trade per turn');
 
 run('closeTradeMarket();newGame();state.rolled=true;state.plots[0].owner=0;state.players[0].money=5000;state.players[0].marketCards.push({id:8701,type:"investor",card:{investment:200,share:20}});');
 assert.equal(run('applyInvestorCard(8701,0)'),true);

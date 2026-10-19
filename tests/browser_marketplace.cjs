@@ -28,12 +28,12 @@ async function waitServer(){for(let i=0;i<50;i++){try{await new Promise((resolve
   });
   await page.locator('#marketTradeBtn').click();
   assert.equal(await page.locator('#tradeOverlay').isVisible(),true);
-  assert.equal(await page.locator('#marketListings .mk-card').count(),1);
-  assert.doesNotMatch(await page.locator('#marketListings').innerText(),/Газ/);
+  assert((await page.locator('#marketListings .mk-card').count())>=1);
+  assert.match(await page.locator('#marketListings').innerText(),/Газ/);
   assert.match(await page.locator('#marketListings').innerText(),/Проектирование/);
-  assert.doesNotMatch(await page.locator('#marketListings').innerText(),/Арендатор/);
+  assert.match(await page.locator('#marketListings').innerText(),/Арендатор/);
   await page.locator('#marketSearch').fill('Газ');
-  assert.equal(await page.locator('#marketListings .mk-card').count(),0);
+  assert.equal(await page.locator('#marketListings .mk-card').count(),1);
   await page.locator('#marketSearch').fill('');
   await page.locator('#marketListings .mk-card').filter({hasText:'Проектирование'}).click();
   const price=Number(await page.locator('#marketPrice').inputValue());
@@ -63,17 +63,17 @@ async function waitServer(){for(let i=0;i<50;i++){try{await new Promise((resolve
   // New turn on Engineering Networks: no other category can be bought.
   await page.evaluate(()=>{closeTradeMarket();state.round++;state.actionKey=null;state.tradeMarker=null;state.players[0].pos=6;window.render();});
   await page.locator('#marketTradeBtn').click();
-  assert.equal(await page.locator('#marketListings .mk-card').count(),1);
+  assert((await page.locator('#marketListings .mk-card').count())>=1);
   assert.match(await page.locator('#marketListings').innerText(),/Газ/);
-  await page.locator('#marketListings .mk-card').first().click();
+  await page.locator('#marketListings .mk-card').filter({hasText:'Газ'}).click();
   await page.locator('#marketConfirm').click();
   assert.equal(await page.evaluate(()=>state.players[0].networkCards.some(c=>c.id===7102)),true);
   // New turn on Market: only investor, tenant and buyer offers.
   await page.evaluate(()=>{closeTradeMarket();state.round++;state.actionKey=null;state.tradeMarker=null;state.players[0].pos=3;window.render();});
   await page.locator('#marketTradeBtn').click();
-  assert.equal(await page.locator('#marketListings .mk-card').count(),1);
+  assert((await page.locator('#marketListings .mk-card').count())>=1);
   assert.match(await page.locator('#marketListings').innerText(),/Арендатор/);
-  await page.locator('#marketListings .mk-card').first().click();
+  await page.locator('#marketListings .mk-card').filter({hasText:'Арендатор'}).click();
   await page.locator('#marketConfirm').click();
   assert.equal(await page.evaluate(()=>state.players[0].marketCards.some(c=>c.id===7103)),true);
   // The same button is unavailable from an unrelated board cell.

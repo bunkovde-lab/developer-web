@@ -41,7 +41,7 @@ function labelGeometry(){
    assert.deepEqual(await page.evaluate(labelGeometry),[],'Compact metadata must not overlap');
    assert.equal(await page.locator('.plot-type').count(),24,'One HTML zone per parcel');
    const crop=await page.locator('.map-plot').first().evaluate(e=>getComputedStyle(e,'::before').backgroundSize);
-   assert.equal(crop,'114.286% 152.381%','Legacy SVG captions/frames cropped from architectural view');
+   assert.equal(crop,'100% 100%','Premium 384×320 artwork fills its own parcel; metadata remains dynamic DOM');
    await page.screenshot({path:out+'/work-'+width+'.png',fullPage:true});
    await page.locator('.hand-quick-item[data-hand-type="utilities"]').click();
    const cards=await page.locator('#handGroups .hand-card').count();assert(cards>0);
@@ -84,8 +84,8 @@ function labelGeometry(){
    await page.close();
   }
   const page=await browser.newPage({viewport:{width:390,height:844}});
-  await page.route('**/assets/svg/buildings/stage-1.svg',r=>r.fulfill({status:404,body:'missing'}));
-  await page.route('**/assets/svg/track/track-01-start.svg',r=>r.fulfill({status:404,body:'missing'}));
+  await page.route('**/assets/svg/premium/stage-*-1.svg',r=>r.fulfill({status:404,body:'missing'}));
+  await page.route('**/assets/svg/track/track-01-start.svg*',r=>r.fulfill({status:404,body:'missing'}));
   await page.goto(url,{waitUntil:'networkidle'});await page.waitForFunction(()=>window.DeveloperMotion?.status().assetsReady);
   await page.evaluate(fixture);
   await page.waitForFunction(()=>!document.querySelectorAll('.map-plot')[1].classList.contains('scene-full-parcel'));
