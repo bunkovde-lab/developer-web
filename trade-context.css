@@ -69,39 +69,6 @@
 #propertySaleOverlay .auction-box button{
   min-height:44px;
 }
-/* A side sheet leaves the WEST side of the city map touchable (especially on
-   390px portrait), and its static explanatory copy never intercepts a parcel. */
-#landSelectOverlay .auction-box{pointer-events:none}
-#landSelectOverlay .auction-box button,
-#landSelectOverlay .auction-box input,
-#landSelectOverlay .auction-box select,
-#landSelectOverlay .auction-city-map{pointer-events:auto}
-#landSelectOverlay .auction-city-map{
-  max-height:min(23dvh,210px);
-  overflow:auto;
-  scrollbar-width:thin;
-  border:1px solid #789a9c66;
-  border-radius:8px;
-}
-#landSelectOverlay .land-browse{
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:4px;
-}
-#landSelectOverlay .land-option{
-  min-height:58px;
-}
-#landSelectOverlay .land-option b,
-#landSelectOverlay .land-option strong{
-  font-size:clamp(9px,.8vw,12px);
-}
-#landSelectionInfo{
-  padding:8px 9px;
-  margin:8px 0;
-  border-left:3px solid #dbb36e;
-  background:#0a2037;
-  color:#eff5fa;
-  line-height:1.45;
-}
 #board[data-auction-picking='true'] .map-plot{
   cursor:crosshair;
 }
@@ -156,31 +123,45 @@
   #propertySaleOverlay .auction-box{
     max-height:46dvh;
   }
-  /* Keep the live 660px-wide city scroll area tappable above the short picker.
-     The picker itself scrolls independently; primary actions stay docked. */
-  /* A top floating drawer leaves the actual land grid beneath it tappable.
-     Bottom anchoring obscured every parcel after the action cabinet was scrolled into view. */
-  #landSelectOverlay:not([hidden]){
-    width:min(43vw,210px);
-    inset:max(4px,env(safe-area-inset-top)) 6px auto auto;
-  }
-  #landSelectOverlay .auction-box{max-height:70dvh}
-  #landSelectOverlay .auction-box h2{font-size:13px}
-  #landSelectOverlay .auction-city-map{display:block;max-height:12dvh;overflow:auto}
-  #landSelectOverlay .auction-box p{font-size:11px;line-height:1.25}
-  #landSelectOverlay .land-selection-actions{display:grid;grid-template-columns:1fr;gap:5px}
-  #landSelectOverlay .land-selection-actions button{font-size:11px;padding:7px 4px}
-  #landSelectOverlay .auction-box .pc-top button{min-width:44px}
-  #landSelectOverlay .auction-city-map{max-height:10dvh}
-  #landSelectOverlay .land-selection-actions{
-    position:sticky;
-    bottom:-10px;
-    z-index:2;
-    padding:7px 0 3px;
-    background:#132c42;
-    border-top:1px solid #658b90;
-  }
+  /* Direct city selection uses the existing main board, never a cloned map. */
 }
 @media(prefers-reduced-motion:reduce){
   #board .map-plot.auction-target{transition:none!important}
+}
+
+/* The auction chooser is only an instruction + action dock. All 24 land
+   tiles remain part of the actual city, clickable behind the compact dock. */
+#landSelectOverlay:not([hidden]){
+  width:min(300px,calc(100vw - 18px));
+  inset:auto max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) auto;
+}
+#landSelectOverlay .auction-box{
+  /* Transparent hit testing: the floating instructions must never eat a plot tap. */
+  pointer-events:none;
+  max-height:min(48dvh,345px);
+  padding:13px;
+}
+#landSelectOverlay .land-selection-actions button,
+#landSelectOverlay .pc-top button{pointer-events:auto;}
+#landSelectOverlay .pc-top{display:flex;gap:6px;align-items:center;justify-content:space-between}
+#landSelectOverlay .pc-top h2{font-size:clamp(14px,1.35vw,18px);line-height:1.25;margin:0}
+#landSelectOverlay .pc-top button{min-width:44px;min-height:44px;padding:7px 11px;flex:0 0 auto}
+#landSelectOverlay .land-direct-hint{font-size:12px;line-height:1.45;margin:8px 0;color:#d4e9ed}
+#landSelectOverlay .land-selection-info{font-size:12px;line-height:1.5}
+#landSelectOverlay .land-selection-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;position:static;padding:0;background:none;border:0}
+#landSelectOverlay .land-selection-actions button{font-size:12px;min-height:44px;min-width:0;padding:8px}
+#landSelectOverlay #landBidStart:disabled{opacity:.55}
+#board[data-auction-picking='true'] .map-plot[data-status='free']{cursor:pointer}
+#board[data-auction-picking='true'] .map-plot[data-status='free']:focus-visible{outline:3px solid #f8df97}
+@media(max-width:560px) and (orientation:portrait){
+ #landSelectOverlay:not([hidden]){
+   inset:max(6px,env(safe-area-inset-top)) 6px auto auto;
+   width:min(225px,56vw);
+ }
+ #landSelectOverlay .auction-box{max-height:45dvh;padding:9px}
+ #landSelectOverlay .pc-top h2{font-size:13px}
+ #landSelectOverlay .land-direct-hint{font-size:11px;line-height:1.3}
+ #landSelectOverlay .land-selection-actions{grid-template-columns:1fr;gap:3px}
+ #landSelectOverlay .land-selection-actions button{font-size:11px;padding:5px;min-height:38px}
+ #landSelectOverlay .land-selection-info{font-size:11px;padding:6px;margin:6px 0}
 }
