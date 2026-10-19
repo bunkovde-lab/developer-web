@@ -3,11 +3,11 @@
 const clean=s=>s.replace(/[\p{Extended_Pictographic}\uFE0F\u200D\u20E3]/gu,'').replace(/^[\s☰●⚠]+/,'').trimStart();
 const icon=(name)=>'assets/svg/ui/engraved-'+name+'.svg';
 function decorate(){
- const scope=document.querySelectorAll('#sessionOverlay button,#sessionOverlay h2,#lobbySlots>div,.hand-dock-title strong,#handDialogTitle,#plotCardTitle,#plotCardProjects b,#plotCardProjects button,#plotCardProjects strong');
+ const scope=document.querySelectorAll('#sessionOpen,#sessionOverlay button,#sessionOverlay h2,#lobbySlots>div,.hand-dock-title strong,#handDialogTitle,#plotCardTitle,#plotCardProjects b,#plotCardProjects button,#plotCardProjects strong');
  for(const n of scope){for(const t of [...n.childNodes])if(t.nodeType===3){const s=clean(t.textContent);if(s!==t.textContent)t.textContent=s;}}
- for(const n of document.querySelectorAll('.hand-dock-title strong,#handDialogTitle,#sessionTitle,#sessionOverlay button:not(.profession-choice),#lobbySlots>div')){
+ for(const n of document.querySelectorAll('.hand-dock-title strong,#handDialogTitle,#sessionOpen,#sessionTitle,#sessionOverlay button:not(.profession-choice),#lobbySlots>div')){
   if(n.querySelector('.engraved-icon'))continue;
-  const action=n.getAttribute('onclick')||'',name=n.id==='v10Sound'?'sound':action.includes('save(')?'save':action.includes('load(')?'load':n.id==='continueGame'?'play':action.includes('startLobby')?'city':n.closest('#lobbySlots')?'players':n.id==='sessionTitle'?'menu':n.closest('#sessionOverlay')?'city':'cards';
+  const action=n.getAttribute('onclick')||'',name=n.id==='v10Sound'?'sound':action.includes('save(')?'save':action.includes('load(')?'load':n.id==='continueGame'?'play':action.includes('startLobby')?'city':n.closest('#lobbySlots')?'players':['sessionTitle','sessionOpen'].includes(n.id)?'menu':n.closest('#sessionOverlay')?'city':'cards';
   const img=document.createElement('img');img.className='engraved-icon';img.alt='';img.src=icon(name);n.prepend(img);
  }
 }
