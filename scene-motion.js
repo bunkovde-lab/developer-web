@@ -11,9 +11,10 @@ const reduced=()=>!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matc
 const enabled=()=>mode!=='off'&&!reduced();
 let manifest=Object.create(null),assetsReady=false;
 let previous=null,previousSession=null,observer=null,painting=false,paintScheduled=false;
+let arrivalGate=null; // Presentation-only delay: keep an event dialog hidden until the moving pawn lands.
 const animations=new Set(),ghosts=new Set(),activeMoves=new Map();
 const counters={renderPasses:0,emitted:0,animations:0,cancelled:0,errors:0};
-const eventNamesSafe=new Set(['lot:acquired','lot:released','build:stage','card:received','card:played','move','money','win','auction:start','auction:result','deal','lease']);
+const eventNamesSafe=new Set(['lot:acquired','lot:released','build:stage','card:received','card:played','move','move:arrived','money','win','auction:start','auction:result','deal','lease']);
 const labels=['▫','📐','📑','🏗','🏢'];
 const deckKeys=new Set(['utilities','permits','construction','commissioning','network','investor','tenant','buyer']);
 function urlFor(key){return Object.prototype.hasOwnProperty.call(manifest,key)?manifest[key]:null;}
@@ -69,6 +70,17 @@ function watchAnimation(node,frames,opt){
   a.finished.catch(()=>{}).finally(()=>animations.delete(a));
  }catch{counters.errors++;}
 }
+function releaseArrival(visualize=true){
+ const gate=arrivalGate;
+ if(!gate)return;
+ arrivalGate=null;
+ document.documentElement.classList.remove('scene-awaiting-arrival');
+ if(gate.watchdog)clearTimeout(gate.watchdog);
+ if(visualize&&state===gate.session){
+  emit('move:arrived',{player:gate.player,to:state.players[gate.player]?.pos});
+  for(const [label,kind,key] of gate.notices)triggerToast(label,kind,key);
+ }
+}
 function cleanup(){
  // Never leave a destination token invisible after Skip, new game or a resize.
  activeMoves.clear();
@@ -79,9 +91,15 @@ function cleanup(){
  document.querySelectorAll('.scene-token-in-flight').forEach(el=>el.classList.remove('scene-token-in-flight'));
  counters.cancelled++;
  document.querySelectorAll('.scene-toast,.scene-cash-delta,.scene-dice-pair').forEach(x=>x.remove());
+ // Skip/off reveals the pending card immediately; a new game discards old feedback.
+ releaseArrival(true);
 }
 function triggerToast(label,kind='info',key){
  if(!enabled())return;
+ if(arrivalGate&&arrivalGate.session===state){
+  arrivalGate.notices.push([label,kind,key]);
+  return;
+ }
  let host=$('sceneNotices');
  if(!host){host=document.createElement('div');host.id='sceneNotices';host.setAttribute('role','presentation');(document.querySelector('.game-field')||document.body).appendChild(host);}
  if(host.children.length>=2)host.firstElementChild.remove();
@@ -143,6 +161,7 @@ function finishMove(player,move){
  if(activeMoves.get(player)===move){
   activeMoves.delete(player);
   maskMovingTokens();
+  if(arrivalGate?.session===move.session&&arrivalGate.player===player)releaseArrival();
  }
 }
 function moveToken(player,from,to,total){
@@ -175,7 +194,7 @@ function moveToken(player,from,to,total){
   const animation=piece.animate(keyframes,{
    duration:duration(count*165),easing:'linear',fill:'forwards'
   });
-  const move={piece,animation,to,session:state};
+  const move={piece,animation,to,session:state,time:duration(count*165)};
   activeMoves.set(player,move);animations.add(animation);counters.animations++;
   maskMovingTokens();
   animation.finished.catch(()=>{}).finally(()=>finishMove(player,move));
@@ -360,12 +379,46 @@ function controls(){
  host.appendChild(panel);
 }
 window.DeveloperMotion=Object.freeze({
- status:()=>({...counters,mode,reduced:reduced(),assetsReady,assetCount:Object.keys(manifest).length,activeAnimations:animations.size,activeGhosts:ghosts.size,movingPlayers:activeMoves.size}),
+ status:()=>({...counters,mode,reduced:reduced(),assetsReady,assetCount:Object.keys(manifest).length,activeAnimations:animations.size,activeGhosts:ghosts.size,movingPlayers:activeMoves.size,awaitingArrival:!!arrivalGate,pendingNotices:arrivalGate?.notices.length||0}),
  setMode:v=>{if(!(v in DURATION))return false;mode=v;try{localStorage.setItem(storageKey,v)}catch{}if(mode==='off')cleanup();document.querySelectorAll('#sceneControls [data-mode]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.mode===mode)));return true;},
  skip:cleanup,refresh:()=>{cycle();paint();}
 });
 const original=window.render;
 window.render=function(){const result=original.apply(this,arguments);cycle();return result;};
+// The engine resolves dice, salary, deck cards and auctions synchronously.
+// Hide only the public *presentation* while the real pawn travels. This avoids
+// changing random draws, player finance, bot deadlines or saved game structure.
+const originalRoll=window.roll;
+window.roll=function(){
+ const session=typeof state!=='undefined'?state:null;
+ const player=session?.turn;
+ const actor=session?.players?.[player];
+ if(!enabled()||!actor||actor.bot||session.rolled||session.pendingCard||
+    session.auction||session.constructionDeckChoice||Number.isInteger(session.winnerIndex))
+  return originalRoll.apply(this,arguments);
+ const from=actor.pos;
+ if(arrivalGate)releaseArrival(false);
+ const gate={session,player,from,notices:[],watchdog:null};
+ arrivalGate=gate;
+ // CSS is applied before the engine opens any card, auction or job dialog.
+ document.documentElement.classList.add('scene-awaiting-arrival');
+ let result;
+ try{result=originalRoll.apply(this,arguments)}
+ catch(error){if(arrivalGate===gate)releaseArrival(false);throw error;}
+ const move=activeMoves.get(player);
+ if(arrivalGate===gate){
+  if(state!==session||!session.rolled||actor.pos===from||!move||move.session!==session)
+   releaseArrival(false);
+  else{
+   gate.watchdog=window.setTimeout(()=>{
+    if(arrivalGate!==gate)return;
+    if(activeMoves.get(player)===move){move.animation?.cancel();finishMove(player,move);}
+    else releaseArrival();
+   },move.time+450);
+  }
+ }
+ return result;
+};
 const board=$('board');
 if(board&&typeof MutationObserver!=='undefined'){
  observer=new MutationObserver(records=>{
@@ -376,6 +429,7 @@ if(board&&typeof MutationObserver!=='undefined'){
 controls();
 // Recompute the route on the next actual move if the viewport geometry changes.
 window.addEventListener('resize',()=>{if(activeMoves.size)cleanup();},{passive:true});
+window.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener?.('change',event=>{if(event.matches)cleanup();});
 if(typeof state!=='undefined'&&state?.players){previous=read();previousSession=state;schedulePaint();}
 fetch('assets/svg/manifest.json',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error('No SVG library');return r.json()}).then(data=>{
  if(!data||data.version!==1||!data.assets||typeof data.assets!=='object')throw Error('Invalid SVG manifest');
