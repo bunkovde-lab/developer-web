@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id),overlay=$('cardOverlay'),root=overlay?.q
 if(!root)return;
 let shown=null,flight=null,cover=null,family='individual';
 const motion=()=>{const s=window.DeveloperMotion?.status();return s?.mode!=='off'&&!matchMedia('(prefers-reduced-motion: reduce)').matches;};
-const back=f=>'assets/svg/cards/backs/'+f+'.svg';
+const back=f=>'assets/svg/cards/backs/'+f.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())+'.svg';
 function familyOf(p){if(p.deck)return p.deck;if(p.workCard)return 'work';const name=eventNames[current().pos];if(name==='Рынок')return current().marketCards?.at(-1)?.type||'investor';return {'Инженерные сети':'network','Кризис':'crisis','Налоговая проверка':'tax','События':'individual'}[name]||'individual';}
 function anchor(f,hand=false){const n=document.querySelector(hand?'[data-hand-type="'+f+'"]':'[data-reference-family="'+f+'"]');return n&&n.getClientRects().length?n:$(hand?'handQuick':'deckShelf')||document.querySelector(hand?'.hand-dock':'.game-field');}
 function travel(node,from,to,duration){if(!from||!to||!motion())return Promise.resolve();const a=from.getBoundingClientRect(),b=to.getBoundingClientRect();return node.animate([{transform:`translate(${a.x-b.x}px,${a.y-b.y}px) scale(${Math.max(.05,a.width/b.width)},${Math.max(.05,a.height/b.height)}) rotate(-9deg)`,opacity:.4},{transform:'translate(0,0) scale(1) rotate(0)',opacity:1}],{duration,easing:'cubic-bezier(.2,.8,.2,1)'}).finished.catch(()=>{});}
