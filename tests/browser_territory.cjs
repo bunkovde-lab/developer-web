@@ -23,10 +23,10 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    assert.match(await page.locator('.map-key').innerText(),/Особые/);
    await page.locator('#buy').click();
    assert.equal(await page.locator('#landSelectOverlay').isVisible(),true,'Auction chooser should open');
-   assert.equal(await page.locator('.land-option').count(),24);
-   assert.equal(await page.locator('.land-option[data-zone="UNIQUE"]').count(),2);
-   assert.equal(await page.locator('.land-option').first().isVisible(),true);
-   await page.locator('.land-option[data-lot="22"]').click();
+   assert.equal(await page.locator('.land-option').count(),0,'No duplicate city map in auction dialog');
+   assert.equal(await page.locator('#board .map-plot').count(),24);
+   assert.equal(await page.locator('#board .map-plot[data-zone="UNIQUE"]').count(),2);
+   await page.locator('#board .map-plot').nth(22).click();
    assert.match(await page.locator('#landSelectionInfo').innerText(),/Набережная/);
    await page.locator('#landBidStart').click();
    assert.equal(await page.locator('#landSelectOverlay').isHidden(),true);
