@@ -13,6 +13,7 @@ on:
       - 'visual.css'
       - 'scene-motion.js'
       - 'scene-motion.css'
+      - 'board-geometry.css'
       - 'game-rework-v016.js'
       - 'assets/**'
       - 'scripts/build-site.cjs'
