@@ -252,9 +252,16 @@ assets/svg/track/track-29-work.svg
 assets/svg/track/track-30-build.svg
 assets/svg/track/track-31-exchange.svg
 assets/svg/track/track-32-event.svg
+docs/design-v020/HANDOFF.md
+docs/design-v020/QUALITY.md
 docs/design-v020/art-inventory.json
+docs/design-v020/changed-files.txt
+docs/design-v020/engine-invariance.json
 index.html
 premium.css
 premium.js
 scene-motion.js
 scripts/generate-premium-art.py
+tests/browser_living_city.cjs
+tests/browser_premium.cjs
+tests/browser_work_integration.cjs
