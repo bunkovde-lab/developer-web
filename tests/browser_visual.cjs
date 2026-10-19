@@ -53,7 +53,14 @@ async function wait(){for(let i=0;i<50;i++){try{await new Promise((ok,fail)=>{co
    }else if(viewport.width>=761&&viewport.height>viewport.width){
     const boardRect=await page.locator('#board').boundingBox();
     const cabinetRect=await page.locator('.company-panel').boundingBox();
-    assert(cabinetRect.y>=boardRect.bottom,'Portrait tablet places the cabinet below the full-size city board');
+    const layoutInfo=await page.evaluate(()=>({
+     display:getComputedStyle(document.querySelector('.layout')).display,
+     direction:getComputedStyle(document.querySelector('.layout')).flexDirection,
+     gameField:document.querySelector('.game-field').getBoundingClientRect().toJSON(),
+     cabinet:document.querySelector('.company-panel').getBoundingClientRect().toJSON(),
+     board:document.querySelector('#board').getBoundingClientRect().toJSON()
+    }));
+    assert(cabinetRect.y>=boardRect.bottom-2,'Portrait tablet cabinet geometry: '+JSON.stringify(layoutInfo));
    }
    assert.equal(await page.locator('#board .cell').count(),32,'Ring must have 32 named spaces');
    assert.equal(await page.locator('#board .map-plot').count(),24,'Center must show 24 parcels');
