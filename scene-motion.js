@@ -78,6 +78,11 @@ function releaseArrival(visualize=true){
  if(gate.watchdog)clearTimeout(gate.watchdog);
  if(visualize&&state===gate.session){
   emit('move:arrived',{player:gate.player,to:state.players[gate.player]?.pos});
+  for(const selector of ['#cardOverlay','#constructionDeckOverlay','#landSelectOverlay',
+                          '#auctionOverlay','#exchangeOverlay','#auditDecision']){
+   const dialog=document.querySelector(selector);
+   if(dialog&&!dialog.hidden)dialog.classList.add('scene-arrived-dialog');
+  }
   for(const [label,kind,key] of gate.notices)triggerToast(label,kind,key);
  }
 }
@@ -402,6 +407,7 @@ window.roll=function(){
  arrivalGate=gate;
  // CSS is applied before the engine opens any card, auction or job dialog.
  document.documentElement.classList.add('scene-awaiting-arrival');
+ document.querySelectorAll('.scene-arrived-dialog').forEach(x=>x.classList.remove('scene-arrived-dialog'));
  let result;
  try{result=originalRoll.apply(this,arguments)}
  catch(error){if(arrivalGate===gate)releaseArrival(false);throw error;}
