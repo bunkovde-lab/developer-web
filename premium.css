@@ -163,3 +163,6 @@ body>header small{font-size:9px!important}
 @media(orientation:landscape) and (max-height:500px){body>header{padding:4px 10px!important}body>header h1{font-size:22px!important}body>header small{font-size:7px!important}.hand-dock{margin-bottom:4px!important;padding:2px 6px!important}.hand-quick .hand-quick-item{height:33px!important;min-height:33px!important}.hand-quick-icon{height:29px!important}.hand-quick img.premium-deck-cover{height:29px!important;width:19px!important}.wrap{padding:5px 8px!important}.company-panel{max-height:calc(100dvh - 85px)}}
 .board>.cell .tokens:has(.token:nth-child(4)){display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));justify-items:center;bottom:0!important}
 .board>.cell .tokens:has(.token:nth-child(4)) .token{margin:0!important}
+
+/* Fill the full game column; adapt the rectangle to the available screen height. */
+.board:not(.zoom-map){height:var(--premium-fit-height,auto)!important;aspect-ratio:auto!important;box-sizing:border-box!important;flex-shrink:0}

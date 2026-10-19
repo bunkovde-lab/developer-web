@@ -63,8 +63,10 @@ function fitBoard(){
  const shelf=document.getElementById('deckShelf');
  const reserve=shelf&&height>=600?shelf.getBoundingClientRect().height+60:52;
  const available=Math.max(110,height-top-reserve);
- const width=Math.max(200,Math.min(field.clientWidth,available*11/7));
+ const width=field.clientWidth;
+ const fittedHeight=Math.min(available,width*7/11);
  board.style.setProperty('--premium-fit-width',width.toFixed(2)+'px');
+ board.style.setProperty('--premium-fit-height',fittedHeight.toFixed(2)+'px');
 }
 function scheduleFit(){if(fitPending)return;fitPending=true;requestAnimationFrame(fitBoard);}
 window.addEventListener('resize',scheduleFit,{passive:true});

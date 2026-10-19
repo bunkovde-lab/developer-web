@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
 const server=spawn('python3',['-m','http.server','8902','--bind','127.0.0.1'],{stdio:'ignore'});
 const url='http://127.0.0.1:8902/index.html';
 async function ready(){for(let i=0;i<60;i++){try{await new Promise((resolve,reject)=>{const r=http.get(url,x=>{x.resume();resolve();});r.on('error',reject) });return}catch{await new Promise(r=>setTimeout(r,100))}}throw Error('Game server unavailable')}
-const targets=[{width:390,height:844},{width:768,height:1024},{width:1024,height:768},{width:1366,height:900},{width:844,height:390}];
+const targets=[{width:390,height:844},{width:768,height:1024},{width:1024,height:768},{width:1366,height:900},{width:1920,height:920},{width:844,height:390}];
 function expectedTrack(){
  const a=[];for(let c=1;c<=11;c++)a.push([1,c]);
  for(let r=2;r<=7;r++)a.push([r,11]);
@@ -52,7 +52,8 @@ function expectedTrack(){
   assert.equal(geometry.svgTiles,32,'All existing track SVGs are still installed');
   assert.equal(geometry.parcels,24,'All existing parcel SVGs are still installed');
   const ratio=geometry.board.w/geometry.board.h;
-  assert(Math.abs(ratio-11/7)<.055,'Board retains its 11:7 physical aspect ratio ('+ratio+')');
+  assert(ratio>=11/7-.055,'Board can stretch horizontally while preserving the complete route ('+ratio+')');
+  assert(Math.abs(geometry.board.w-geometry.field.w)<2,'Board fills the game column without blank side margins');
   const widths=geometry.cells.map(x=>x.w),heights=geometry.cells.map(x=>x.h);
   assert(Math.min(...widths)>=23&&Math.min(...heights)>=23,'Full-board overview keeps usable visible track footprints; zoom supplies detailed targets: '+Math.min(...widths)+'x'+Math.min(...heights));
   const plotWidths=geometry.plots.map(x=>x.w),plotHeights=geometry.plots.map(x=>x.h);
