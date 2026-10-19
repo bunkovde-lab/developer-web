@@ -175,10 +175,11 @@ window.render=function(...args){
 };
 function attach(){
  if($('workEconomyInfo'))return;
- const panel=document.querySelector('.cabinet-main .stats')||document.querySelector('.company-panel');
+ // Keep the carefully fitted landscape cabinet unchanged; show the ledger in the session menu.
+ const panel=document.querySelector('.menu-options')||document.querySelector('.session-menu');
  if(!panel)return;
  const div=document.createElement('div');div.id='workEconomyInfo';div.className='pill';
- div.style.cssText='grid-column:1/-1;font-size:11px;line-height:1.35';
+ div.style.cssText='font-size:11px;line-height:1.35;margin-top:5px';
  panel.appendChild(div);
 }
 attach();
