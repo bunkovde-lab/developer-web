@@ -32,7 +32,7 @@ function snapshot(){
  return state.plots.map((l,i)=>({index:i,owner:l.owner,stage:l.project?.stage||0,
   support:l.reservedFor,hasProject:!!l.project}));
 }
-function sales(before,strict){
+function sales(before,beforeRevenues){
  const w=ensure();if(!w)return;
  for(const b of before){
   const after=state.plots[b.index];if(!after)continue;
@@ -43,20 +43,22 @@ function sales(before,strict){
   }
   if(b.owner<0||after.owner!==-1)continue;
   const parent=Number.isInteger(b.support)?before[b.support]:b;
-  const credible=(parent?.stage===4||strict);
+  // A finishing investor stage goes from stage 3 straight to an external sale.
+  const realised=(state.players[b.owner]?.saleRevenue||0)>(beforeRevenues[b.owner]||0);
+  const credible=parent?.stage===4||(parent?.stage===3&&realised);
   if(!credible)continue;
   after.workSold=true;
   if(!w.sold.includes(b.index))w.sold.push(b.index);
  }
 }
-function wrapSale(name,strict=false){
+function wrapSale(name){
  const original=window[name];
  if(typeof original!=='function')return;
  window[name]=function(...args){
   if(!active())return original.apply(this,args);
-  const game=state,before=snapshot();
+  const game=state,before=snapshot(),revenues=state.players.map(p=>p.saleRevenue||0);
   const result=original.apply(this,args);
-  if(state===game)sales(before,strict);
+  if(state===game)sales(before,revenues);
   return result;
  };
 }
@@ -144,7 +146,7 @@ window.resolveSpecialCell=function(...args){
 };
 // Wrapper composition: execute the real previous action (including all finance logic),
 // then distinguish true external asset liquidation from transfers and bankruptcies.
-for(const name of ['sell','applyMarketCard','playStageCard','bot','runPropertySale'])wrapSale(name,false);
+for(const name of ['sell','applyMarketCard','playStageCard','bot','runPropertySale'])wrapSale(name);
 const oldNew=window.newGame;
 window.newGame=function(...args){const v=oldNew.apply(this,args);ensure();return v;};
 const oldEnd=window.endTurn;
