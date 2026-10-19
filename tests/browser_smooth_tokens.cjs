@@ -18,8 +18,9 @@ async function online(){for(let i=0;i<60;i++){try{await new Promise((ok,fail)=>{
   const initial=await page.evaluate(()=>({cash:state.players[0].money,plots:state.plots.map(l=>l.owner),round:state.round}));
   // Real source and destination values; economics and dice are *not* replayed by the visual layer.
   const route=await page.evaluate(()=>{
-   const from=state.players[0].pos;state.players[1].pos=5;
-   state.players[0].pos=5;state.dice=5;window.render();
+   const from=state.players[0].pos;
+   DeveloperMotion.setMode('off');state.players[1].pos=5;window.render();
+   DeveloperMotion.setMode('normal');state.players[0].pos=5;state.dice=5;window.render();
    const piece=document.querySelector('.scene-moving-token');
    if(!piece)return null;
    const animation=piece.getAnimations()[0];animation.pause();
