@@ -70,7 +70,41 @@ function decorateHand(){
   });
  });
 }
+
+function decorateEvent(){
+ const pending=state?.pendingCard;let f=null,i=-1;
+ if(pending){
+  if(!pending.special&&pending.deck){f=pending.deck;i=pending.index;}
+  else if(pending.workCard){f='work';i=pending.workCard.lot;}
+  else{
+   const cell=eventNames[current().pos];
+   if(cell==='События'){f='individual';i=SPECIAL_CARDS.individual.indexOf(Number(String(pending.effect||'').match(/[+-]?\d+/)?.[0]));}
+   if(cell==='Кризис'){f='crisis';i=SPECIAL_CARDS.crisis.indexOf(state.crisis?.percent);}
+   if(cell==='Рынок'){
+    const last=current().marketCards?.at(-1);f=last?.type;i=SPECIAL_CARDS[f]?.findIndex(c=>Object.keys(c).every(k=>c[k]===last.card?.[k]));
+   }
+   if(cell==='Инженерные сети'){f='network';i=NETWORK_CARDS.findIndex(c=>String(pending.title||'').includes(c.title));}
+  }
+ }
+ const model=CATALOG.find(c=>c.family===f&&c.index===i),root=$('cardOverlay')?.querySelector('.event-card');
+ if(root){
+  let badge=$('eventCardNumber'),art=$('eventCardIllustration');
+  if(model){
+   root.classList.add('tcg-event-card');
+   if(!badge){badge=element('div','tcg-number');badge.id='eventCardNumber';root.prepend(badge);}
+   if(badge.textContent!==model.number)badge.textContent=model.number;
+   if(!art){art=element('img','event-card-illustration');art.id='eventCardIllustration';art.alt='';root.insertBefore(art,$('cardTitle'));}
+   const path=artPath(model.art);if(art.getAttribute('src')!==path)art.src=path;
+  }else{badge?.remove();art?.remove();root.classList.remove('tcg-event-card');}
+ }
+ const audit=$('auditDecision');if(audit&&!audit.querySelector('.tcg-number')){const badge=element('div','tcg-number','НЛ-01 · НАЛОГОВАЯ ПРОВЕРКА');audit.querySelector('.auction-box')?.prepend(badge);}
+ const active=state?.activeCityRequest,request=$('cityRequestOverlay')?.querySelector('.city-request-box');
+ if(request&&!active)request.querySelector('.tcg-number')?.remove();
+ if(request&&active){let badge=request.querySelector('.tcg-number');if(!badge){badge=element('div','tcg-number');request.prepend(badge);}const text=code('cityRequest',active.index);if(badge.textContent!==text)badge.textContent=text;}
+}
+const oldRender=window.render;window.render=function(){const result=oldRender.apply(this,arguments);if(ready){decorateHand();decorateEvent();}return result;};
+for(const id of ['cardOverlay','cityRequestOverlay']){const n=$(id);if(n)new MutationObserver(decorateEvent).observe(n,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});}
 const groups=$('handGroups');if(groups)new MutationObserver(decorateHand).observe(groups,{childList:true,subtree:true});
-fetch('assets/svg/manifest.json?v=20003').then(r=>r.json()).then(data=>{manifest=data.assets;build();createUI();decorateHand();}).catch(e=>console.warn('Card reference unavailable',e));
+fetch('assets/svg/manifest.json?v=20003').then(r=>r.json()).then(data=>{manifest=data.assets;build();createUI();decorateHand();decorateEvent();}).catch(e=>console.warn('Card reference unavailable',e));
 window.DeveloperCardLibrary=Object.freeze({catalog:()=>CATALOG.map(c=>({...c})),families:()=>FAMILIES.map(f=>({...f})),open,close});
 })();

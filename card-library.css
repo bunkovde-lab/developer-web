@@ -18,3 +18,7 @@
 #handGroups .tcg-hand-card>small{order:3;line-height:1.6;font-size:12px}#handGroups .tcg-hand-card>label{order:4;margin-top:auto;padding-top:10px}#handGroups .tcg-hand-card>button{order:5;margin-top:8px}
 @media(max-width:600px){.deck-stacks{grid-template-columns:repeat(4,minmax(0,1fr))}.deck-reference-box{padding:12px}.deck-reference-grid{grid-template-columns:1fr;max-width:360px;margin:auto}.reference-card-art{height:190px}.deck-stack span{font-size:9px}.deck-reference-box h2{font-size:21px}}
 @media(orientation:landscape) and (max-height:500px){.deck-stacks{grid-template-columns:repeat(8,minmax(0,1fr))}.deck-shelf{padding:4px 6px}.deck-stack{min-height:37px!important;grid-template-columns:18px 1fr}.deck-stack img{width:18px;height:27px}.deck-stack span{font-size:7px}.deck-shelf-head{margin-bottom:3px}.deck-reference-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}.deck-shelf-head button{min-height:25px!important}}
+.event-card.tcg-event-card{border:3px solid #b99c61!important;box-shadow:inset 0 0 0 2px #fff6,0 15px 45px #0009!important;border-radius:12px!important;overflow-y:auto;max-height:94dvh}
+.event-card-illustration{display:block;width:100%;height:120px;object-fit:cover;border:1px solid #ad9766;border-radius:6px;margin:9px 0}
+.event-card.work-card .event-card-illustration{height:90px}
+@media(max-height:500px){.event-card-illustration{height:70px}.event-card.work-card .event-card-illustration{display:none}}
