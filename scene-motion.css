@@ -203,3 +203,26 @@ body.city-zoom-open{overflow:hidden}
 @media(max-width:600px){
  .board.zoom-map .city-lots{grid-template-rows:repeat(8,minmax(116px,1fr))}
 }
+
+/* Arrival-first presentation: the engine may resolve a card immediately, but
+   nothing is revealed visually until the real player's pawn reaches its square.
+   Keeping [hidden] untouched preserves save/restore and existing modal state. */
+html.scene-awaiting-arrival #cardOverlay,
+html.scene-awaiting-arrival #constructionDeckOverlay,
+html.scene-awaiting-arrival #landSelectOverlay,
+html.scene-awaiting-arrival #auctionOverlay,
+html.scene-awaiting-arrival #exchangeOverlay,
+html.scene-awaiting-arrival #auditDecision{
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+@keyframes scene-arrival-card-reveal{
+ from{opacity:0;transform:translateY(18px) scale(.96)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+.scene-arrived-dialog:not([hidden]) > :first-child{
+ animation:scene-arrival-card-reveal 240ms cubic-bezier(.22,.75,.25,1) both;
+}
+@media(prefers-reduced-motion:reduce){
+ .scene-arrived-dialog:not([hidden]) > :first-child{animation:none!important}
+}
