@@ -69,6 +69,13 @@
 #propertySaleOverlay .auction-box button{
   min-height:44px;
 }
+/* A side sheet leaves the WEST side of the city map touchable (especially on
+   390px portrait), and its static explanatory copy never intercepts a parcel. */
+#landSelectOverlay .auction-box{pointer-events:none}
+#landSelectOverlay .auction-box button,
+#landSelectOverlay .auction-box input,
+#landSelectOverlay .auction-box select,
+#landSelectOverlay .auction-city-map{pointer-events:auto}
 #landSelectOverlay .auction-city-map{
   max-height:min(23dvh,210px);
   overflow:auto;
@@ -126,6 +133,11 @@
     max-height:51dvh;
     padding:10px 12px;
   }
+  #landSelectOverlay:not([hidden]){
+    width:min(43vw,330px);
+    right:6px;
+  }
+  #landSelectOverlay .auction-box{max-height:64dvh}
   #landSelectOverlay .auction-city-map{max-height:15dvh}
 }
 @media(max-width:560px) and (orientation:portrait){
@@ -149,9 +161,16 @@
   /* A top floating drawer leaves the actual land grid beneath it tappable.
      Bottom anchoring obscured every parcel after the action cabinet was scrolled into view. */
   #landSelectOverlay:not([hidden]){
+    width:min(43vw,210px);
     inset:max(4px,env(safe-area-inset-top)) 6px auto auto;
   }
-  #landSelectOverlay .auction-box{max-height:24dvh}
+  #landSelectOverlay .auction-box{max-height:70dvh}
+  #landSelectOverlay .auction-box h2{font-size:13px}
+  #landSelectOverlay .auction-city-map{display:none}
+  #landSelectOverlay .auction-box p{font-size:11px;line-height:1.25}
+  #landSelectOverlay .land-selection-actions{display:grid;grid-template-columns:1fr;gap:5px}
+  #landSelectOverlay .land-selection-actions button{font-size:11px;padding:7px 4px}
+  #landSelectOverlay .auction-box .pc-top button{min-width:44px}
   #landSelectOverlay .auction-city-map{max-height:10dvh}
   #landSelectOverlay .land-selection-actions{
     position:sticky;
