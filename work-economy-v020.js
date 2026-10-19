@@ -161,14 +161,14 @@ function work(){
 }
 function clearWorkCard(){
  const root=$('cardOverlay')?.querySelector('.event-card');
- if(root)root.classList.remove('work-card','work-municipal');
+ if(root?.classList)root.classList.remove('work-card','work-municipal');
  $('workCardFlag')?.remove();
  $('workCardRules')?.remove();
 }
 function renderWorkCard(detail){
  clearWorkCard();
  const root=$('cardOverlay')?.querySelector('.event-card');
- if(!root||!detail)return;
+ if(!root?.classList||!detail)return;
  root.classList.add('work-card');
  if(detail.municipal)root.classList.add('work-municipal');
  $('cardDeck').textContent='💼 Колода «Работа» · участок №'+(detail.lot+1);
