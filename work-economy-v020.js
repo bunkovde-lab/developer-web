@@ -4,8 +4,8 @@
  */
 (function(){
 'use strict';
-const BASE={J1:155,RET:175,PK:195,OD:210,JK4:225,UNIQUE:250};
-const COST=[35,65,100],VERSION=2,MAX_RENT=125;
+const BASE={J1:150,RET:150,PK:150,OD:150,JK4:150,UNIQUE:150};
+const COST=[50,75,100],VERSION=2,MAX_RENT=100;
 const $=id=>document.getElementById(id);
 function active(){return typeof state!=='undefined'&&state&&Array.isArray(state.plots)&&state.plots.length===24;}
 function shuffleDeck(cards){
@@ -109,19 +109,19 @@ function work(){
  const origin=Number.isInteger(lot.reservedFor)?lot.reservedFor:lotIndex;
  const main=state.plots[origin],base=BASE[zone]||BASE.J1;
  const stage=main.project?.stage||0,actor=state.turn;
- const rented=main.owner>=0&&stage===4&&!!main.tenant;
+ const rented=main.owner>=0&&stage===4;
  const building=main.owner>=0&&stage>=1&&stage<=3;
  const sold=lot.owner<0&&(lot.workSold===true||w.sold.includes(lotIndex));
  let status,requested,from=-1,to=actor;
  if(building){
   status='construction';requested=COST[main.project?.size??0]??COST[0];from=main.owner;
  }else if(rented){
-  status='rent';requested=Math.min(MAX_RENT,Math.round(Math.max(0,tenantIncomeForLot(main))*.8));
+  status='rent';requested=MAX_RENT;
   from=actor;to=main.owner;
  }else if(sold){
-  status='sold';requested=Math.round(base*.85);
+  status='sold';requested=100;
  }else if(main.owner>=0&&stage===4){
-  status='vacant';requested=Math.round(base*.55);
+  status='vacant';requested=100;
  }else{
   status='empty';requested=base;
  }
@@ -183,10 +183,10 @@ function renderWorkCard(detail){
  const base=detail.base;
  const terms=[
   ['empty','Участок свободен или строительство не начато — город платит '+base+' тыс.'],
-  ['construction','Идёт строительство — владелец платит вытянувшему: малый объект 35, средний 65, крупный 100 тыс.'],
-  ['rent','Объект с арендатором — вытянувший платит собственнику 80% действующей аренды, максимум 125 тыс.'],
-  ['sold','Объект продан внешнему покупателю — город платит '+Math.round(base*.85)+' тыс. (85%).'],
-  ['vacant','Объект введён, но без арендатора — город платит '+Math.round(base*.55)+' тыс. (55%).']
+  ['construction','Идёт строительство — владелец платит вытянувшему: малый объект50, средний75, крупный100 тыс.'],
+  ['rent','Готовое здание — вытянувший платит собственнику100 тыс.'],
+  ['sold','Объект продан внешнему покупателю — город платит '+100+' тыс.'],
+  ['vacant','Объект введён, но без арендатора — город платит '+100+' тыс.']
  ];
  for(const [status,text] of terms){
   const item=document.createElement('li');
@@ -255,7 +255,7 @@ function attach(){
 }
 attach();
 if(active()){ensure();window.render();}
-window.DeveloperWork=Object.freeze({status:()=>active()?{
+window.DeveloperWork=Object.freeze({catalog:()=>ZONE_GRID.map((zone,lot)=>({lot,base:BASE[zone]||BASE.J1})),status:()=>active()?{
  version:VERSION,remaining:ensure().deck.length,draws:ensure().draws,reshuffles:ensure().reshuffles,
  sold:ensure().sold.slice(),debts:ensure().debts.map(d=>({...d})),
  totals:{...ensure().totals},last:ensure().last}:null});

@@ -76,10 +76,10 @@ assert.equal(run('marketCommit()'),true,'Land-for-card exchange must succeed');
 assert.equal(run('state.plots[0].owner'),1,'Empty land title transfers to the counterparty');
 assert.equal(run('state.players[0].cards.some(c=>c.id===9001)'),true);
 assert.equal(run('state.marketTransactions.length'),1);
-run('newGame();state.rolled=true;state.players[0].pos=7;state.players[0].money=10000;state.players[1].money=10000;state.plots[22].owner=0;state.plots[23].owner=0;state.players[0].cards.push({id:9002,deck:"utilities",index:0});playStageCard(22,2,9002);');
-assert.equal(run('state.plots[23].reservedFor'),22);
+run('newGame();state.rolled=true;state.players[0].pos=7;state.players[0].money=10000;state.players[1].money=10000;state.plots[3].owner=0;state.plots[9].owner=0;state.players[0].cards.push({id:9002,deck:"utilities",index:0});playStageCard(3,2,9002);');
+assert.equal(run('state.plots[9].reservedFor'),3);
 run('openTradeMarket();marketSetMode("sell");');
-assert.equal(run('marketplaceGetOffers().some(o=>o.card.id==="lot-23")'),false,'Reserved partner land never listed as tradable');
+assert.equal(run('marketplaceGetOffers().some(o=>o.card.id==="lot-9")'),false,'Reserved partner land never listed as tradable');
 
 run('newGame();state.rolled=true;state.players[0].pos=3;');
 assert.equal(run('state.stock.market.length'),30,'Market starts with thirty physical investor, tenant and buyer cards');

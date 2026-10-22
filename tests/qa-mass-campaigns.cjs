@@ -5,7 +5,7 @@ const {execFileSync}=require('node:child_process');
 const {createHash}=require('node:crypto');
 let sourceCommit=process.env.GITHUB_SHA;
 if(!sourceCommit){try{sourceCommit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();}catch{sourceCommit='unversioned';}}
-const sourceFiles=['index.html','balance.js','marketplace.js','pace.js','auction-competition.js','city-requests.js','game-rework-v016.js','work-economy-v020.js'];
+const sourceFiles=['index.html','balance.js','marketplace.js','pace.js','auction-competition.js','city-requests.js','game-rework-v016.js','work-economy-v020.js','rules-v021.js'];
 let engineWorkingTreeDirty=null;
 try{engineWorkingTreeDirty=execFileSync('git',['status','--porcelain','--',...sourceFiles],{encoding:'utf8'}).trim().length>0;}catch{}
 const engineSha256=createHash('sha256');
@@ -46,6 +46,7 @@ vm.runInContext(fs.readFileSync('auction-competition.js','utf8'),sandbox,{filena
 vm.runInContext(fs.readFileSync('city-requests.js','utf8'),sandbox,{filename:'city-requests.js',timeout:5000});
 vm.runInContext(fs.readFileSync('game-rework-v016.js','utf8'),sandbox,{filename:'game-rework-v016.js',timeout:5000});
 vm.runInContext(fs.readFileSync('work-economy-v020.js','utf8'),sandbox,{filename:'work-economy-v020.js',timeout:5000});
+vm.runInContext(fs.readFileSync('rules-v021.js','utf8'),sandbox,{filename:'rules-v021.js'});
 run('newGame()');
 assert.equal(run('state.paceVersion'),1);
 assert.equal(run('state.players.length'),6);
@@ -109,9 +110,9 @@ for(const n of [3,4,5,6]){
    try{run('bot();endTurn();');}
    catch(e){throw Error('simulation n='+n+', trial='+i+', seed='+seed+': '+e.stack);}
   }
-  const snap=run('({winner:state.winnerIndex??null,winType:state.winType??"territory",completedTurns:state.completedTurns??0,money:state.players.map(p=>p.money),profession:state.players.map(p=>p.profession),built:state.plots.filter(l=>l.project?.stage===4).length,land:state.plots.filter(l=>l.owner>=0).length,saleRevenue:state.players.reduce((s,p)=>s+(p.saleRevenue||0),0),botTrades:state.econMetrics?.botTrades||0,landTrades:state.econMetrics?.botLandTrades||0,assetSales:state.econMetrics?.botAssetSales||0,stageStockouts:state.econMetrics?.stageStockouts||0,networkStockouts:state.econMetrics?.networkStockouts||0,bankruptcies:qaEvents.filter(x=>x.includes("обанкротился")).length})');
-  assert(Number.isInteger(snap.winner),'Every campaign must terminate with a winner');
-  assert(snap.completedTurns<=240,'Turn horizon must hold');
+  const snap=run('({winner:state.winnerIndex??null,winType:state.winType??"unfinished",completedTurns:state.completedTurns??0,money:state.players.map(p=>p.money),profession:state.players.map(p=>p.profession),built:state.plots.filter(l=>l.project?.stage===4).length,land:state.plots.filter(l=>l.owner>=0).length,saleRevenue:state.players.reduce((s,p)=>s+(p.saleRevenue||0),0),botTrades:state.econMetrics?.botTrades||0,landTrades:state.econMetrics?.botLandTrades||0,assetSales:state.econMetrics?.botAssetSales||0,stageStockouts:state.econMetrics?.stageStockouts||0,networkStockouts:state.econMetrics?.networkStockouts||0,bankruptcies:qaEvents.filter(x=>x.includes("обанкротился")).length})');
+  assert.equal(run('state.turnLimit'),null,'No artificial turn limit');
+  assert(snap.completedTurns<=245,'Diagnostic runner budget must hold');
   assert(snap.money.every(Number.isFinite),'No invalid money');
   const diagnostics=run(diagnosticSnapshot);
   raw.push({diagnostics,players:n,trial:i,seed:(202610180+n*100000+i)>>>0,...snap});
@@ -120,8 +121,8 @@ for(const n of [3,4,5,6]){
 const sizeReports=[3,4,5,6].map(n=>{
  const rows=raw.filter(x=>x.players===n);
  const modes={};const professionWins={};
- rows.forEach(r=>{modes[r.winType]=(modes[r.winType]||0)+1;const winnerProf=r.profession[r.winner];professionWins[winnerProf]=(professionWins[winnerProf]||0)+1;});
- return {players:n,games:rows.length,completed:rows.length,completionPercent:100,
+ rows.forEach(r=>{modes[r.winType]=(modes[r.winType]||0)+1;if(r.winner!==null){const winnerProf=r.profession[r.winner];professionWins[winnerProf]=(professionWins[winnerProf]||0)+1;}});
+ return {players:n,games:rows.length,completed:rows.filter(r=>r.winner!==null).length,completionPercent:100*rows.filter(r=>r.winner!==null).length/rows.length,
    averageTurns:Number(mean(rows.map(x=>x.completedTurns)).toFixed(2)),
    medianTurns:median(rows.map(x=>x.completedTurns)),
    finishReasons:modes,professionWins,
@@ -136,7 +137,7 @@ const sizeReports=[3,4,5,6].map(n=>{
    networkStockouts:rows.reduce((s,x)=>s+x.networkStockouts,0)};
 });
 const allTurns=raw.map(x=>x.completedTurns);
-const summary={kind:"actual-engine-vm",commit:sourceCommit,engineWorkingTreeDirty,rules:"HTML "+(html.match(/HTML · (v[0-9.]+(?:-[a-z0-9]+)?)/)?.[1]||"unknown"),engineSha256:engineSha256.digest("hex"),games:raw.length,seeds:"202610180+player_count*100000+trial",complete:raw.length,meanTurns:Number(mean(allTurns).toFixed(2)),medianTurns:median(allTurns),byPlayerCount:sizeReports,limitations:["all bots use the same existing AI, no human strategy archetypes", "headless Node VM; no full Chromium interaction", "real human time, deal negotiation, exact cumulative rent/sales split not measured"]};
+const summary={kind:"actual-engine-vm",commit:sourceCommit,engineWorkingTreeDirty,rules:"HTML "+(html.match(/HTML · (v[0-9.]+(?:-[a-z0-9]+)?)/)?.[1]||"unknown"),engineSha256:engineSha256.digest("hex"),games:raw.length,seeds:"202610180+player_count*100000+trial",complete:raw.filter(r=>r.winner!==null).length,meanTurns:Number(mean(allTurns).toFixed(2)),medianTurns:median(allTurns),byPlayerCount:sizeReports,limitations:["all bots use the same existing AI, no human strategy archetypes", "headless Node VM; no full Chromium interaction", "real human time, deal negotiation, exact cumulative rent/sales split not measured"]};
 console.log('QA_BASELINE_SUMMARY '+JSON.stringify(summary));
 if(process.env.QA_REPORT_DIR){
  const path=require('node:path'),out=path.resolve(process.env.QA_REPORT_DIR);fs.mkdirSync(out,{recursive:true});

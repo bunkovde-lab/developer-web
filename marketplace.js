@@ -13,41 +13,41 @@ const MARKET_SCOPE={
  'Инженерные сети':{title:'Инженерные сети · подключения',families:['network']},
  'Сделка':{title:'Сделка · строительные карты',families:['utilities','permits','construction','commissioning','land']}
 };
-function scopeNow(){return state&&state.players[state.turn]&&MARKET_SCOPE[eventNames[state.players[state.turn].pos]];}
+function scopeNow(){return state&&state.players[state.turn]?{title:'Переговоры · все карты, земля и здания',families:Object.keys(KIND_NAMES)}:null;}
 function tradeInScope(c){return !!c&&!!scopeNow()?.families.includes(category(c));}
 
-const KIND_NAMES={utilities:"Проектирование",permits:"Разрешения",construction:"Строительство",commissioning:"Ввод в эксплуатацию",land:"Участки",network:"Инженерные сети",investor:"Инвестор",tenant:"Арендатор",buyer:"Покупатель"};
+const KIND_NAMES={utilities:"Проектирование",permits:"Разрешения",construction:"Строительство",commissioning:"Ввод в эксплуатацию",land:"Участки",property:"Здания и проекты",government:"Госзаказы",network:"Инженерные сети",investor:"Инвестор",tenant:"Арендатор",buyer:"Покупатель"};
 function cardsOf(p){
  return [...(p.cards||[]).map(c=>({...c,kind:"stage",family:c.deck})),
          ...(p.networkCards||[]).map(c=>({...c,kind:"network",family:"network"})),
-         ...(p.marketCards||[]).map(c=>({...c,kind:"market",family:c.type})),...state.plots.map((lot,index)=>({lot,index})).filter(x=>x.lot.owner===state.players.indexOf(p)&&!x.lot.project&&!Number.isInteger(x.lot.reservedFor)).map(x=>({id:"lot-"+x.index,kind:"land",family:"land",plotIndex:x.index}))];
+         ...(p.marketCards||[]).map(c=>({...c,kind:"market",family:c.type})),...(p.governmentCards||[]).map(c=>({...c,id:'government-'+c.id,originalId:c.id,kind:'government',family:'government'})),...state.plots.map((lot,index)=>({lot,index})).filter(x=>x.lot.owner===state.players.indexOf(p)&&!x.lot.cityOwned&&!x.lot.investor&&!Number.isInteger(x.lot.reservedFor)).map(x=>({id:"lot-"+x.index,kind:x.lot.project?"property":"land",family:x.lot.project?"property":"land",plotIndex:x.index}))];
 }
 function findCard(owner,id){return cardsOf(state.players[owner]||{}).find(c=>String(c.id)===String(id));}
-function cardModel(c){if(c.kind==="land")return state.plots[c.plotIndex];return c.kind==="stage"?BALANCED_DECKS[c.deck]?.[c.index]:c.kind==="network"?NETWORK_CARDS.find(n=>n.type===c.type):c.card;}
+function cardModel(c){if(["land","property"].includes(c.kind))return state.plots[c.plotIndex];if(c.kind==="government")return c;return c.kind==="stage"?BALANCED_DECKS[c.deck]?.[c.index]:c.kind==="network"?NETWORK_CARDS.find(n=>n.type===c.type):c.card;}
 function category(c){return c.family;}
-function title(c){if(c.kind==="land")return "Участок №"+(c.plotIndex+1)+" · "+state.plots[c.plotIndex].name;const model=cardModel(c);if(c.kind==="stage")return model?.title||KIND_NAMES[c.family];if(c.kind==="network")return model?.title||KIND_NAMES.network;return KIND_NAMES[c.family]||"Рыночное предложение";}
+function title(c){if(["land","property"].includes(c.kind))return "Участок №"+(c.plotIndex+1)+" · "+state.plots[c.plotIndex].name;const model=cardModel(c);if(c.kind==="stage")return model?.title||KIND_NAMES[c.family];if(c.kind==="network")return model?.title||KIND_NAMES.network;return KIND_NAMES[c.family]||"Рыночное предложение";}
 function detail(c){
  const m=cardModel(c)||{};
- if(c.kind==="land")return "Зона "+zoneOf(c.plotIndex).short+" · цена "+m.price+" тыс. · без строительства";
+ if(["land","property"].includes(c.kind))return "Зона "+zoneOf(c.plotIndex).short+" · "+(m.project?"Этап "+m.project.stage+"/4 · арендатор и сети переходят с объектом":"Свободный участок");if(c.kind==="government")return "Госзаказ · "+(c.type||"контракт");
  if(c.kind==="stage")return "Работы: малый "+(m.costs?.[0]??"—")+" / средний "+(m.costs?.[1]??"—")+" / крупный "+(m.costs?.[2]??"—")+" тыс.";
- if(c.kind==="network")return "Подключение: "+m.cost+" тыс. • +10% к цене и базовой аренде подходящего объекта";
- if(c.family==="investor")return "Инвестиции: "+m.investment+" тыс. • доля: "+m.share+"%";
- return (c.family==="tenant"?"Аренда":"Покупка")+": "+m.percent+"% от стоимости объекта";
+ if(c.kind==="network")return "Подключение: "+m.cost+" тыс. • +100 к цене продажи и +25 к аренде подходящего объекта";
+ if(c.family==="investor")return "Инвестиции: "+m.investment+" тыс. • плата: "+m.fee+" тыс. фиксированно";
+ return c.family==="tenant"?"Аренда ×"+m.percent/100:"Надбавка первой продажи +"+(m.bonus||0)+" тыс.";
 }
-function icon(c){return c.kind==="land"?"🗺️":c.family==="utilities"?"📐":c.family==="permits"?"📑":c.family==="construction"?"🏗":c.family==="commissioning"?"🏢":c.family==="network"?"⚡":c.family==="investor"?"💼":c.family==="tenant"?"🏬":"🏷";}
+function icon(c){return ["land","property"].includes(c.kind)?"🗺️":c.family==="utilities"?"📐":c.family==="permits"?"📑":c.family==="construction"?"🏗":c.family==="commissioning"?"🏢":c.family==="network"?"⚡":c.family==="investor"?"💼":c.family==="tenant"?"🏬":"🏷";}
 function format(n){return new Intl.NumberFormat("ru-RU").format(Math.round(n))+" тыс.";}
-function round5(n){return Math.max(5,Math.round(n/5)*5);}
+function round5(n){return Math.max(25,Math.round(n/25)*25);}
 function scarcity(c){if(!state.stock)return false;if(c.kind==="stage")return !state.stock.stage?.[c.deck]?.length;if(c.kind==="network")return !state.stock.network?.length;return false;}
 function basePrice(c){
  const m=cardModel(c)||{};
- if(c.kind==="land")return m.price;
+ if(["land","property"].includes(c.kind))return m.project?.stage===4?marketBase(m,"buyer"):m.price+Math.round((m.developmentSpent||0)*.55);if(c.kind==="government")return Math.max(25,Number(c.terms?.reward)||50);
  if(c.kind==="stage")return Math.max(24,Math.round((m.costs?.[0]||50)*.75+25));
  if(c.kind==="network")return 25+(m.cost||40);
  if(c.family==="investor")return 35+Math.round((m.investment||150)*.2);
  return 40+Math.round((m.percent||100)*.55);
 }
 function ownerNeeds(owner,c){
- if(c.kind==="land")return territoryAnalysis(c.plotIndex,owner).own>0||territoryAnalysis(c.plotIndex,owner).blocking>=2;
+ if(["land","property"].includes(c.kind))return territoryAnalysis(c.plotIndex,owner).own>0||territoryAnalysis(c.plotIndex,owner).blocking>=2;
  const holdings=state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===owner);
  if(c.kind==="stage")return holdings.some(x=>x.lot.project?.stage!==4&&nextStageDeck(x.lot.project)===c.deck);
  if(c.kind==="network")return holdings.some(x=>x.lot.project?.stage===4&&requiredNetworkTypes(x.i,x.lot.project.size).includes(c.type)&&!connectedNetworksFor(x.lot).includes(c.type));
@@ -59,13 +59,13 @@ function ownerNeeds(owner,c){
 function askFor(owner,c){return round5(basePrice(c)*(ownerNeeds(owner,c)?1.8:1.25)*(scarcity(c)?1.20:1));}
 function bidFrom(owner,c){return round5(basePrice(c)*(ownerNeeds(owner,c)?1.15:.68)*(scarcity(c)?1.08:1));}
 function effectiveMoney(owner){return state.players[owner]?.money||0;}
-function tradeAllowed(){return state&&!!scopeNow()&&state.turn===0&&!state.players[0]?.bot&&state.rolled&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice&&!Number.isInteger(state.winnerIndex)&&(state.actionKey!=="0-"+state.round||(state.actionsUsed||0)<2)&&state.tradeMarker!=="0-"+state.round;}
+function tradeAllowed(){return state&&!!scopeNow()&&!state.players[state.turn]?.bot&&state.rolled&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice&&!Number.isInteger(state.winnerIndex)&&(state.actionKey!==state.turn+"-"+state.round||(state.actionsUsed||0)<2)&&state.tradeMarker!==state.turn+"-"+state.round;}
 function capacity(p,received,given){return true;}
 
 function exists(owner,id){return state?.players?.[owner]&&findCard(owner,id);}
-function offers(){return state.players.flatMap((p,i)=>i===0?[]:cardsOf(p).filter(tradeInScope).map(c=>({owner:i,card:c,ask:askFor(i,c)})));}
+function offers(){return state.players.flatMap((p,i)=>i===state.turn?[]:cardsOf(p).filter(tradeInScope).map(c=>({owner:i,card:c,ask:askFor(i,c)})));}
 function playerOptions(){
- return state.players.map((p,i)=>i===0?"":'<option value="'+i+'"'+(String(ui.owner)===String(i)?" selected":"")+'>'+html(p.name)+'</option>').join("");
+ return state.players.map((p,i)=>i===state.turn?"":'<option value="'+i+'"'+(String(ui.owner)===String(i)?" selected":"")+'>'+html(p.name)+'</option>').join("");
 }
 function cardMarkup(c,owner,selected,local){
  const price=local?null:askFor(owner,c),wanted=ownerNeeds(owner,c),categoryName=KIND_NAMES[category(c)]||"Карта";
@@ -76,14 +76,14 @@ function cardMarkup(c,owner,selected,local){
  (wanted?'<i>Нужна владельцу</i>':'<i>Доступна для сделки</i>')+'</span></button>';
 }
 function stats(){
- const all=state.players.slice(1).reduce((a,p)=>a+cardsOf(p).length,0),available=state.stock?.stage?Object.values(state.stock.stage).reduce((a,v)=>a+v.length,0):0;
- return '<div class="mk-stats"><span>Ваш баланс <b>'+format(effectiveMoney(0))+'</b></span><span>Карты соперников <b>'+all+'</b></span><span>В колодах этапов <b>'+available+'</b></span><span>Сетей в колоде <b>'+(state.stock?.network?.length??"—")+'</b></span></div>';
+ const all=state.players.filter((p,i)=>i!==state.turn).reduce((a,p)=>a+cardsOf(p).length,0),available=state.stock?.stage?Object.values(state.stock.stage).reduce((a,v)=>a+v.length,0):0;
+ return '<div class="mk-stats"><span>Ваш баланс <b>'+format(effectiveMoney(state.turn))+'</b></span><span>Карты соперников <b>'+all+'</b></span><span>В колодах этапов <b>'+available+'</b></span><span>Сетей в колоде <b>'+(state.stock?.network?.length??"—")+'</b></span></div>';
 }
 function filteredOffers(){
  return offers().filter(o=>(String(ui.owner)==="all"||String(o.owner)===String(ui.owner))&&(ui.category==="all"||category(o.card)===ui.category)&&(!ui.query||(title(o.card)+" "+(KIND_NAMES[category(o.card)]||"")+" "+state.players[o.owner].name).toLowerCase().includes(ui.query.toLowerCase())));
 }
 function actionContext(){
- const rawMine=exists(0,ui.mine),rawRemote=ui.remote&&exists(ui.remote.owner,ui.remote.id);
+ const rawMine=exists(state.turn,ui.mine),rawRemote=ui.remote&&exists(ui.remote.owner,ui.remote.id);
  const mine=tradeInScope(rawMine)?rawMine:null,remote=tradeInScope(rawRemote)?rawRemote:null,other=remote&&state.players[ui.remote.owner];
  if(ui.mode==="buy"){
   if(!remote)return {valid:false,message:"Выберите карту другого игрока в каталоге."};
@@ -93,7 +93,7 @@ function actionContext(){
  if(ui.mode==="sell"){
   if(!mine)return {valid:false,message:"Выберите свою карту для продажи."};
   const owner=Number(ui.buyer??1),buyer=state.players[owner];
-  if(!buyer?.bot)return {valid:false,message:"Выберите покупателя."};
+  if(!buyer||owner===state.turn)return {valid:false,message:"Выберите покупателя."};
   return {mode:"sell",mine,remote:null,other:buyer,owner,quote:bidFrom(owner,mine),valid:true,description:"Продажа карты игроку "+buyer.name};
  }
  if(!mine||!remote)return {valid:false,message:"Выберите свою карту и карту другого игрока для обмена."};
@@ -103,17 +103,17 @@ function actionAvailability(ctx,price){
  if(!ctx.valid)return ctx.message;
  if(!tradeAllowed())return "Сделки доступны только в ваш ход после броска, пока осталось действие. Витрину можно изучать заранее.";
  if(ctx.mode==="buy"){
-  if(!capacity(state.players[0],ctx.remote,null))return "У вас недостаточно денег.";
-  if(price<ctx.quote)return "Продавец не согласен на такую цену. Встречное предложение: "+format(ctx.quote)+".";
-  if(effectiveMoney(0)<price)return "Недостаточно средств для покупки.";
+  if(!capacity(state.players[state.turn],ctx.remote,null))return "У вас недостаточно денег.";
+  if(ctx.other.bot&&price<ctx.quote)return "Продавец не согласен на такую цену. Встречное предложение: "+format(ctx.quote)+".";
+  if(effectiveMoney(state.turn)<price)return "Недостаточно средств для покупки.";
  }else if(ctx.mode==="sell"){
   if(!capacity(ctx.other,ctx.mine,null))return "Покупатель не может принять карту.";
-  if(price>ctx.quote)return "Покупатель отклонил цену. Его предложение: "+format(ctx.quote)+".";
+  if(ctx.other.bot&&price>ctx.quote)return "Покупатель отклонил цену. Его предложение: "+format(ctx.quote)+".";
   if(effectiveMoney(ctx.owner)<price)return "У покупателя недостаточно средств.";
  }else{
-  if(!capacity(state.players[0],ctx.remote,ctx.mine)||!capacity(ctx.other,ctx.mine,ctx.remote))return "Обмен карт недоступен.";
-  if(price<ctx.quote)return "Игрок не согласен на размер доплаты. Минимальная разница: "+(ctx.quote>=0?"+":"")+format(ctx.quote)+".";
-  if(price>0&&effectiveMoney(0)<price)return "Недостаточно средств для доплаты.";
+  if(!capacity(state.players[state.turn],ctx.remote,ctx.mine)||!capacity(ctx.other,ctx.mine,ctx.remote))return "Обмен карт недоступен.";
+  if(ctx.other.bot&&price<ctx.quote)return "Игрок не согласен на размер доплаты. Минимальная разница: "+(ctx.quote>=0?"+":"")+format(ctx.quote)+".";
+  if(price>0&&effectiveMoney(state.turn)<price)return "Недостаточно средств для доплаты.";
   if(price<0&&effectiveMoney(ctx.owner)<-price)return "У соперника недостаточно денег для компенсации.";
  }
  return "";
@@ -124,7 +124,7 @@ function historyMarkup(){
 }
 function renderTradeMarket(){
  if(!state||!$m("marketListings"))return;
- const filtered=filteredOffers(),mineCards=cardsOf(state.players[0]).filter(tradeInScope),ctx=actionContext();
+ const filtered=filteredOffers(),mineCards=cardsOf(state.players[state.turn]).filter(tradeInScope),ctx=actionContext();
  $m("marketStats").innerHTML=stats();
  const region=scopeNow();$m("marketScope").textContent=region?region.title:"Торговля недоступна на этой клетке";
  $m("marketCategory").innerHTML='<option value="all">Все типы этой клетки</option>'+(region?.families||[]).map(k=>'<option value="'+k+'">'+html(KIND_NAMES[k])+'</option>').join("");
@@ -133,7 +133,7 @@ function renderTradeMarket(){
  $m("marketMineList").innerHTML=mineCards.length?mineCards.map(c=>cardMarkup(c,0,String(ui.mine)===String(c.id),true)).join(""):'<p class="mk-empty">В вашей руке пока нет торговых карт.</p>';
  $m("marketModeButtons").innerHTML=[["buy","Купить"],["sell","Продать"],["swap","Обменять"]].map(([key,label])=>'<button type="button" class="'+(ui.mode===key?"mk-active":"")+'" onclick="marketSetMode(\''+key+'\')">'+label+'</button>').join("");
  $m("marketBuyerWrap").hidden=ui.mode!=="sell";
- $m("marketBuyer").innerHTML=state.players.slice(1).map((p,i)=>'<option value="'+(i+1)+'"'+(String(ui.buyer??1)===String(i+1)?" selected":"")+'>'+html(p.name)+' · '+format(p.money)+'</option>').join("");
+ $m("marketBuyer").innerHTML=state.players.map((p,i)=>i===state.turn?"":'<option value="'+i+'"'+(String(ui.buyer)===String(i)?" selected":"")+'>'+html(p.name)+' · '+format(p.money)+'</option>').join("");
  $m("marketMineWrap").hidden=ui.mode==="buy";
  $m("marketSelectionTitle").textContent=ctx.valid?ctx.description:"Подготовка сделки";
  $m("marketSelectionText").textContent=ctx.valid?(ctx.mode==="buy"?title(ctx.remote):ctx.mode==="sell"?title(ctx.mine):title(ctx.mine)+" ⇄ "+title(ctx.remote)):"Выберите карточки из каталога и своего портфеля.";
@@ -153,14 +153,14 @@ function renderTradeMarket(){
  highlightMarketLand();
 }
 function highlightMarketLand(){
- const selected=ui.mode==="sell"?findCard(0,ui.mine):ui.remote?findCard(ui.remote.owner,ui.remote.id):null;
+ const selected=ui.mode==="sell"?findCard(state.turn,ui.mine):ui.remote?findCard(ui.remote.owner,ui.remote.id):null;
  const lot=selected?.kind==="land"?selected.plotIndex:-1;
  document.querySelectorAll?.('#board .map-plot').forEach((tile,i)=>tile.classList.toggle('market-target',i===lot));
 }
 function cardInventorySummary(i){const p=state.players[i];return cardsOf(p).length+" карт · "+format(p.money);}
 function marketSetMode(mode){if(!["buy","sell","swap"].includes(mode))return;ui.mode=mode;ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
-function marketSelectRemote(owner,id){if(!tradeInScope(findCard(Number(owner),id)))return;ui.remote={owner:Number(owner),id:String(id)};ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
-function marketSelectMine(id){if(!tradeInScope(findCard(0,id)))return;ui.mine=String(id);ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
+function marketSelectRemote(owner,id){if(Number(owner)===state.turn||!tradeInScope(findCard(Number(owner),id)))return;ui.remote={owner:Number(owner),id:String(id)};ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
+function marketSelectMine(id){if(!tradeInScope(findCard(state.turn,id)))return;ui.mine=String(id);ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
 function marketSetBuyer(id){ui.buyer=Number(id);ui.feedback="";ui.quoteDirty=false;renderTradeMarket();}
 function marketSetFilter(){
  const owner=$m("marketOwner"),category=$m("marketCategory"),query=$m("marketSearch");
@@ -168,14 +168,15 @@ function marketSetFilter(){
 }
 function marketSetPrice(){ui.quoteDirty=true;ui.feedback="";renderTradeMarket();}
 function transferRemove(player,c){
- if(c.kind==="land"){const lot=state.plots[c.plotIndex];if(lot.owner!==state.players.indexOf(player)||lot.project||Number.isInteger(lot.reservedFor))return false;lot.owner=-1;return true;}
- const a=c.kind==="stage"?player.cards:c.kind==="network"?player.networkCards:player.marketCards;
- const i=a.findIndex(x=>x.id===c.id);if(i<0)return false;a.splice(i,1);return true;
+ if(["land","property"].includes(c.kind)){const lot=state.plots[c.plotIndex];if(lot.owner!==state.players.indexOf(player)||lot.cityOwned||lot.investor||Number.isInteger(lot.reservedFor))return false;if(Number.isInteger(lot.project?.pair))state.plots[lot.project.pair].owner=-1;lot.owner=-1;return true;}
+ const a=c.kind==="government"?player.governmentCards:c.kind==="stage"?player.cards:c.kind==="network"?player.networkCards:player.marketCards;
+ const i=a.findIndex(x=>x.id===(c.kind==="government"?c.originalId:c.id));if(i<0)return false;a.splice(i,1);return true;
 }
 function transferAdd(player,c){
- if(c.kind==="land"){state.plots[c.plotIndex].owner=state.players.indexOf(player);return;}
- const a=c.kind==="stage"?player.cards:c.kind==="network"?player.networkCards:player.marketCards;
- if(c.kind==="stage")a.push({id:c.id,deck:c.deck,index:c.index});
+ if(["land","property"].includes(c.kind)){transferLargeSection(c.plotIndex,state.players.indexOf(player));state.plots[c.plotIndex].owner=state.players.indexOf(player);return;}
+ const a=c.kind==="government"?player.governmentCards:c.kind==="stage"?player.cards:c.kind==="network"?player.networkCards:player.marketCards;
+ if(c.kind==="government"){const {kind,family,originalId,...original}=c;a.push({...original,id:originalId});}
+ else if(c.kind==="stage")a.push({id:c.id,deck:c.deck,index:c.index});
  else if(c.kind==="network")a.push({id:c.id,type:c.type});
  else a.push({id:c.id,type:c.type,card:c.card,modelIndex:c.modelIndex});
 }
@@ -192,20 +193,23 @@ function tradeRecord(mode,description){
 function marketCommit(){
  if(!tradeAllowed()){ui.feedback="Сейчас совершать сделки нельзя.";renderTradeMarket();return false;}
  const ctx=actionContext(),price=Number($m("marketPrice").value);
- if(!Number.isSafeInteger(price)||Math.abs(price)>999999||(!ctx.valid)){ui.feedback="Неверная цена или карточка.";renderTradeMarket();return false;}
+ if(!Number.isSafeInteger(price)||Math.abs(price)>999999||(ui.mode!=="swap"&&price<0)||(!ctx.valid)){ui.feedback="Неверная цена или карточка.";renderTradeMarket();return false;}
  const reason=actionAvailability(ctx,price);
  if(reason){ui.feedback=reason;renderTradeMarket();return false;}
- const p=state.players[0],other=ctx.other,remote=ctx.remote,mine=ctx.mine;
+ const p=state.players[state.turn],other=ctx.other,remote=ctx.remote,mine=ctx.mine;
+ if(!other.bot&&!confirm(other.name+": подтвердить сделку? "+ctx.description+" · "+format(price))){ui.feedback="Вторая сторона отказалась.";renderTradeMarket();return false;}
  // Validate ownership immediately before mutation. All actions execute synchronously.
- if((remote&&!findCard(ctx.owner,remote.id))||(mine&&!findCard(0,mine.id))){ui.feedback="Карта уже перешла другому игроку.";renderTradeMarket();return false;}
+ if((remote&&!findCard(ctx.owner,remote.id))||(mine&&!findCard(state.turn,mine.id))){ui.feedback="Карта уже перешла другому игроку.";renderTradeMarket();return false;}
  let description="";
  if(ctx.mode==="buy"){
   if(!transferRemove(other,remote)){ui.feedback="Карта недоступна.";renderTradeMarket();return false;}
   transferAdd(p,remote);p.money-=price;other.money+=price;
+  if(['land','property'].includes(remote.kind)){state.plots[remote.plotIndex].acquisitionPrice=price;state.plots[remote.plotIndex].developmentSpent=0;}
   description=p.name+" купил "+title(remote)+" у "+other.name+" за "+format(price);
  }else if(ctx.mode==="sell"){
   if(!transferRemove(p,mine)){ui.feedback="Ваша карта недоступна.";renderTradeMarket();return false;}
   transferAdd(other,mine);p.money+=price;other.money-=price;
+  if(['land','property'].includes(mine.kind)){state.plots[mine.plotIndex].acquisitionPrice=price;state.plots[mine.plotIndex].developmentSpent=0;}
   description=p.name+" продал "+title(mine)+" игроку "+other.name+" за "+format(price);
  }else{
   if(!transferRemove(p,mine)){ui.feedback="Ваша карта недоступна.";renderTradeMarket();return false;}
@@ -223,7 +227,7 @@ function marketCommit(){
 function openTradeMarket(){
  if(!state||!scopeNow()||!tradeAllowed())return;
  if(ui.cell!==state.players[state.turn].pos){ui.remote=null;ui.mine=null;ui.category="all";ui.mode="buy";ui.quoteDirty=false;ui.cell=state.players[state.turn].pos;}
- if(ui.session!==state){Object.assign(ui,{mode:"buy",owner:"all",category:"all",query:"",remote:null,mine:null,buyer:1,feedback:"",quoteDirty:false,session:state});}
+ if(ui.session!==state||ui.actor!==state.turn){Object.assign(ui,{mode:"buy",owner:"all",category:"all",query:"",remote:null,mine:null,buyer:state.players.findIndex((p,i)=>i!==state.turn),actor:state.turn,feedback:"",quoteDirty:false,session:state});}
  if(!$m("marketListings"))setupUI();
  $m("tradeOverlay").hidden=false;ui.feedback="";ui.quoteDirty=false;
  const owner=$m("marketOwner");
@@ -241,7 +245,7 @@ function setupUI(){
  overlay.innerHTML='<div class="mk-shell" role="document">'+
  '<header class="mk-header"><div><span class="mk-eyebrow">ДЕВЕЛОПЕР · КАРТОЧНАЯ БИРЖА</span><h2>🤝 Торговая площадка</h2><p>Карты игроков, переговоры, покупка и обмен в одном месте</p></div><button type="button" class="mk-close" onclick="closeTradeMarket()" aria-label="Закрыть биржу">✕</button></header>'+
  '<div id="marketStats" class="mk-stats"></div><div id="marketScope" class="mk-scope"></div>'+
- '<div class="mk-layout"><section class="mk-catalog"><div class="mk-section-title"><h3>Карты других игроков</h3><small>Только карты категории клетки; в локальной версии карты ботов видны</small></div>'+
+ '<div class="mk-layout"><section class="mk-catalog"><div class="mk-section-title"><h3>Карты других игроков</h3><small>Все карты и недвижимость; сделки между людьми подтверждаются второй стороной</small></div>'+
  '<div class="mk-filters"><label>Владелец<select id="marketOwner" onchange="marketSetFilter()"><option value="all">Все игроки</option></select></label><label>Категория<select id="marketCategory" onchange="marketSetFilter()"><option value="all">Все категории</option>'+Object.entries(KIND_NAMES).map(([k,v])=>'<option value="'+k+'">'+html(v)+'</option>').join("")+'</select></label><label class="mk-search">Поиск<input id="marketSearch" type="search" oninput="marketSetFilter()" placeholder="Название карты или игрок"></label></div>'+
  '<div id="marketListings" class="mk-list"></div></section>'+
  '<aside class="mk-trade"><div class="mk-section-title"><h3>Переговоры</h3><small>Одна сделка за ход · входит в лимит двух действий</small></div>'+
@@ -249,7 +253,7 @@ function setupUI(){
  '<label id="marketBuyerWrap" class="mk-buyer">Предложить игроку<select id="marketBuyer" onchange="marketSetBuyer(this.value)"></select></label>'+
  '<div class="mk-offer"><h4 id="marketSelectionTitle">Подготовка сделки</h4><p id="marketSelectionText"></p><label id="marketPriceLabel" for="marketPrice">Предлагаемая цена</label><input id="marketPrice" type="number" step="1" inputmode="numeric" oninput="marketSetPrice()"/><p id="marketQuote"></p><p id="marketWarning" role="status"></p><button id="marketConfirm" type="button" onclick="marketCommit()">Подтвердить</button></div>'+
  '<div class="mk-history"><h4>Последние сделки</h4><div id="marketHistory"></div></div></aside></div>'+
- '<footer class="mk-footer">Торги доступны только после попадания на клетки «Рынок», «Инженерные сети» и «Сделка», и лишь в свой ход. Каждый вид клетки имеет собственный ассортимент. Госконтракты не продаются. В настоящем мультиплеере закрытые руки будут приватны — торговаться можно будет только выставленными картами.</footer></div>';
+ '<footer class="mk-footer">Переговоры доступны после броска в свой ход на любой клетке. Можно купить, продать или обменять любую карту, землю и здание с доплатой. Городские и инвестиционные объекты не продаются. В настоящем мультиплеере закрытые руки будут приватны — торговаться можно будет только выставленными картами.</footer></div>';
  overlay.setAttribute("aria-label","Карточная торговая площадка");
  overlay.setAttribute("aria-modal","false");
  const style=document.createElement("style");style.textContent=`

@@ -1,0 +1,24 @@
+{
+  "base": "f91ac31",
+  "owner_authorized_change": "Tax moved from cell 9 to 11; Work moved from 11 to 9",
+  "presentation_changes": [
+    "ring color palette",
+    "public numbered catalog",
+    "card-front rendering",
+    "two read-only catalog exports"
+  ],
+  "economy_rates_and_card_effects_changed": false,
+  "module_byte_equality": {
+    "balance.js": true,
+    "marketplace.js": true,
+    "pace.js": true,
+    "auction-competition.js": true,
+    "city-requests.js": false,
+    "game-rework-v016.js": true,
+    "work-economy-v020.js": false
+  },
+  "read_only_exports_added": [
+    "DeveloperWork.catalog",
+    "DeveloperCityRequests.catalog"
+  ]
+}

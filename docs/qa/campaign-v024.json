@@ -1,0 +1,161 @@
+[
+  {
+    "seed": 24001,
+    "players": 4,
+    "turns": 207,
+    "winner": 2,
+    "round": 52,
+    "line": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "ready": 13,
+    "cash": [
+      2831,
+      4595,
+      244,
+      2
+    ],
+    "cityPurchases": 1,
+    "stall": null
+  },
+  {
+    "seed": 24002,
+    "players": 4,
+    "turns": 179,
+    "winner": 2,
+    "round": 45,
+    "line": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "ready": 10,
+    "cash": [
+      1137,
+      150,
+      175,
+      363
+    ],
+    "paidDraws": 4,
+    "cityPurchases": 0,
+    "stall": null
+  },
+  {
+    "seed": 24003,
+    "players": 4,
+    "turns": 152,
+    "winner": 3,
+    "round": 38,
+    "line": [
+      1,
+      7,
+      13,
+      19
+    ],
+    "ready": 10,
+    "cash": [
+      1078,
+      831,
+      0,
+      672
+    ],
+    "paidDraws": 3,
+    "cityPurchases": 2,
+    "stall": null
+  },
+  {
+    "seed": 24004,
+    "players": 4,
+    "turns": 202,
+    "winner": 1,
+    "round": 51,
+    "line": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "ready": 12,
+    "cash": [
+      1326,
+      1159,
+      0,
+      40
+    ],
+    "cityPurchases": 0,
+    "stall": null
+  },
+  {
+    "seed": 24005,
+    "players": 3,
+    "turns": 99,
+    "winner": 2,
+    "round": 33,
+    "line": [
+      1,
+      7,
+      13,
+      19
+    ],
+    "ready": 10,
+    "cash": [
+      235,
+      259,
+      67
+    ],
+    "paidDraws": 2,
+    "cityPurchases": 1,
+    "stall": null
+  },
+  {
+    "seed": 24006,
+    "players": 5,
+    "turns": 258,
+    "winner": 2,
+    "round": 52,
+    "line": [
+      5,
+      11,
+      17,
+      23
+    ],
+    "ready": 19,
+    "cash": [
+      2427,
+      1297,
+      1400,
+      2147,
+      953
+    ],
+    "cityPurchases": 0,
+    "stall": null
+  },
+  {
+    "seed": 24007,
+    "players": 6,
+    "turns": 314,
+    "winner": 1,
+    "round": 53,
+    "line": [
+      5,
+      11,
+      17,
+      23
+    ],
+    "ready": 19,
+    "cash": [
+      2851,
+      62,
+      4156,
+      241,
+      2590,
+      1580
+    ],
+    "cityPurchases": 1,
+    "stall": null
+  }
+]

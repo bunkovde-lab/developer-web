@@ -1,0 +1,27 @@
+/* 0.24: readable parcel cards — zone header, art, stage track, owner deed. */
+body.live-city-edition .board .map-plot{border:2px solid var(--title-owner)!important;border-radius:6px!important;background:var(--district-paper)!important;box-shadow:0 2px 5px #071b2480!important}
+body.live-city-edition .board .map-plot::before{inset:18% 0 27%!important;background-position:center 56%!important;background-size:contain!important}
+body.live-city-edition .board .map-plot::after{inset:0 0 auto!important;height:19%!important;background:var(--district-ink)!important;border-bottom:1px solid #ffffff4d!important;z-index:1!important}
+body.live-city-edition .board .map-plot .plot-id{top:5%!important;left:4%!important;color:#fff!important;font-size:clamp(7px,7cqw,12px)!important;max-width:25%!important;z-index:3!important}
+body.live-city-edition .board .map-plot .plot-type{top:5.5%!important;right:4%!important;color:#fff!important;font-size:clamp(5px,5.5cqw,10px)!important;max-width:71%!important;letter-spacing:.025em!important;white-space:nowrap!important;text-align:right!important;z-index:3!important}
+body.live-city-edition .board .map-plot .plot-progress{inset:auto 0 25%!important;height:13%!important;background:var(--district-paper)!important;color:#193b49!important;min-height:0!important;font-size:clamp(6px,6.3cqw,11px)!important;font-weight:800!important;border:0!important;letter-spacing:0!important;z-index:3!important}
+body.live-city-edition .board .map-plot .v24-owner{position:absolute;inset:auto 0 0;height:19%;display:flex;align-items:center;gap:4%;padding:0 4%;background:var(--title-owner);color:#142d3c;z-index:5;border-top:1px solid #ffffff70;overflow:hidden;font:750 clamp(6px,6.2cqw,11px)/1 system-ui,Arial,sans-serif;letter-spacing:.01em}
+.v24-player-seal{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:1.45em;height:1.45em;border-radius:50%;border:1px solid currentColor;background:#fff7;font-size:.95em}
+.v24-owner-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+body.live-city-edition .map-plot[data-v24-city="true"] .v24-owner{color:#f3e6bf}
+body.live-city-edition .map-plot[data-v24-owner="-1"][data-v24-city="false"]{border-color:#bdc9c4!important}
+body.live-city-edition .map-plot[data-v24-owner="-1"] .v24-owner{font-size:clamp(5px,5.6cqw,9px)}
+body.live-city-edition .map-plot .v24-stage-track{position:absolute;inset:auto 4% 20.5%;height:3.2%;min-height:2px;display:grid;grid-template-columns:repeat(4,1fr);gap:3%;z-index:4}
+.v24-stage-track>span{display:block;background:#b2bfb8;border-radius:1px}
+.v24-stage-track>span[data-done="true"]{background:var(--district-ink)}
+body.live-city-edition .board .map-plot .premium-neighbors{display:none!important}
+body.live-city-edition .board .map-plot[data-v24-stage="4"]{box-shadow:inset 0 0 0 1px #fff8,0 2px 5px #071b2480!important}
+body.live-city-edition .board .map-plot[data-v24-stage="4"] .plot-progress{color:#155745!important}
+body.live-city-edition .board .map-plot[data-v24-city="true"] .plot-progress{background:#dfe6e9!important;color:#243c4f!important}
+body.live-city-edition .board .map-plot.scene-winning{outline:3px solid #fff3a7!important;outline-offset:-3px!important}
+body.live-city-edition .board>.city-map .map-key{display:flex!important;align-items:center;justify-content:center;gap:clamp(3px,.6vw,10px);min-height:12px;flex-shrink:0;overflow:hidden!important;font:600 clamp(6px,.65vw,10px)/1.3 system-ui,Arial,sans-serif!important;letter-spacing:0!important;white-space:nowrap}
+.map-key>small{font-size:.85em;letter-spacing:.08em}.v24-legend-owner{display:flex;align-items:center;gap:3px;min-width:0;color:#eaf3f3}.v24-legend-owner b{display:flex;align-items:center;justify-content:center;color:#112c3b;background:var(--legend-owner);width:1.6em;height:1.6em;border-radius:50%;flex-shrink:0}.v24-legend-owner>span{max-width:8em;overflow:hidden;text-overflow:ellipsis}
+body .v24-overlay{z-index:7100!important}.v24-overlay .auction-box{width:min(680px,calc(100vw - 24px));max-width:none;max-height:calc(100dvh - 32px);overflow:auto;background:#f0ebdc;color:#213c4a;border:1px solid #b59a60;border-radius:13px;padding:22px;box-shadow:0 20px 70px #000a}.v24-overlay header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:0 0 12px;background:transparent;border-bottom:1px solid #bec7bb}.v24-overlay h2{font:500 24px/1.2 Georgia,serif;color:#213c4a}.v24-overlay h3{font-size:15px;color:#3b625c;margin:24px 0 8px}.v24-content p{font-size:14px;line-height:1.65}.v24-content button{margin:8px 0}.v24-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0}.v24-choices button{white-space:normal;font-size:13px;padding:13px;background:#d9e5de;color:#183c46;border:1px solid #a2b8ac}.v24-choices button:disabled{cursor:not-allowed}.v24-city-buy{width:100%;background:#245e6b;color:#fff3cd;margin:12px 0;padding:14px;font-size:13px;white-space:normal}.v24-overlay button:focus-visible,.map-plot:focus-visible{outline:3px solid #dbac42;outline-offset:2px}
+@media(max-width:600px){body.live-city-edition .board>.city-map .map-key>small{display:none}.v24-legend-owner>span{max-width:5em}.v24-overlay .auction-box{padding:16px}.v24-choices{grid-template-columns:1fr}}
+
+body.live-city-edition .board.zoom-map .city-lots{grid-template-columns:repeat(6,minmax(112px,1fr))!important;grid-template-rows:repeat(4,minmax(116px,1fr))!important;overflow:auto!important}body.live-city-edition .board.zoom-map .city-map{overflow:auto!important}

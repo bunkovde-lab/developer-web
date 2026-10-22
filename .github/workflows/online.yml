@@ -1,0 +1,27 @@
+name: Online room integrity
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'online.js'
+      - 'scripts/build-online-engine.cjs'
+      - 'tests/online-v027.mjs'
+      - '.github/workflows/online.yml'
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  online:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: corepack enable
+      - run: corepack pnpm install --frozen-lockfile
+      - run: node scripts/build-online-engine.cjs
+      - run: node tests/online-v027.mjs
+      - run: node tests/renewal-v026.cjs

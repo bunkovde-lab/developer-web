@@ -49,6 +49,25 @@ jobs:
         run: |
           npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium
+      - name: Capture pinned pre-design baseline for before-after comparison
+        shell: bash
+        run: |
+          baseline="$(mktemp -d)"
+          git fetch --depth=1 origin f91ac3102eb6796a72f216aca443dc964082824e
+          git archive f91ac3102eb6796a72f216aca443dc964082824e | tar -x -C "$baseline"
+          (cd "$baseline" && NODE_PATH="$GITHUB_WORKSPACE/node_modules" node tests/browser_rectangular_geometry.cjs)
+          mkdir -p ui-snapshots/before
+          cp "$baseline"/ui-snapshots/*.png ui-snapshots/before/
+      - name: User economic rules, empty-stock negotiation and neighbour rent cards
+        run: node tests/browser_rules_v021.cjs
+      - name: Card geometry, engraved menu and compact land card
+        run: node tests/browser_card_polish.cjs
+      - name: Face-down card flight, reveal and destination decks
+        run: node tests/browser_card_flight.cjs
+      - name: Numbered card library, visible deck shelf, reference privacy and tax cell 11
+        run: node tests/browser_card_library.cjs
+      - name: Premium design, non-mutation, responsive screens and live city fixture
+        run: node tests/browser_premium.cjs
       - name: Final 11x7 board geometry, every touch target, 5 devices and before-after screenshots
         run: node tests/browser_rectangular_geometry.cjs
       - name: Run mobile marketplace browser test
@@ -81,5 +100,5 @@ jobs:
         if: always()
         with:
           name: developer-v010-screenshots
-          path: ui-snapshots/*.png
+          path: ui-snapshots/
           if-no-files-found: ignore

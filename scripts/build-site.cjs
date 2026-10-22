@@ -42,6 +42,7 @@ if (missing.length) {
   process.exit(1);
 }
 const details = [
+  'Game version: 0.27.0 — Online Rooms',
   'Source commit: ' + (process.env.GITHUB_SHA || process.env.CF_PAGES_COMMIT_SHA || 'local'),
   'PR number: ' + (process.env.PR_NUMBER || 'not specified'),
   'Build type: ' + (process.env.CF_PAGES ? 'Cloudflare Pages' : 'GitHub/local'),

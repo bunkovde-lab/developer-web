@@ -5,7 +5,7 @@ const E=id=>document.getElementById(id);
 const format=n=>Math.round(n).toLocaleString('ru-RU')+' тыс.';
 const live=()=>!!(state&&state.players&&state.plots);
 function records(){if(live())for(const p of state.players){if(!Number.isFinite(p.completedProjects))p.completedProjects=0;if(!Number.isFinite(p.saleRevenue))p.saleRevenue=0;}}
-function actionOK(){return live()&&!current().bot&&state.rolled&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice&&!Number.isInteger(state.winnerIndex)&&(state.actionKey!==state.turn+'-'+state.round||(state.actionsUsed||0)<2);}
+function actionOK(){return !state?.liquidityPending&&!state?.penaltyPending&&!state?.upgradePending&&live()&&!current().bot&&state.rolled&&!state.auction&&!state.pendingCard&&!state.constructionDeckChoice&&!Number.isInteger(state.winnerIndex)&&(state.actionKey!==state.turn+'-'+state.round||(state.actionsUsed||0)<2);}
 function actionSpend(){const key=state.turn+'-'+state.round;if(state.actionKey!==key){state.actionKey=key;state.actionsUsed=0;}state.actionsUsed++;}
 const oldVictory=window.checkVictory;
 window.checkVictory=function(){
@@ -20,6 +20,7 @@ window.checkVictory=function(){
    return i;
   }
  }
+ if(state.plots.length&&state.plots.every((l,i)=>state.plots[Number.isInteger(l.reservedFor)?l.reservedFor:i]?.project?.stage===4)){finalizeCampaign();state.winType='city';return state.winnerIndex;}
  return -1;
 };
 // Stage completion, discounts and investor settlement are performed exactly once
@@ -45,8 +46,8 @@ window.startSettlement=function(i){
  const r=oldSettlement(i);if(!live())return r;
  const rented=state.plots.filter(l=>l.owner===i&&l.tenant&&l.project?.stage===4).length;
  const empty=state.plots.filter(l=>l.owner===i&&!l.project&&!Number.isInteger(l.reservedFor)).length;
- const extra=rented>=2?Math.round(r.rent*Math.min(.18,rented*.06)):0;
- const upkeep=Math.max(0,empty-3)*22;
+ const extra=0; // Neighbour bonuses are included on each property card.
+ const upkeep=0; // Idle-land sanctions are explicit event cards, never a hidden counter.
  return {...r,rent:r.rent+extra,portfolioBonus:extra,idleFee:upkeep,total:r.total+extra-upkeep};
 };
 const oldRoll=window.roll;
@@ -96,7 +97,7 @@ window.resolveSpecialCell=function(){
 function finishedAssets(){return state.plots.map((lot,i)=>({lot,i})).filter(x=>x.lot.owner===state.turn&&x.lot.project?.stage===4&&!x.lot.investor&&!Number.isInteger(x.lot.reservedFor));}
 function quickQuote(){
  const lot=state?.plots?.[Number(E('quickSaleLot')?.value)];
- if(lot&&E('quickSaleQuote'))E('quickSaleQuote').textContent='Поступление: '+format(Math.round(marketBase(lot,'buyer')*.88))+'. Фонд забирает объект и арендатора. Одно действие.';
+ if(lot&&E('quickSaleQuote'))E('quickSaleQuote').textContent='Поступление: '+format(window.developerSaleQuote26?developerSaleQuote26(lot):marketBase(lot,'buyer'))+'. Фонд забирает объект и арендатора. Одно действие.';
 }
 function quickClose(){E('quickSaleOverlay')?.remove();}
 function quickSale(){
@@ -105,7 +106,7 @@ function quickSale(){
  quickClose();const dialog=document.createElement('div');dialog.id='quickSaleOverlay';dialog.className='auction-overlay';
  dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');
  dialog.innerHTML='<div class="auction-box"><div class="eco-kicker">СДЕЛКА · ЛИКВИДНОСТЬ</div><h2>🏷 Продать недвижимость</h2>'+
- '<p>Быстрый выкуп за 88% текущей оценки. Карта покупателя или торги между игроками могут принести больше.</p>'+
+ '<p>Продажа по фиксированной цене из карточки объекта. Карта покупателя или торги между игроками могут принести больше.</p>'+
  '<label>Выберите готовый объект<select id="quickSaleLot"></select></label><p id="quickSaleQuote"></p>'+
  '<button onclick="developerQuickConfirm()">Подтвердить</button> <button onclick="developerQuickClose()">Отмена</button></div>';
  document.body.appendChild(dialog);
@@ -116,9 +117,8 @@ function quickConfirm(){
  if(!actionOK())return false;
  const i=Number(E('quickSaleLot')?.value),lot=state.plots[i],p=current();
  if(!lot||lot.owner!==state.turn||lot.project?.stage!==4||lot.investor||Number.isInteger(lot.reservedFor))return false;
- records();const price=Math.round(marketBase(lot,'buyer')*.88);
- p.money+=price;p.saleRevenue+=price;transferLargeSection(i,-1);
- lot.owner=-1;lot.level=0;lot.project=null;lot.tenant=null;lot.investor=null;lot.developmentSpent=0;
+ records();const price=Math.round(marketBase(lot,'buyer'));
+ p.money+=price;p.saleRevenue+=price;municipalizePlot(i);
  actionSpend();note('🏷 '+p.name+' продал '+lot.name+' фонду за '+format(price));
  quickClose();render();return true;
 }
@@ -134,10 +134,10 @@ function ceiling(index,i){
 function sealedResult(bid){
  const a=state.auction;if(!a?.sealed)return false;
  if(Number.isFinite(bid)&&bid>=a.minBid)a.offers.push({owner:a.humanBidder,price:bid,order:a.offers.length});
- const offers=a.offers.filter(o=>o.price>=a.minBid&&state.players[o.owner].money>=o.price).sort((x,y)=>y.price-x.price||x.order-y.order);
+ const offers=a.offers.filter(o=>o.price>=a.minBid&&state.players[o.owner].money>=o.price).sort((x,y)=>y.price-x.price||((x.owner-a.initiator+state.players.length)%state.players.length)-((y.owner-a.initiator+state.players.length)%state.players.length));
  a.history=offers.map(o=>state.players[o.owner].name+': '+format(o.price));
- if(offers.length<2){
-  a.price=0;a.leader=-1;a.history.push('Недостаточно ставок: необходимо минимум две.');
+ if(offers.length<1){
+  a.price=0;a.leader=-1;a.history.push('Нет действительных ставок.');
   if(!state.landDeck.includes(a.lot))state.landDeck.push(a.lot);
  }else{
   a.leader=offers[0].owner;a.price=offers[0].price;
@@ -148,37 +148,57 @@ function sealedResult(bid){
  if(a.humanBidder<0)closeAuctionResult();
  return true;
 }
+function bidFeedback(){
+ const a=state?.auction;if(!a?.sealed)return false;
+ const input=E('auctionBid'),money=state.players[a.humanBidder].money,bid=Number(input.value);
+ let message='';
+ if(money<a.minBid)message='Для участия нужно '+format(a.minBid)+'. Ваш капитал: '+format(money)+'. Можно отказаться от участия.';
+ else if(!Number.isSafeInteger(bid)||input.value==='')message='Введите целую сумму от '+format(a.minBid)+' до '+format(money)+'.';
+ else if(window.DeveloperRenewal&&bid%25)message='Ставка должна быть кратна25 тыс.';
+ else if(bid>money)message='Недостаточно средств: ставка '+format(bid)+', ваш капитал '+format(money)+'. Уменьшите ставку.';
+ else if(bid<a.minBid)message='Ставка ниже стартовой цены. Минимум: '+format(a.minBid)+'.';
+ input.setAttribute('aria-invalid',String(!!message));
+ E('auctionError').textContent=message||'Допустимая ставка: от '+format(a.minBid)+' до '+format(money)+'. Победитель платит свою ставку.';
+ E('auctionError').dataset.invalid=String(!!message);
+ return !message;
+}
 function sealedView(){
  const a=state?.auction;if(!a?.sealed)return;
  const participant=state.players[a.humanBidder],modal=E('auctionOverlay');
- E('auctionTitle').textContent='🔒 Закрытый аукцион';
+ E('auctionTitle').textContent=(a.kind==='city'?'Городское здание':a.kind==='frozen'?'Незавершённая стройка':'Земельный аукцион')+' · '+participant.name;
  E('auctionInfo').textContent=state.plots[a.lot].name+' · старт '+format(a.minBid)+
   ' · ваш капитал '+format(participant.money)+'. Ставки соперников будут раскрыты после вашего решения.';
- E('auctionBid').min=a.minBid;E('auctionBid').max=participant.money;
+ E('auctionBid').step=window.DeveloperRenewal?25:1;E('auctionBid').min=a.minBid;E('auctionBid').max=participant.money;
  E('auctionBid').value=a.minBid;E('auctionBid').disabled=participant.money<a.minBid;
+ E('auctionBid').oninput=bidFeedback;E('auctionBid').setAttribute('aria-describedby','auctionError');
+ const hint=modal.querySelector('.auction-hint');if(hint)hint.textContent='Одна закрытая ставка. Ставки соперников раскрываются после вашего решения.';
  const label=modal.querySelector('label[for="auctionBid"]');if(label)label.textContent='Ваша окончательная ставка';
  const buttons=modal.querySelectorAll('.auction-buttons button');
  if(buttons[0]){buttons[0].textContent='🔒 Подать ставку';buttons[0].disabled=participant.money<a.minBid;}
  if(buttons[1])buttons[1].textContent='Отказаться';
- E('auctionError').textContent='Первая цена: победитель платит собственную ставку. Минимум две действительные заявки.';
+ bidFeedback();
  modal.hidden=false;
 }
-function sealedStart(index,initiator){
- if(!live()||!state.rolled||state.auction||state.pendingCard||state.plots[index]?.owner!==-1)return false;
+function sealedStart(index,initiator,options={}){
+ if(!live()||!state.rolled||state.auction||state.pendingCard)return false;
+ if(window.developerAuctionAllowedV024){if(!window.developerAuctionAllowedV024(index,initiator,options))return false;}else if(state.plots[index]?.owner!==-1||state.plots[index]?.cityOwned)return false;
  ensureLandDeck();const pos=state.landDeck.indexOf(index);if(pos>=0)state.landDeck.splice(pos,1);
- const human=state.players.findIndex(p=>!p.bot);
+ const order=state.players.map((_,k)=>(initiator+k)%state.players.length);
+ const human=order.find(i=>!state.players[i].bot)??-1;
  state.auction={lot:index,price:0,minBid:state.plots[index].price,step:0,leader:-1,initiator,
-  humanBidder:human,botInitiated:state.players[initiator].bot,sealed:true,offers:[],
-  active:state.players.map(()=>true),history:[],round:0};
+  humanBidders:order.filter(i=>!state.players[i].bot),bidderCursor:0,humanBidder:human,botInitiated:state.players[initiator].bot,sealed:true,offers:[],
+  active:state.players.map(()=>true),history:[],round:0,...options};
  const a=state.auction;
- for(let i=0;i<state.players.length;i++)if(state.players[i].bot){
-  const amount=ceiling(index,i);
+ if(window.developerAuctionStartedV024)window.developerAuctionStartedV024(a);
+ for(const i of order)if(state.players[i].bot){
+  const amount=window.developerAuctionBotBidV024?window.developerAuctionBotBidV024(a,i):ceiling(index,i);
   if(amount>=a.minBid)a.offers.push({owner:i,price:amount,order:a.offers.length});
  }
  selectedLot=index;note('🔒 Земельный аукцион: участок №'+(index+1)+'. Закрытые ставки.');
  if(human>=0){sealedView();render();return true;}
  return sealedResult(null);
 }
+window.developerStartSealedAuction=sealedStart;
 window.showAuction=function(){if(state?.auction?.sealed)sealedView();};
 window.beginAuction=function(index){
  if(index<0)return openLandSelection();
@@ -186,16 +206,20 @@ window.beginAuction=function(index){
  return sealedStart(index,state.turn);
 };
 window.startBotAuction=function(index,botIndex){
- if(!live()||!state.rolled||state.turn!==botIndex||!state.players[botIndex].bot||eventNames[state.players[botIndex].pos]!=='Аукцион'||state.plots[index]?.owner!==-1)return false;
+ if(!live()||!state.rolled||state.turn!==botIndex||!state.players[botIndex].bot||eventNames[state.players[botIndex].pos]!=='Аукцион'||(state.plots[index]?.owner!==-1||state.plots[index]?.cityOwned))return false;
  if(ceiling(index,botIndex)<state.plots[index].price)return false;
  state.pendingBotTurnCompletion=state.players.some(p=>!p.bot);
  return sealedStart(index,botIndex);
 };
 window.submitAuctionBid=function(pass=false){
  const a=state?.auction;if(!a?.sealed)return false;
- if(pass)return sealedResult(null);
- const bid=Number(E('auctionBid').value),p=state.players[a.humanBidder];
- if(!Number.isSafeInteger(bid)||bid<a.minBid||bid>p.money){E('auctionError').textContent='Введите целую ставку от '+format(a.minBid)+' до '+format(p.money);return false;}
+ const bid=pass?null:Number(E('auctionBid').value);
+ if(!pass&&!bidFeedback()){E('auctionBid').focus?.();return false;}
+ const humans=a.humanBidders||[a.humanBidder],cursor=a.bidderCursor||0;
+ if(cursor+1<humans.length){
+  if(bid!==null)a.offers.push({owner:a.humanBidder,price:bid,order:a.offers.length});
+  a.bidderCursor=cursor+1;a.humanBidder=humans[a.bidderCursor];sealedView();return true;
+ }
  return sealedResult(bid);
 };
 // Fixed-length standard campaign: an adjudicated outcome if rivals block every four-lot chain.
@@ -247,10 +271,9 @@ function finalizeCampaign(){
     ' победил по стоимости компании и результатам девелопмента ('+format(winner.score)+').');
 }
 window.endTurn=function(){
- if(live()&&Number.isInteger(state.turnLimit)&&state.rolled&&!state.pendingCard&&!state.auction&&
+ if(live()&&state.rolled&&!state.pendingCard&&!state.auction&&
   !state.constructionDeckChoice&&!Number.isInteger(state.winnerIndex)){
   state.completedTurns=(state.completedTurns||0)+1;
-  if(state.completedTurns>=state.turnLimit){finalizeCampaign();render();return;}
  }
  return oldEndTurn();
 };
@@ -269,12 +292,11 @@ window.render=function(){
    '<span>🏢 Объекты <b>'+ready.length+'</b></span><span>🏘 Арендаторы <b>'+ready.filter(l=>l.tenant).length+'</b></span>'+
    '<span>🏗 Всего построено <b>'+p.completedProjects+'</b></span><span>💰 Продажи <b>'+format(p.saleRevenue)+'</b></span></div>'+
    '<p class="eco-rule">Стандарт: '+(Number.isInteger(state.turnLimit)?(state.completedTurns||0)+' / '+state.turnLimit+' ходов. ':'Без ограничения ходов. ')+
-   'Досрочная победа: цепь 4 зданий или 5 введённых проектов, '+format(2350)+
-   ' продаж, '+format(650)+' капитала и 2 здания в разных районах, включая среднее/крупное.</p>';
+   'Победа: четыре собственных готовых здания в одной прямой. Повороты и диагонали не считаются.</p>';
  }
 };
 const oldNewGame=window.newGame;
-window.newGame=function(){E('auditDecision')?.remove();quickClose();oldNewGame();state.turnLimit=240;state.completedTurns=0;records();render();};
+window.newGame=function(){E('auditDecision')?.remove();quickClose();oldNewGame();state.turnLimit=null;state.completedTurns=0;records();render();};
 const host=document.querySelector('.company-panel');
 if(host&&!E('developerStrategy')){const panel=document.createElement('section');panel.id='developerStrategy';panel.className='eco-summary';host.appendChild(panel);}
 const css=document.createElement('style');

@@ -1,0 +1,212 @@
+[
+  {
+    "seed": 24001,
+    "players": 4,
+    "turns": 467,
+    "winner": 2,
+    "round": 117,
+    "line": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "ready": 16,
+    "cash": [
+      3211,
+      12886,
+      12385,
+      304
+    ],
+    "professionStages": 8,
+    "freeStages": 6,
+    "trades": 10,
+    "paidDraws": 0,
+    "cityPurchases": 2,
+    "stall": null
+  },
+  {
+    "seed": 24002,
+    "players": 4,
+    "turns": 246,
+    "winner": 1,
+    "round": 62,
+    "line": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ready": 11,
+    "cash": [
+      906,
+      4464,
+      150,
+      575
+    ],
+    "professionStages": 5,
+    "freeStages": 4,
+    "trades": 10,
+    "paidDraws": 0,
+    "cityPurchases": 1,
+    "stall": null
+  },
+  {
+    "seed": 24003,
+    "players": 4,
+    "turns": 324,
+    "winner": 3,
+    "round": 81,
+    "line": [
+      1,
+      7,
+      13,
+      19
+    ],
+    "ready": 11,
+    "cash": [
+      135,
+      203,
+      2129,
+      578
+    ],
+    "professionStages": 7,
+    "freeStages": 4,
+    "trades": 7,
+    "paidDraws": 0,
+    "cityPurchases": 1,
+    "stall": null
+  },
+  {
+    "seed": 24004,
+    "players": 4,
+    "turns": 242,
+    "winner": 1,
+    "round": 61,
+    "line": [
+      2,
+      8,
+      14,
+      20
+    ],
+    "ready": 11,
+    "cash": [
+      1192,
+      352,
+      1730,
+      150
+    ],
+    "professionStages": 7,
+    "freeStages": 3,
+    "trades": 6,
+    "paidDraws": 0,
+    "cityPurchases": 0,
+    "stall": null
+  },
+  {
+    "seed": 24005,
+    "players": 3,
+    "turns": 297,
+    "winner": 2,
+    "round": 99,
+    "line": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "ready": 10,
+    "cash": [
+      3435,
+      3992,
+      3120
+    ],
+    "professionStages": 4,
+    "freeStages": 5,
+    "trades": 8,
+    "paidDraws": 0,
+    "cityPurchases": 0,
+    "stall": null
+  },
+  {
+    "seed": 24006,
+    "players": 5,
+    "turns": 366,
+    "winner": 0,
+    "round": 74,
+    "line": [
+      7,
+      8,
+      9,
+      10
+    ],
+    "ready": 15,
+    "cash": [
+      3166,
+      2492,
+      1736,
+      205,
+      3809
+    ],
+    "professionStages": 6,
+    "freeStages": 7,
+    "trades": 15,
+    "paidDraws": 0,
+    "cityPurchases": 2,
+    "stall": null
+  },
+  {
+    "seed": 24007,
+    "players": 6,
+    "turns": 501,
+    "winner": 2,
+    "round": 84,
+    "line": [
+      7,
+      8,
+      9,
+      10
+    ],
+    "ready": 19,
+    "cash": [
+      2569,
+      2018,
+      5297,
+      2078,
+      3697,
+      2263
+    ],
+    "professionStages": 13,
+    "freeStages": 9,
+    "trades": 20,
+    "paidDraws": 0,
+    "cityPurchases": 0,
+    "stall": null
+  },
+  {
+    "seed": 26005,
+    "players": 4,
+    "turns": 298,
+    "winner": 1,
+    "round": 75,
+    "line": [
+      0,
+      6,
+      12,
+      18
+    ],
+    "ready": 11,
+    "cash": [
+      1087,
+      6,
+      4647,
+      4245
+    ],
+    "professionStages": 7,
+    "freeStages": 5,
+    "trades": 11,
+    "paidDraws": 0,
+    "cityPurchases": 0,
+    "stall": null
+  }
+]

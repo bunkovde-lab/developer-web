@@ -10,13 +10,14 @@ assert(fs.existsSync(manifestFile),'SVG manifest required: assets/svg/manifest.j
 const manifest=JSON.parse(fs.readFileSync(manifestFile,'utf8'));
 assert.equal(manifest.version,1,'Expected SVG manifest version 1');
 assert(manifest.assets&&typeof manifest.assets==='object'&&!Array.isArray(manifest.assets),'SVG assets must be a key/path object');
+for(const [alias,canonical] of Object.entries(manifest.aliases||{}))assert(alias!==canonical&&manifest.assets[alias]===manifest.assets[canonical]&&!manifest.aliases[canonical],'Invalid SVG alias '+alias);
 const declared=new Set();
 for(const [id,rel] of Object.entries(manifest.assets)){
  assert.match(id,/^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/,'Invalid SVG asset key: '+id);
  assert.equal(typeof rel,'string','SVG asset path must be a string: '+id);
- assert.match(rel,/^assets\/svg\/(?:[a-z0-9-]+\/)*[a-z0-9-]+\.svg$/,'Invalid SVG asset path '+id+': '+rel);
+ assert.match(rel,/^assets\/svg\/(?:[a-z0-9-]+\/)*[a-z0-9-]+\.svg$/i,'Invalid SVG asset path '+id+': '+rel);
  assert(!rel.split('/').includes('..'),'SVG asset path escapes root: '+rel);
- assert(!declared.has(rel),'Two SVG keys point to same path: '+rel);
+ if(declared.has(rel)){const canonical=manifest.aliases?.[id];assert(canonical&&manifest.assets[canonical]===rel&&!manifest.aliases[canonical],'Shared SVG must have an explicit direct canonical alias: '+id);}
  declared.add(rel);
  const absolute=path.join(root,rel);
  assert(fs.existsSync(absolute),'Missing SVG file for key '+id+': '+rel);

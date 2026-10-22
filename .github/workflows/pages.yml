@@ -1,22 +1,11 @@
-name: Publish Developer Web
+name: Publish Developer Online
 on:
   push:
     branches: [main]
     paths:
-      - 'index.html'
-      - 'balance.js'
-      - 'marketplace.js'
-      - 'city-requests.js'
-      - 'auction-competition.js'
-      - 'pace.js'
-      - 'visual.js'
-      - 'visual.css'
-      - 'scene-motion.js'
-      - 'scene-motion.css'
-      - 'board-geometry.css'
-      - 'trade-context.css'
-      - 'game-rework-v016.js'
-      - 'work-economy-v020.js'
+      - '*.html'
+      - '*.js'
+      - '*.css'
       - 'assets/**'
       - 'scripts/build-site.cjs'
       - '.github/workflows/pages.yml'
@@ -30,106 +19,37 @@ concurrency:
   cancel-in-progress: true
 jobs:
   deploy:
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - uses: actions/configure-pages@v5
-      - name: Build pinned stable, RC1, v0.19 control, and experimental QA v0.20
+      - name: Check current rules and assets
+        run: |
+          node tests/renewal-v026.cjs
+          node tests/svg-assets.cjs
+          node tests/atelier-presentation.cjs
+      - name: Build online client
+        run: node scripts/build-site.cjs --out site
+      - name: Preserve historic reference builds
         shell: bash
         run: |
           set -euo pipefail
-          # Last verified v0.18 stable source, deliberately unchanged by RC review.
-          stable_sha="7ece96d3315a2e5698c086122f356b7209fc658a"
-          git fetch --no-tags --depth=1 origin "$stable_sha"
-          stable="$(mktemp -d)"
-          git archive "$stable_sha" | tar -x -C "$stable"
-          (
-            cd "$stable"
-            GITHUB_SHA="$stable_sha" node scripts/build-site.cjs --out dist
-          )
-          mkdir -p site
-          cp -R "$stable/dist/." site/
-
-          # Preserve the last geometry-reviewed RC1 separately from new QA balance.
-          rc_sha="0a6c0f1bcc95ac628ffd9a2e355addcca8973f53"
-          git fetch --no-tags --depth=1 origin "$rc_sha"
-          rc="$(mktemp -d)"
-          git archive "$rc_sha" | tar -x -C "$rc"
-          (
-            cd "$rc"
-            GITHUB_SHA="$rc_sha" node scripts/build-site.cjs --out dist
-          )
-          mkdir -p site/previews/v0181-rc1
-          cp -R "$rc/dist/." site/previews/v0181-rc1/
-
-          # v0.20 QA is experimental: preserve both previous public links.
-          GITHUB_SHA="$GITHUB_SHA" PR_NUMBER=28 node scripts/build-site.cjs --out dist
-          test -f dist/work-economy-v020.js
-          grep -q 'v0.20.0-qa1' dist/index.html
-          test "$(node -p "require('./assets/svg/manifest.json').version")" = 1
-          mkdir -p site/previews/v020-qa
-          cp -R dist/. site/previews/v020-qa/
-          cat >site/previews/v020-qa/QA_SOURCE.json <<EOF
-          {
-            "release": "v0.20.0-qa1",
-            "status": "EXPERIMENTAL - four-player QA calibration pending owner acceptance",
-            "source_sha": "$GITHUB_SHA",
-            "qa_research_pr": 28,
-            "preview_path": "/developer-web/previews/v020-qa/"
-          }
-          EOF
-
-          # Isolated v0.19 control: proven WORK #18 plus QA #19 branch.
-          # This deliberately does NOT overwrite main/experimental v0.20 economics.
-          v019_sha="7f22188a37be4dbad5e4b181d381894bec115e7c"
-          git fetch --no-tags --depth=1 origin "$v019_sha"
-          v019="$(mktemp -d)"
-          git archive "$v019_sha" | tar -x -C "$v019"
-          (
-            cd "$v019"
-            GITHUB_SHA="$v019_sha" PR_NUMBER=19 node scripts/build-site.cjs --out dist
-            node tests/build-package.cjs
-          )
-          grep -q 'v0.19-test' "$v019/dist/index.html"
-          test -f "$v019/dist/game/runtime.js"
-          test -f "$v019/dist/BUILD_MANIFEST.json"
-          mkdir -p site/previews/v019
-          cp -R "$v019/dist/." site/previews/v019/
-          cat >site/previews/v019/CONTROL_SOURCE.json <<EOF
-          {
-            "release": "v0.19-test",
-            "status": "CONTROL PREVIEW - not stable, physical Android unverified",
-            "source_sha": "$v019_sha",
-            "work_pr": 18,
-            "qa_pr": 19,
-            "exclusions": "SVG #20 and motion #21 are not ported into this isolated old-core snapshot",
-            "preview_path": "/developer-web/previews/v019/"
-          }
-          EOF
-
-          # Maintain the old preview address for existing Android feedback.
-          mkdir -p site/previews/v018
-          cp -R "$stable/dist/." site/previews/v018/
-          cat >site/previews/v0181-rc1/RC1_SOURCE.json <<EOF
-          {
-            "release": "v0.18.1-rc1",
-            "status": "TEST ONLY - not stable",
-            "source_sha": "$rc_sha",
-            "stable_source_sha": "$stable_sha",
-            "preview_path": "/developer-web/previews/v0181-rc1/"
-          }
-          EOF
-          touch site/.nojekyll
-          echo "Stable root from $stable_sha" >> "$GITHUB_STEP_SUMMARY"
-          echo "Pinned RC1 preview: $rc_sha at https://bunkovde-lab.github.io/developer-web/previews/v0181-rc1/" >> "$GITHUB_STEP_SUMMARY"
-          echo "v0.19 control: $v019_sha at https://bunkovde-lab.github.io/developer-web/previews/v019/" >> "$GITHUB_STEP_SUMMARY"
-          echo "Experimental QA v0.20: $GITHUB_SHA at https://bunkovde-lab.github.io/developer-web/previews/v020-qa/" >> "$GITHUB_STEP_SUMMARY"
+          for item in 'v018:7ece96d3315a2e5698c086122f356b7209fc658a' 'v0181-rc1:0a6c0f1bcc95ac628ffd9a2e355addcca8973f53' 'v019:7f22188a37be4dbad5e4b181d381894bec115e7c' 'v020-qa:f91ac3102eb6796a72f216aca443dc964082824e'; do
+            name="${item%%:*}"
+            sha="${item#*:}"
+            git fetch --no-tags --depth=1 origin "$sha"
+            legacy="$(mktemp -d)"
+            git archive "$sha" | tar -x -C "$legacy"
+            (cd "$legacy" && GITHUB_SHA="$sha" node scripts/build-site.cjs --out dist)
+            mkdir -p "site/previews/$name"
+            cp -R "$legacy/dist/." "site/previews/$name/"
+          done
+      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

@@ -43,7 +43,7 @@ window.closeAuctionResult=function(){
  if(!state||state.auction||!state.pendingBotTurnCompletion)return;
  state.pendingBotTurnCompletion=false;
  // The bot paused its turn for a human auction. Resume only after result closed.
- if(state.players[state.turn]?.bot){const session=state,actor=state.turn,round=state.round;window.setTimeout(()=>{if(state===session&&state.turn===actor&&state.round===round)window.endTurn();},200);}
+ if(state.players[state.turn]?.bot){const session=state,actor=state.turn,round=state.round;window.setTimeout(()=>{if(state===session&&state.turn===actor&&state.round===round){if(window.developerResumeBot)window.developerResumeBot();else window.endTurn();}},200);}
 };
 window.startBotAuction=startBotAuction;
 window.finishBotOnlyAuction=finishBotOnlyAuction;

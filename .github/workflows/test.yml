@@ -12,6 +12,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: User economic rules, manual-player trades, municipal ownership and neighbour rents
+        run: node tests/rules-v021.cjs
       - name: Game mechanics and syntax smoke tests
         run: node tests/smoke.cjs
       - name: Spatial map, explicit land auction and development rules
@@ -22,9 +24,9 @@ jobs:
         run: node tests/pace.cjs
       - name: V0.16 gameplay, sealed auctions and alternate ending
         run: node tests/rework.cjs
-      - name: V0.16 sixteen complete deterministic campaigns
+      - name: V0.16 sixteen bounded regression diagnostics
         run: node tests/tournament-v016.cjs
-      - name: QA 1000 deterministic full economic campaigns (3–6 players)
+      - name: QA 1000 bounded economic diagnostics (3–6 players)
         timeout-minutes: 20
         run: QA_GAMES=1000 node tests/qa-mass-campaigns.cjs
       - name: SVG manifest and safe vector asset validation

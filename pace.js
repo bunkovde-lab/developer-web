@@ -4,7 +4,7 @@
  */
 (function(){
 "use strict";
-const PACE={version:1,startCapital:1250,largeTableCapital:1650,sixPlayerCapital:1650,starterStages:['utilities','permits','construction'],constructionDraws:3,largeTableConstructionDraws:4,workMultiplier:1};
+const PACE={version:1,startCapital:1500,largeTableCapital:1500,sixPlayerCapital:1500,starterStages:['utilities','permits','construction','commissioning'],constructionDraws:3,largeTableConstructionDraws:4,workMultiplier:1};
 const stageIds=['utilities','permits','construction','commissioning'];
 const baseNewGame=window.newGame,baseChoice=window.selectConstructionDeck;
 function takeFromStock(deck){
@@ -36,10 +36,10 @@ function seedNewGame(){
   const p=state.players[i];p.money=state.players.length===6?PACE.sixPlayerCapital:largerTable?PACE.largeTableCapital:PACE.startCapital;
   // Players always begin without land. Auction cells remain the sole acquisition path.
   // No reserved, gifted, discounted or auto-purchased plots at game creation.
-  let items=0;for(const deck of (state.players.length===6?[...PACE.starterStages,'commissioning']:PACE.starterStages))if(grantCard(i,deck))items++;
+  let items=0;for(const deck of PACE.starterStages)if(grantCard(i,deck))items++;
   note('⚡ '+p.name+': на старте нет участков; '+items+' карты находятся в руке. Земля — только через аукцион.');
  }
- note('⚡ На старте никто не владеет участками. Земля приобретается на аукционах. Ускоренная раздача карт остаётся тестовой настройкой.');
+ note('⚡ На старте никто не владеет участками. Земля приобретается на аукционах. На старте у каждого есть карты первых этапов.');
  render();
 }
 function newGame(){baseNewGame();seedNewGame();}

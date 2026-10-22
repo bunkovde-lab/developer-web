@@ -1,0 +1,830 @@
+[
+  {
+    "seed": 26100,
+    "players": 4,
+    "turns": 333,
+    "winner": 0,
+    "winType": "line",
+    "professions": [
+      "foreman",
+      "designer",
+      "permits",
+      "lawyer"
+    ],
+    "strategies": [
+      "line",
+      "rental",
+      "developer",
+      "tower"
+    ],
+    "round": 84,
+    "line": [
+      5,
+      11,
+      17,
+      23
+    ],
+    "occupied": 16,
+    "towerPayments": 1,
+    "sales": 3,
+    "ready": 16,
+    "cash": [
+      2075,
+      725,
+      150,
+      975
+    ],
+    "professionStages": 11,
+    "freeStages": 7,
+    "trades": 11,
+    "paidDraws": 0,
+    "cityPurchases": 5,
+    "stall": null
+  },
+  {
+    "seed": 26101,
+    "players": 4,
+    "turns": 382,
+    "winner": 2,
+    "winType": "line",
+    "professions": [
+      "designer",
+      "permits",
+      "lawyer",
+      "financier"
+    ],
+    "strategies": [
+      "rental",
+      "developer",
+      "tower",
+      "line"
+    ],
+    "round": 96,
+    "line": [
+      0,
+      6,
+      12,
+      18
+    ],
+    "occupied": 16,
+    "towerPayments": 4,
+    "sales": 2,
+    "ready": 16,
+    "cash": [
+      2375,
+      3275,
+      575,
+      1050
+    ],
+    "professionStages": 12,
+    "freeStages": 5,
+    "trades": 11,
+    "paidDraws": 0,
+    "cityPurchases": 4,
+    "stall": null
+  },
+  {
+    "seed": 26102,
+    "players": 4,
+    "turns": 291,
+    "winner": 0,
+    "winType": "line",
+    "professions": [
+      "permits",
+      "lawyer",
+      "financier",
+      "foreman"
+    ],
+    "strategies": [
+      "developer",
+      "tower",
+      "line",
+      "rental"
+    ],
+    "round": 73,
+    "line": [
+      5,
+      11,
+      17,
+      23
+    ],
+    "occupied": 16,
+    "towerPayments": 4,
+    "sales": 2,
+    "ready": 16,
+    "cash": [
+      2300,
+      950,
+      125,
+      4075
+    ],
+    "professionStages": 13,
+    "freeStages": 6,
+    "trades": 14,
+    "paidDraws": 0,
+    "cityPurchases": 3,
+    "stall": null
+  },
+  {
+    "seed": 26103,
+    "players": 4,
+    "turns": 271,
+    "winner": 2,
+    "winType": "line",
+    "professions": [
+      "lawyer",
+      "financier",
+      "foreman",
+      "designer"
+    ],
+    "strategies": [
+      "tower",
+      "line",
+      "rental",
+      "developer"
+    ],
+    "round": 68,
+    "line": [
+      5,
+      11,
+      17,
+      23
+    ],
+    "occupied": 16,
+    "towerPayments": 2,
+    "sales": 0,
+    "ready": 16,
+    "cash": [
+      400,
+      1550,
+      1550,
+      550
+    ],
+    "professionStages": 14,
+    "freeStages": 6,
+    "trades": 16,
+    "paidDraws": 0,
+    "cityPurchases": 4,
+    "stall": null
+  },
+  {
+    "seed": 26104,
+    "players": 4,
+    "turns": 380,
+    "winner": 3,
+    "winType": "skyscraper",
+    "professions": [
+      "financier",
+      "foreman",
+      "designer",
+      "permits"
+    ],
+    "strategies": [
+      "line",
+      "rental",
+      "developer",
+      "tower"
+    ],
+    "round": 95,
+    "line": [
+      21
+    ],
+    "occupied": 18,
+    "towerPayments": 4,
+    "sales": 0,
+    "ready": 18,
+    "cash": [
+      550,
+      50,
+      1375,
+      1775
+    ],
+    "professionStages": 18,
+    "freeStages": 6,
+    "trades": 13,
+    "paidDraws": 0,
+    "cityPurchases": 6,
+    "stall": null
+  },
+  {
+    "seed": 26105,
+    "players": 4,
+    "turns": 452,
+    "winner": 3,
+    "winType": "line",
+    "professions": [
+      "foreman",
+      "designer",
+      "permits",
+      "lawyer"
+    ],
+    "strategies": [
+      "rental",
+      "developer",
+      "tower",
+      "line"
+    ],
+    "round": 113,
+    "line": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "occupied": 16,
+    "towerPayments": 8,
+    "sales": 1,
+    "ready": 16,
+    "cash": [
+      12125,
+      2400,
+      250,
+      4500
+    ],
+    "professionStages": 11,
+    "freeStages": 7,
+    "trades": 9,
+    "paidDraws": 0,
+    "cityPurchases": 6,
+    "stall": null
+  },
+  {
+    "seed": 26106,
+    "players": 4,
+    "turns": 272,
+    "winner": 1,
+    "winType": "skyscraper",
+    "professions": [
+      "designer",
+      "permits",
+      "lawyer",
+      "financier"
+    ],
+    "strategies": [
+      "developer",
+      "tower",
+      "line",
+      "rental"
+    ],
+    "round": 68,
+    "line": [
+      8
+    ],
+    "occupied": 16,
+    "towerPayments": 4,
+    "sales": 2,
+    "ready": 16,
+    "cash": [
+      2150,
+      1275,
+      1800,
+      900
+    ],
+    "professionStages": 18,
+    "freeStages": 6,
+    "trades": 10,
+    "paidDraws": 0,
+    "cityPurchases": 5,
+    "stall": null
+  },
+  {
+    "seed": 26107,
+    "players": 4,
+    "turns": 252,
+    "winner": 2,
+    "winType": "line",
+    "professions": [
+      "permits",
+      "lawyer",
+      "financier",
+      "foreman"
+    ],
+    "strategies": [
+      "tower",
+      "line",
+      "rental",
+      "developer"
+    ],
+    "round": 63,
+    "line": [
+      0,
+      6,
+      12,
+      18
+    ],
+    "occupied": 16,
+    "towerPayments": 0,
+    "sales": 3,
+    "ready": 16,
+    "cash": [
+      425,
+      1500,
+      2275,
+      2075
+    ],
+    "professionStages": 22,
+    "freeStages": 5,
+    "trades": 12,
+    "paidDraws": 0,
+    "cityPurchases": 2,
+    "stall": null
+  },
+  {
+    "seed": 26108,
+    "players": 4,
+    "turns": 287,
+    "winner": 2,
+    "winType": "line",
+    "professions": [
+      "lawyer",
+      "financier",
+      "foreman",
+      "designer"
+    ],
+    "strategies": [
+      "line",
+      "rental",
+      "developer",
+      "tower"
+    ],
+    "round": 72,
+    "line": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "occupied": 16,
+    "towerPayments": 3,
+    "sales": 3,
+    "ready": 16,
+    "cash": [
+      900,
+      2125,
+      200,
+      750
+    ],
+    "professionStages": 16,
+    "freeStages": 5,
+    "trades": 9,
+    "paidDraws": 0,
+    "cityPurchases": 3,
+    "stall": null
+  },
+  {
+    "seed": 26109,
+    "players": 4,
+    "turns": 353,
+    "winner": 0,
+    "winType": "skyscraper",
+    "professions": [
+      "financier",
+      "foreman",
+      "designer",
+      "permits"
+    ],
+    "strategies": [
+      "rental",
+      "developer",
+      "tower",
+      "line"
+    ],
+    "round": 89,
+    "line": [
+      5
+    ],
+    "occupied": 17,
+    "towerPayments": 7,
+    "sales": 1,
+    "ready": 17,
+    "cash": [
+      875,
+      1550,
+      375,
+      1325
+    ],
+    "professionStages": 16,
+    "freeStages": 5,
+    "trades": 12,
+    "paidDraws": 0,
+    "cityPurchases": 4,
+    "stall": null
+  },
+  {
+    "seed": 26110,
+    "players": 4,
+    "turns": 320,
+    "winner": 3,
+    "winType": "line",
+    "professions": [
+      "foreman",
+      "designer",
+      "permits",
+      "lawyer"
+    ],
+    "strategies": [
+      "developer",
+      "tower",
+      "line",
+      "rental"
+    ],
+    "round": 80,
+    "line": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "occupied": 16,
+    "towerPayments": 0,
+    "sales": 2,
+    "ready": 16,
+    "cash": [
+      1375,
+      950,
+      4325,
+      3075
+    ],
+    "professionStages": 9,
+    "freeStages": 6,
+    "trades": 17,
+    "paidDraws": 0,
+    "cityPurchases": 3,
+    "stall": null
+  },
+  {
+    "seed": 26111,
+    "players": 4,
+    "turns": 378,
+    "winner": 1,
+    "winType": "line",
+    "professions": [
+      "designer",
+      "permits",
+      "lawyer",
+      "financier"
+    ],
+    "strategies": [
+      "tower",
+      "line",
+      "rental",
+      "developer"
+    ],
+    "round": 95,
+    "line": [
+      0,
+      6,
+      12,
+      18
+    ],
+    "occupied": 16,
+    "towerPayments": 4,
+    "sales": 1,
+    "ready": 16,
+    "cash": [
+      700,
+      4600,
+      2725,
+      500
+    ],
+    "professionStages": 16,
+    "freeStages": 7,
+    "trades": 12,
+    "paidDraws": 0,
+    "cityPurchases": 4,
+    "stall": null
+  },
+  {
+    "seed": 26112,
+    "players": 4,
+    "turns": 299,
+    "winner": 0,
+    "winType": "line",
+    "professions": [
+      "permits",
+      "lawyer",
+      "financier",
+      "foreman"
+    ],
+    "strategies": [
+      "line",
+      "rental",
+      "developer",
+      "tower"
+    ],
+    "round": 75,
+    "line": [
+      5,
+      11,
+      17,
+      23
+    ],
+    "occupied": 16,
+    "towerPayments": 0,
+    "sales": 1,
+    "ready": 16,
+    "cash": [
+      2975,
+      850,
+      1325,
+      1800
+    ],
+    "professionStages": 16,
+    "freeStages": 7,
+    "trades": 4,
+    "paidDraws": 0,
+    "cityPurchases": 4,
+    "stall": null
+  },
+  {
+    "seed": 26113,
+    "players": 4,
+    "turns": 286,
+    "winner": 1,
+    "winType": "skyscraper",
+    "professions": [
+      "lawyer",
+      "financier",
+      "foreman",
+      "designer"
+    ],
+    "strategies": [
+      "rental",
+      "developer",
+      "tower",
+      "line"
+    ],
+    "round": 72,
+    "line": [
+      8
+    ],
+    "occupied": 17,
+    "towerPayments": 4,
+    "sales": 0,
+    "ready": 17,
+    "cash": [
+      2325,
+      675,
+      875,
+      1375
+    ],
+    "professionStages": 18,
+    "freeStages": 7,
+    "trades": 11,
+    "paidDraws": 0,
+    "cityPurchases": 4,
+    "stall": null
+  },
+  {
+    "seed": 26114,
+    "players": 4,
+    "turns": 295,
+    "winner": 2,
+    "winType": "line",
+    "professions": [
+      "financier",
+      "foreman",
+      "designer",
+      "permits"
+    ],
+    "strategies": [
+      "developer",
+      "tower",
+      "line",
+      "rental"
+    ],
+    "round": 74,
+    "line": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "occupied": 16,
+    "towerPayments": 0,
+    "sales": 1,
+    "ready": 16,
+    "cash": [
+      700,
+      1175,
+      3200,
+      650
+    ],
+    "professionStages": 17,
+    "freeStages": 5,
+    "trades": 7,
+    "paidDraws": 0,
+    "cityPurchases": 6,
+    "stall": null
+  },
+  {
+    "seed": 26115,
+    "players": 4,
+    "turns": 395,
+    "winner": 2,
+    "winType": "line",
+    "professions": [
+      "foreman",
+      "designer",
+      "permits",
+      "lawyer"
+    ],
+    "strategies": [
+      "tower",
+      "line",
+      "rental",
+      "developer"
+    ],
+    "round": 99,
+    "line": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "occupied": 16,
+    "towerPayments": 8,
+    "sales": 1,
+    "ready": 16,
+    "cash": [
+      900,
+      1675,
+      6475,
+      650
+    ],
+    "professionStages": 10,
+    "freeStages": 7,
+    "trades": 8,
+    "paidDraws": 0,
+    "cityPurchases": 4,
+    "stall": null
+  },
+  {
+    "seed": 26116,
+    "players": 4,
+    "turns": 309,
+    "winner": 0,
+    "winType": "line",
+    "professions": [
+      "designer",
+      "permits",
+      "lawyer",
+      "financier"
+    ],
+    "strategies": [
+      "line",
+      "rental",
+      "developer",
+      "tower"
+    ],
+    "round": 78,
+    "line": [
+      20,
+      21,
+      22,
+      23
+    ],
+    "occupied": 16,
+    "towerPayments": 2,
+    "sales": 0,
+    "ready": 16,
+    "cash": [
+      2600,
+      4250,
+      400,
+      750
+    ],
+    "professionStages": 17,
+    "freeStages": 7,
+    "trades": 9,
+    "paidDraws": 0,
+    "cityPurchases": 3,
+    "stall": null
+  },
+  {
+    "seed": 26117,
+    "players": 4,
+    "turns": 300,
+    "winner": 3,
+    "winType": "line",
+    "professions": [
+      "permits",
+      "lawyer",
+      "financier",
+      "foreman"
+    ],
+    "strategies": [
+      "rental",
+      "developer",
+      "tower",
+      "line"
+    ],
+    "round": 75,
+    "line": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "occupied": 16,
+    "towerPayments": 0,
+    "sales": 2,
+    "ready": 16,
+    "cash": [
+      275,
+      500,
+      1225,
+      1350
+    ],
+    "professionStages": 14,
+    "freeStages": 5,
+    "trades": 16,
+    "paidDraws": 0,
+    "cityPurchases": 3,
+    "stall": null
+  },
+  {
+    "seed": 26118,
+    "players": 4,
+    "turns": 295,
+    "winner": 3,
+    "winType": "line",
+    "professions": [
+      "lawyer",
+      "financier",
+      "foreman",
+      "designer"
+    ],
+    "strategies": [
+      "developer",
+      "tower",
+      "line",
+      "rental"
+    ],
+    "round": 74,
+    "line": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "occupied": 16,
+    "towerPayments": 2,
+    "sales": 0,
+    "ready": 16,
+    "cash": [
+      1800,
+      400,
+      2475,
+      2375
+    ],
+    "professionStages": 13,
+    "freeStages": 5,
+    "trades": 13,
+    "paidDraws": 0,
+    "cityPurchases": 4,
+    "stall": null
+  },
+  {
+    "seed": 26119,
+    "players": 4,
+    "turns": 242,
+    "winner": 0,
+    "winType": "line",
+    "professions": [
+      "financier",
+      "foreman",
+      "designer",
+      "permits"
+    ],
+    "strategies": [
+      "tower",
+      "line",
+      "rental",
+      "developer"
+    ],
+    "round": 61,
+    "line": [
+      5,
+      11,
+      17,
+      23
+    ],
+    "occupied": 16,
+    "towerPayments": 1,
+    "sales": 1,
+    "ready": 16,
+    "cash": [
+      1000,
+      1700,
+      875,
+      800
+    ],
+    "professionStages": 9,
+    "freeStages": 5,
+    "trades": 12,
+    "paidDraws": 0,
+    "cityPurchases": 2,
+    "stall": null
+  }
+]
