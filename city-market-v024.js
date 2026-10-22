@@ -216,7 +216,7 @@ window.developerResumeBot=window.bot=function(){
   }
   if(busy())return;
   const owner=state.turn,p=current(),plan=bestLine(owner);
-  if(eventNames[p.pos]==='Аукцион'&&state.landAuctionKey!==key()&&unfinished(owner).length<2){
+  if(eventNames[p.pos]==='Аукцион'&&state.landAuctionKey!==key()&&unfinished(owner).length<(window.developerBotMaxProjects?window.developerBotMaxProjects(owner):2)){
    const lot=window.developerLandTarget26?developerLandTarget26(owner,plan):plan?.cells.find(i=>state.plots[i].owner<0&&!state.plots[i].cityOwned&&p.money>=state.plots[i].price+100);
    if(lot!==undefined){startBotAuction(lot,owner);if(busy()||state.pendingBotTurnCompletion)return;}
   }

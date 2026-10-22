@@ -35,4 +35,5 @@ export const api = {
   join: (code, profile, token) => request('/' + code + '/join', { body: { ...profile, token } }),
   room: (code, token) => request('/' + code, { token }),
   start: (code, token, revision) => request('/' + code + '/action', { token, body: { type: 'start', revision, requestId: newToken().slice(0, 32) } }),
+  action: (code, token, revision, body) => request('/' + code + '/action', { token, body: { ...body, revision, requestId: newToken().slice(0, 32) } }),
 };

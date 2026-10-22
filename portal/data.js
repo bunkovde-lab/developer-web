@@ -73,6 +73,15 @@ export function levelOf(xp) {
 }
 function roman(n) { return ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n] || String(n); }
 
+// Bot difficulty levels (bot-brain.js). Win shares are filled from docs/bots/training.json.
+export const BOT_LEVELS = [
+  { id: 'novice', name: 'Новичок', icon: 'premium/pawn-2.svg', text: 'Осторожно торгуется, держит одну стройку, иногда пропускает ход и ошибается с выбором земли.' },
+  { id: 'pro', name: 'Опытный', icon: 'premium/pawn-4.svg', text: 'Полноценный план 0.26: линия, две стройки, продажи с покупателем, финансирование и небоскрёб.' },
+  { id: 'master', name: 'Мастер', icon: 'premium/pawn-1.svg', text: 'Обучен самоигрой: перекрывает ваши линии на аукционах, точнее держит резерв и выбирает момент для продажи.' },
+  { id: 'mixed', name: 'Смешанный стол', icon: 'premium/pawn-5.svg', text: 'Новичок, Опытный и Мастер за одним столом — у каждого свой характер.' },
+];
+export const BOT_XP = { finish: 40, building: 10, win: { novice: 60, pro: 160, master: 320, mixed: 200 } };
+
 export const XP = { finish: 120, win: 300, building: 25, tower: 60, quiz: 150, perThousandSales: 10, salesCap: 150 };
 
 export const ACHIEVEMENTS = [
@@ -90,6 +99,9 @@ export const ACHIEVEMENTS = [
   { id: 'veteran', title: 'Ветеран города', text: 'Доиграйте 10 партий', icon: 'premium/icon-audit.svg' },
   { id: 'streak3', title: 'Без выходных', text: 'Играйте 3 недели подряд', icon: 'premium/icon-event.svg' },
   { id: 'album', title: 'Полный альбом', text: 'Соберите все 8 архитектурных типов', icon: 'premium/icon-market.svg' },
+  { id: 'beat-novice', title: 'Первые шаги', text: 'Обыграйте стол Новичков', icon: 'premium/pawn-2.svg' },
+  { id: 'beat-pro', title: 'На равных', text: 'Обыграйте стол Опытных ботов', icon: 'premium/pawn-4.svg' },
+  { id: 'beat-master', title: 'Учитель мастеров', text: 'Обыграйте стол Мастеров', icon: 'premium/pawn-1.svg' },
   { id: 'academy', title: 'Выпускник академии', text: 'Ответьте верно на все вопросы академии', icon: 'premium/icon-work.svg' },
 ];
 

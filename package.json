@@ -13,7 +13,7 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "prepare:game": "node scripts/prepare-online.cjs",
-    "test:online": "node scripts/build-online-engine.cjs && node tests/online-v027.mjs"
+    "test:online": "node scripts/build-online-engine.cjs && node tests/online-v027.mjs && node tests/online-bots.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

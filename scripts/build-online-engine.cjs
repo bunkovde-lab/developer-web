@@ -1,7 +1,7 @@
 const fs=require('node:fs'),ts=require('typescript');
 const html=fs.readFileSync('index.html','utf8');
 let legacy=html.match(/<script>([\s\S]*?)<\/script>/)[1].replace(/resumeSavedGame\(\);\s*$/,'');
-const names=new Set(),files=['balance.js','marketplace.js','pace.js','auction-competition.js','city-requests.js','game-rework-v016.js','work-economy-v020.js','rules-v021.js','economy-v022.js','city-market-v024.js','renewal-v026.js'];
+const names=new Set(),files=['balance.js','marketplace.js','pace.js','auction-competition.js','city-requests.js','game-rework-v016.js','work-economy-v020.js','rules-v021.js','economy-v022.js','city-market-v024.js','renewal-v026.js','bot-brain.js'];
 const tree=ts.createSourceFile('legacy.js',legacy,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);
 for(const n of tree.statements){if(ts.isFunctionDeclaration(n)&&n.name)names.add(n.name.text);if(ts.isVariableStatement(n))for(const d of n.declarationList.declarations){if(!ts.isIdentifier(d.name))throw Error('Unrecognized top level binding');names.add(d.name.text);}}
 const extra=new Set();

@@ -1,6 +1,6 @@
 // Turns finished server games into career progress. Only real final states are rewarded.
 import { store } from './store.js';
-import { XP, CONTRACTS, ACHIEVEMENTS, ALBUM, PROFESSIONS, levelOf } from './data.js';
+import { XP, CONTRACTS, ACHIEVEMENTS, ALBUM, PROFESSIONS, BOT_XP, levelOf } from './data.js';
 
 export function isoWeek(date = new Date()) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -119,7 +119,7 @@ export function unlock(id) {
 }
 
 function checkAchievements(r) {
-  const d = store.data, games = d.history.length, out = [];
+  const d = store.data, games = d.history.filter(h => !h.bots).length, out = [];
   const tests = {
     'first-game': games >= 1, 'first-win': r.won, line: r.won && r.winType !== 'skyscraper', skyscraper: r.won && r.winType === 'skyscraper',
     block: r.buildings >= 5, tycoon: r.money >= 3000, seller: r.sales >= 3000, waterfront: r.zones.includes('WATER'),
@@ -129,6 +129,36 @@ function checkAchievements(r) {
   for (const [id, ok] of Object.entries(tests)) if (ok) { const e = unlock(id); if (e) out.push(e); }
   return out;
 }
+
+// Local games against bots: smaller XP, own achievements, no weekly contracts or album.
+export function settleBotGames() {
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('developer-bot-results') || '[]'); } catch { return []; }
+  const d = store.data;
+  d.botSettled ||= {};
+  const out = [];
+  for (const r of list.slice().reverse()) {
+    if (d.botSettled[r.id]) continue;
+    d.botSettled[r.id] = Date.now();
+    const before = levelOf(d.xp);
+    const parts = [['Партия с ботами доиграна', BOT_XP.finish]];
+    let xp = BOT_XP.finish;
+    if (r.won) { const w = BOT_XP.win[r.level] || BOT_XP.win.pro; xp += w; parts.push([`Победа · ${BOT_LEVEL_NAME[r.level] || 'боты'}`, w]); }
+    if (r.buildings) { xp += r.buildings * BOT_XP.building; parts.push([`Зданий введено: ${r.buildings}`, r.buildings * BOT_XP.building]); }
+    d.xp += xp;
+    const entry = { ...r, code: 'bots-' + r.id, bots: true, xp, parts, names: [], seat: 0 };
+    d.history.unshift(entry);
+    d.history = d.history.slice(0, 60);
+    const events = [{ type: 'result', result: entry, xp, parts }];
+    if (r.won && ['novice', 'pro', 'master'].includes(r.level)) { const a = unlock('beat-' + r.level); if (a) events.push(a); }
+    const after = levelOf(d.xp);
+    if (after.level > before.level) events.push({ type: 'level', level: after.level, rank: after.rank });
+    out.push(events);
+  }
+  if (out.length) store.save();
+  return out;
+}
+const BOT_LEVEL_NAME = { novice: 'Новички', pro: 'Опытные', master: 'Мастера', mixed: 'смешанный стол' };
 
 export function careerStats() {
   const h = store.data.history;

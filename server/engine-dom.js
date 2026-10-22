@@ -12,4 +12,7 @@ const elements=new Map(),node=id=>{if(!elements.has(id))elements.set(id,new Elem
 const document={getElementById:node,querySelector:()=>new Element(),querySelectorAll:()=>[],createElement:()=>new Element(),body:new Element(),head:new Element(),addEventListener(){}};
 const window={document,addEventListener(){},location:{search:'',pathname:'/'}};
 const localStorage={getItem:()=>null,setItem(){},removeItem(){}};
-const setTimeout=()=>0,clearTimeout=()=>{},alert=()=>{},confirm=()=>true;
+// Timers are queued, never run on their own. Rooms with bots drain the queue in runBots();
+// human-only rooms discard it with the engine instance, exactly as before.
+let timerSeq=0;const timerQueue=[];
+const setTimeout=fn=>{const id=++timerSeq;if(typeof fn==='function')timerQueue.push({id,fn});return id;},clearTimeout=id=>{const i=timerQueue.findIndex(t=>t.id===id);if(i>=0)timerQueue.splice(i,1);},alert=()=>{},confirm=()=>true;

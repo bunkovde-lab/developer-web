@@ -11,7 +11,7 @@ globalThis.localStorage = {
 const { encodeQR } = await import('../portal/qr.js');
 const { ZONES, STAGES, levelOf, ALBUM, QUIZ } = await import('../portal/data.js');
 const { store } = await import('../portal/store.js');
-const { settle, isoWeek, weekStreak, weeklyContracts, boardSummary } = await import('../portal/progress.js');
+const { settle, settleBotGames, isoWeek, weekStreak, weeklyContracts, boardSummary } = await import('../portal/progress.js');
 
 // QR: finder patterns in three corners, version grows with length, timing pattern alternates.
 for (const [text, minVer] of [['https://bunkovde-lab.github.io/developer-web/?room=ABCD2345', 4], ['x'.repeat(150), 8]]) {
@@ -72,4 +72,13 @@ const xp = store.data.xp;
 assert.deepEqual(settle(room), [], 'a finished room is rewarded once');
 assert.equal(store.data.xp, xp);
 assert.ok(ALBUM.length === 8);
-console.log('Portal: QR, rules data, weeks, settlement — OK');
+// Local games against bots: rewarded once, own achievements, online counters untouched.
+localStorage.setItem('developer-bot-results', JSON.stringify([{ id: 'b1', finishedAt: Date.now(), level: 'master', players: 4, won: true, winType: 'line', winnerName: 'Вы', profession: 'lawyer', money: 1800, buildings: 4, round: 80 }]));
+const xpBefore = store.data.xp, onlineGames = store.data.history.filter(h => !h.bots).length;
+const botEvents = settleBotGames();
+assert.equal(botEvents.length, 1);
+assert.equal(store.data.xp - xpBefore, 40 + 320 + 40);
+assert.ok(store.data.achievements['beat-master']);
+assert.deepEqual(settleBotGames(), [], 'bot game rewarded once');
+assert.equal(store.data.history.filter(h => !h.bots).length, onlineGames);
+console.log('Portal: QR, rules data, weeks, settlement, bot games — OK');

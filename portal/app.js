@@ -1,10 +1,10 @@
 // Девелопер — portal app. Vanilla ES modules, no build step.
 import { api, validCode, newToken } from './api.js';
 import { store, getToken, setToken, discoverRooms, addRoom, forgetRoom, exportProgress, importProgress } from './store.js';
-import { settle, weeklyContracts, weekStreak, weekEndsIn, isoWeek, careerStats, boardSummary, unlock } from './progress.js';
+import { settle, settleBotGames, weeklyContracts, weekStreak, weekEndsIn, isoWeek, careerStats, boardSummary, unlock } from './progress.js';
 import {
   ART, PLAYER_COLORS, PROFESSIONS, professionById, ZONES, SIZES, STAGES, PROF_DISCOUNT, ALBUM, RANKS, LEVELS,
-  levelOf, ACHIEVEMENTS, QUIZ, XP,
+  levelOf, ACHIEVEMENTS, QUIZ, XP, BOT_LEVELS,
 } from './data.js';
 import { qrSvg } from './qr.js';
 
@@ -178,7 +178,7 @@ function schedulePoll() {
   clearTimeout(pollTimer);
   pollTimer = setTimeout(async () => { await pollRooms(); schedulePoll(); }, document.hidden ? 45000 : 12000);
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { pollRooms(); schedulePoll(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { settleBotGames().forEach(queueRewards); pollRooms(); schedulePoll(); } });
 window.addEventListener('online', () => pollRooms());
 
 function announceTurn(code, data) {
@@ -281,20 +281,24 @@ function renderGames() {
   $('#historyBlock').hidden = !h.length;
   $('[data-history]').innerHTML = h.map(r => `<li>
       <span class="res ${r.won ? 'win' : ''}">${r.won ? 'Победа' : 'Финал'}</span>
-      <div><b>${r.won ? (r.winType === 'skyscraper' ? 'Победа небоскрёбом' : 'Победа линией') : 'Победил ' + esc(r.winnerName)}</b><small>Комната ${esc(r.code)} · ${r.players} игр. · ${esc(professionById(r.profession).name)} · ${r.buildings} зд. · капитал ${fmt(r.money)} · ${new Date(r.finishedAt).toLocaleDateString('ru-RU')}</small></div>
+      <div><b>${r.won ? (r.winType === 'skyscraper' ? 'Победа небоскрёбом' : 'Победа линией') : 'Победил ' + esc(r.winnerName)}</b><small>${r.bots ? 'Против ботов · ' + esc(BOT_LEVELS.find(l => l.id === r.level)?.name || '') : 'Комната ' + esc(r.code)} · ${r.players} игр. · ${esc(professionById(r.profession).name)} · ${r.buildings} зд. · капитал ${fmt(r.money)} · ${new Date(r.finishedAt).toLocaleDateString('ru-RU')}</small></div>
       <span class="xp">+${fmt(r.xp)} XP</span></li>`).join('');
 }
 
 document.addEventListener('click', async e => {
-  const t = e.target.closest('[data-copy],[data-lobby],[data-forget],[data-action]');
+  const t = e.target.closest('[data-copy],[data-lobby],[data-forget],[data-action],[data-bots-level],[data-add-bot],[data-remove-bot]');
   if (!t) return;
   if (t.dataset.copy) copyInvite(t.dataset.copy);
   else if (t.dataset.lobby) openLobby(t.dataset.lobby);
+  else if (t.dataset.botsLevel) openBots(t.dataset.botsLevel);
+  else if (t.dataset.addBot) addBot(t.dataset.addBot);
+  else if (t.dataset.removeBot) removeBot(Number(t.dataset.removeBot));
   else if (t.dataset.forget) { forgetRoom(t.dataset.forget); live.delete(t.dataset.forget); renderView(activeView); }
   else {
     const a = t.dataset.action;
     if (a === 'create') openCreate();
     else if (a === 'join') openJoin();
+    else if (a === 'bots') openBots();
     else if (a === 'notify') toggleNotify();
     else if (a === 'export') doExport();
     else if (a === 'import') doImport();
@@ -403,7 +407,7 @@ function seatList(d, known = 0) {
   const rows = [];
   for (let i = 0; i < 6; i++) {
     const p = d.players[i];
-    if (p) rows.push(`<li class="${i >= known ? 'arrive' : ''}" style="animation-delay:${(i - known) * 80}ms"><img src="${art('premium/pawn-' + (i + 1) + '.svg')}" alt=""><div><b>${esc(p.name)}</b> ${i === d.seat ? '<span class="you">вы</span>' : ''}${i === 0 ? ' <span class="you">создатель</span>' : ''}<br><small>${esc(professionById(p.profession).name)}</small></div><span class="muted small">${i + 1}</span></li>`);
+    if (p) rows.push(`<li class="${i >= known ? 'arrive' : ''} ${p.bot ? 'bot-seat' : ''}" style="animation-delay:${(i - known) * 80}ms"><img src="${art('premium/pawn-' + (i + 1) + '.svg')}" alt=""><div><b>${esc(p.name)}</b> ${i === d.seat ? '<span class="you">вы</span>' : ''}${i === 0 ? ' <span class="you">создатель</span>' : ''}${p.bot ? ' <span class="you bot-tag">бот</span>' : ''}<br><small>${esc(professionById(p.profession).name)}</small></div>${p.bot && d.host && !d.state ? `<button class="icon-btn" data-remove-bot="${i}" aria-label="Убрать бота">✕</button>` : `<span class="muted small">${i + 1}</span>`}</li>`);
     else rows.push(`<li class="empty-seat"><span></span><span>${i < 3 ? 'Ждём игрока…' : 'Свободное место'}</span><span class="small">${i + 1}</span></li>`);
   }
   return rows.join('');
@@ -428,7 +432,7 @@ function openLobby(code, initial) {
   $('[data-share]', roomBody)?.addEventListener('click', () => navigator.share({ title: 'Девелопер — комната ' + code, text: 'Играем в «Девелопера»! Заходи в комнату:', url }).catch(() => {}));
   let shown = 0, sig = '';
   const paint = d => {
-    const nextSig = d.players.map(p => p.name + '/' + p.profession).join('|') + '#' + d.host;
+    const nextSig = d.players.map(p => p.name + '/' + p.profession + '/' + (p.botLevel || '')).join('|') + '#' + d.host;
     if (nextSig === sig) return;
     sig = nextSig;
     $('[data-seats]', roomBody).innerHTML = seatList(d, shown);
@@ -436,6 +440,7 @@ function openLobby(code, initial) {
     const n = d.players.length, act = $('[data-lobby-action]', roomBody), status = $('[data-lobby-status]', roomBody);
     if (d.host) {
       act.innerHTML = `<button class="btn btn-gold btn-lg" style="width:100%" data-start ${n < 3 ? 'disabled' : ''}>${n < 3 ? `Нужно ещё ${3 - n} ${plural(3 - n, 'игрок', 'игрока', 'игроков')}` : `Начать партию · ${n} ${plural(n, 'игрок', 'игрока', 'игроков')}`}</button>`;
+      if (n < 6) act.insertAdjacentHTML('afterbegin', `<div class="add-bots"><span class="muted small">Не хватает людей? Посадите бота:</span>${BOT_LEVELS.filter(l => l.id !== 'mixed').map(l => `<button class="btn btn-ghost btn-small" data-add-bot="${l.id}">+ ${esc(l.name)}</button>`).join('')}</div>`);
       $('[data-start]', act)?.addEventListener('click', () => startGame(code));
       status.textContent = n < 3 ? 'Лобби обновляется автоматически.' : n < 6 ? 'Можно начинать или подождать ещё игроков.' : 'Все шесть мест заняты.';
     } else {
@@ -443,6 +448,7 @@ function openLobby(code, initial) {
       status.textContent = 'Создатель комнаты начнёт партию, когда все соберутся. Не закрывайте страницу.';
     }
   };
+  lobbyRepaint = paint;
   if (initial) paint(initial);
   const loop = async () => {
     if (lobbyCode !== code) return;
@@ -471,6 +477,63 @@ async function startGame(code) {
   }
 }
 
+/* ---------------- Bots: local tables and online seats ---------------- */
+function localSave() {
+  try { const s = JSON.parse(localStorage.getItem('developer-html-save') || 'null'); return s?.players ? s : null; } catch { return null; }
+}
+function renderBots() {
+  const host = $('[data-bot-levels]');
+  if (!host) return;
+  host.innerHTML = BOT_LEVELS.map(l => `<article class="bot-level" data-level="${l.id}">
+    <img src="${art(l.icon)}" alt=""><div><h3>${esc(l.name)}</h3><p>${esc(l.text)}</p>${l.stat ? `<small class="bot-stat">${esc(l.stat)}</small>` : ''}</div>
+    <button class="btn ${l.id === 'pro' ? 'btn-gold' : 'btn-ghost'}" data-bots-level="${l.id}">Играть</button></article>`).join('');
+  const s = localSave(), box = $('#botResume');
+  if (s?.botTable && !Number.isInteger(s.winnerIndex)) {
+    const lv = BOT_LEVELS.find(l => l.id === s.botTable.level);
+    box.hidden = false;
+    box.innerHTML = `<div><b>Незаконченная партия с ботами</b><span class="muted small">${esc(lv?.name || '')} · ${s.players.length} игр. · раунд ${s.round} · капитал ${fmt(s.players[0].money)}</span></div><a class="btn btn-gold" href="${GAME}?local=1&resume=1">Продолжить →</a>`;
+  } else box.hidden = true;
+}
+function openBots(level = 'pro') {
+  const save = localSave(), unfinished = save && !Number.isInteger(save.winnerIndex) && save.players.length;
+  roomBody.innerHTML = `<p class="eyebrow">Одно устройство</p><h2 id="roomDialogTitle">Стол с ботами</h2>
+  <p class="muted">У каждого бота свой характер: кто-то держит аренду, кто-то целится в небоскрёб или перекрывает ваши линии. Ходы — с паузой на раздумья, как у живых соперников.</p>
+  <form class="dialog-body" style="padding:0" data-bots-form>
+    <fieldset class="seg"><legend>Соперников</legend>${[2, 3, 4, 5].map(n => `<label><input type="radio" name="count" value="${n}" ${n === 3 ? 'checked' : ''}><span>${n}</span></label>`).join('')}</fieldset>
+    <fieldset class="prof-pick level-pick"><legend>Сложность</legend>${BOT_LEVELS.map(l => `<label><input type="radio" name="level" value="${l.id}" ${l.id === level ? 'checked' : ''}><img src="${art(l.icon)}" alt=""><b>${esc(l.name)}</b><small>${esc(l.stat || '')}</small></label>`).join('')}</fieldset>
+    ${profileFields('Ваша профессия')}
+    ${unfinished ? '<p class="muted small">Незаконченная локальная партия на этом устройстве будет заменена новой.</p>' : ''}
+    <p class="form-error" role="alert"></p>
+    <button class="btn btn-gold btn-lg" type="submit">Начать партию</button></form>`;
+  openDialog();
+  const form = $('[data-bots-form]', roomBody);
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    try {
+      const prof = readProfile(form);
+      const q = new URLSearchParams({ local: '1', bots: form.count.value, level: form.level.value, prof: prof.profession, name: prof.name });
+      location.href = GAME + '?' + q.toString();
+    } catch (ex) { $('.form-error', form).textContent = ex.message; }
+  });
+}
+async function lobbyAction(body, okText) {
+  const code = lobbyCode, token = getToken(code);
+  if (!code) return;
+  try {
+    let d = live.get(code)?.data || await api.room(code, token);
+    try { d = await api.action(code, token, d.revision, body); }
+    catch (e) { if (e.status !== 409) throw e; d = await api.room(code, token); d = await api.action(code, token, d.revision, body); }
+    live.set(code, { data: d, at: Date.now() });
+    lobbyRepaint?.(d);
+    if (okText) $('[data-lobby-status]', roomBody).textContent = okText;
+  } catch (e) {
+    $('[data-lobby-status]', roomBody).textContent = /Неизвестный запрос/.test(e.message) ? 'Сервер комнат ещё не обновлён для ботов — попросите владельца выложить новую версию сервера.' : e.message;
+  }
+}
+const addBot = level => lobbyAction({ type: 'addBot', level }, 'Бот сел за стол.');
+const removeBot = seat => lobbyAction({ type: 'removeBot', seat }, 'Место освобождено.');
+let lobbyRepaint = null;
+
 /* ---------------- Rewards ---------------- */
 const rewardDialog = $('#rewardDialog');
 const rewardQueue = [];
@@ -488,7 +551,7 @@ function nextReward() {
   const title = res ? (res.result.won ? 'Победа!' : 'Партия доиграна') : 'Экзамен сдан';
   const sub = res ? (res.result.won ? (res.result.winType === 'skyscraper' ? 'Ваш небоскрёб поднялся над городом.' : 'Четыре здания в линию — город ваш.') : `Победил ${esc(res.result.winnerName)}. Опыт остаётся с вами.`) : 'Все ответы верны — вы готовы к первой партии.';
   const parts = res ? res.parts : r.quiz?.parts || [];
-  $('[data-reward-body]').innerHTML = `<p class="eyebrow">${res ? 'Комната ' + esc(res.result.code) : 'Академия'}</p>
+  $('[data-reward-body]').innerHTML = `<p class="eyebrow">${res ? (res.result.bots ? 'Партия с ботами · ' + esc(BOT_LEVELS.find(l => l.id === res.result.level)?.name || '') : 'Комната ' + esc(res.result.code)) : 'Академия'}</p>
     <h2 id="rewardTitle">${title}</h2><p class="muted">${sub}</p>
     <div class="reward-xp" data-count="${xp}">+0</div>
     <ul class="reward-parts">${parts.map(([t, v], i) => `<li style="animation-delay:${200 + i * 90}ms"><span>${esc(t)}</span><b>+${fmt(v)}</b></li>`).join('')}</ul>
@@ -695,7 +758,7 @@ function buildQuiz() {
 /* ---------------- Render orchestration ---------------- */
 function renderView(v) {
   renderMe();
-  if (v === 'play') { renderContracts(); renderAlbum(); renderContinue(); }
+  if (v === 'play') { renderContracts(); renderAlbum(); renderContinue(); renderBots(); }
   if (v === 'games') renderGames();
   if (v === 'career') renderCareer();
 }
@@ -731,6 +794,7 @@ function boot() {
   store.subscribe(() => renderMe());
   showView(viewFromHash(), location.hash.startsWith('#ac-') ? location.hash.slice(1) : null);
   handleInvite();
+  settleBotGames().forEach(queueRewards);
   pollRooms().then(schedulePoll);
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -1,9 +1,9 @@
 // Девелопер service worker: instant repeat visits without ever serving stale game logic.
 // Art (SVG) is cache-first; HTML/JS/CSS are network-first with offline fallback; the room API is never touched.
-const VERSION = 'portal-1';
+const VERSION = 'portal-2';
 const ART = 'developer-art-' + VERSION;
 const SHELL = 'developer-shell-' + VERSION;
-const SHELL_FILES = ['./', 'portal/portal.css?v=1', 'portal/app.js?v=1', 'portal/data.js', 'portal/api.js', 'portal/store.js', 'portal/progress.js', 'portal/qr.js', 'portal/icon.svg'];
+const SHELL_FILES = ['./', 'portal/portal.css?v=2', 'portal/app.js?v=2', 'portal/data.js', 'portal/api.js', 'portal/store.js', 'portal/progress.js', 'portal/qr.js', 'portal/icon.svg'];
 
 self.addEventListener('install', event => {
   self.skipWaiting();

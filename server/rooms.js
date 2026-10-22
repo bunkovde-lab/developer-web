@@ -8,7 +8,7 @@ const profile=b=>{if(typeof b.name!=='string'||!b.name.trim()||b.name.trim().len
 const clone=v=>structuredClone(v);
 const inventory=(s,seat)=>{const p=s.players[seat];return [...(p.cards||[]).map(c=>({key:'cards:'+c.id,title:c.deck+' №'+c.id,card:c})),...(p.networkCards||[]).map(c=>({key:'networkCards:'+c.id,title:'Сети: '+c.type+' №'+c.id,card:c})),...(p.marketCards||[]).map(c=>({key:'marketCards:'+c.id,title:c.type+' №'+c.id,card:c})),...(p.governmentCards||[]).map(c=>({key:'governmentCards:'+c.id,title:'Госзаказ №'+c.id,card:c})),...s.plots.map((l,i)=>({l,i})).filter(({l})=>l.owner===seat&&!l.investor&&!Number.isInteger(l.reservedFor)&&!Number.isInteger(l.municipalOrigin)).map(({l,i})=>({key:'lot:'+i,title:l.name+' · этап '+(l.project?.stage||0)+'/4',lot:i}))];};
 export function projectRoom(room,seat){
- const out={code:room.code,revision:room.revision,status:room.status,seat,host:seat===0,players:room.players.map(({name,profession})=>({name,profession})),createdAt:room.createdAt,serverTime:Date.now(),offers:room.offers||[],listings:[],state:null};
+ const out={code:room.code,revision:room.revision,status:room.status,seat,host:seat===0,players:room.players.map(({name,profession,bot,botLevel})=>bot?{name,profession,bot:true,botLevel}:{name,profession}),createdAt:room.createdAt,serverTime:Date.now(),offers:room.offers||[],listings:[],state:null};
  if(!room.game)return out;
  const s=clone(room.game.state);
  for(let i=0;i<s.players.length;i++){const p=s.players[i];p.handCounts={};for(const k of ['cards','networkCards','marketCards','governmentCards']){p.handCounts[k]=(p[k]||[]).length;if(i!==seat)p[k]=[];}}
@@ -26,7 +26,45 @@ export function projectRoom(room,seat){
 function expected(s){return s.auction?.humanBidder??s.liquidityPending?.auction?.players?.[s.liquidityPending.auction.cursor]??s.liquidityPending?.owner??s.penaltyPending?.queue?.[0]??s.turn;}
 function canTrade(s,seat){return s.turn===seat&&s.rolled&&!Number.isInteger(s.winnerIndex)&&!s.pendingCard&&!s.auction&&!s.constructionDeckChoice&&!s.penaltyPending&&!s.liquidityPending&&(s.actionKey!==s.turn+'-'+s.round||(s.actionsUsed||0)<2)&&s.tradeMarker!==s.turn+'-'+s.round;}
 function moveAsset(s,from,to,key){if(!key)return;const item=inventory(s,from).find(x=>x.key===key);if(!item)fail('Предмет сделки уже недоступен');if(key.startsWith('lot:')){const i=item.lot,l=s.plots[i];l.owner=to;if(Number.isInteger(l.project?.pair))s.plots[l.project.pair].owner=to;return;}const [kind,id]=key.split(':');const list=s.players[from][kind],at=list.findIndex(c=>String(c.id)===id);s.players[to][kind]||=[];s.players[to][kind].push(list.splice(at,1)[0]);}
+const hasBots=room=>room.players.some(p=>p.bot);
+const BOT_MARGIN={novice:-50,pro:25,master:75};
+// Rough public valuation a bot uses to judge a private offer.
+function itemValue(s,owner,key){
+ if(!key)return 0;const item=inventory(s,owner).find(x=>x.key===key);if(!item)return null;
+ if(key.startsWith('lot:')){const l=s.plots[item.lot];return (l.acquisitionPrice||l.price)+(Number(l.developmentSpent)||0)+(l.project?.stage===4?400:0);}
+ return key.startsWith('networkCards:')?50:100;
+}
+function botListings(room){
+ const s=room.game.state;
+ room.players.forEach((p,i)=>{if(!p.bot)return;const cards=s.players[i].cards||[];const count={};for(const c of cards)count[c.deck]=(count[c.deck]||0)+1;
+  room.listings[i]=cards.filter(c=>count[c.deck]>1).map(c=>'cards:'+c.id).slice(0,6);});
+}
+export function runRoomBots(room){
+ if(!room.game||!hasBots(room))return;
+ room.game=createEngine(room.game.rng).load(room.game.state).runBots();
+ if(Number.isInteger(room.game.state.winnerIndex))room.status='finished';
+ botListings(room);
+ room.offers=room.offers.filter(o=>o.turnKey===room.game.state.turn+'-'+room.game.state.round);
+}
 export function mutateRoom(room,seat,b){
+ const r=mutateRoomCore(room,seat,b);
+ if(room.status==='playing'&&['start','command','answer','offer'].includes(b.type))runRoomBots(room);
+ return r;
+}
+function mutateRoomCore(room,seat,b){
+ if(b.type==='addBot'||b.type==='removeBot'){
+  if(seat!==0)fail('Ботов приглашает создатель комнаты',403);if(room.status!=='lobby')fail('Партия уже началась');
+  if(b.type==='removeBot'){const p=room.players[b.seat];if(!Number.isInteger(b.seat)||!p?.bot)fail('Это место занимает человек');room.players.splice(b.seat,1);return;}
+  if(room.players.length>=6)fail('Все 6 мест заняты');
+  const catalog=createEngine().botCatalog();if(!catalog)fail('Боты недоступны на этом сервере',503);
+  if(!catalog.levels.includes(b.level))fail('Выберите уровень бота');
+  const used=new Set(room.players.filter(p=>p.bot).map(p=>p.botPersona));
+  const persona=catalog.personas.find(x=>!used.has(x.id))||catalog.personas[room.players.length%catalog.personas.length];
+  const takenProf=room.players.map(p=>p.profession);
+  const profession=professions.find(x=>!takenProf.includes(x))||professions[room.players.length%professions.length];
+  room.players.push({name:persona.name+' · '+catalog.levelNames[b.level],profession,bot:true,botLevel:b.level,botPersona:persona.id});
+  return;
+ }
  if(b.type==='start'){if(seat!==0)fail('Партию начинает создатель комнаты',403);if(room.status!=='lobby')fail('Партия уже началась');if(room.players.length<3)fail('Нужно от 3 до 6 игроков');room.game=createEngine().start(room.players);room.status='playing';return;}
  if(room.status!=='playing')fail('Дождитесь начала партии');
  const s=room.game.state;
@@ -35,7 +73,15 @@ export function mutateRoom(room,seat,b){
   if(!canTrade(s,seat))fail('Сделка доступна в свой ход и тратит одно действие');if(!Number.isInteger(b.to)||b.to===seat||!s.players[b.to])fail('Выберите партнёра');if(!Number.isSafeInteger(b.cash)||Math.abs(b.cash)>1000000)fail('Некорректная сумма');
   const give=inventory(s,seat).find(c=>c.key===b.give),take=inventory(s,b.to).find(c=>c.key===b.take);
   if(b.give&&!give||b.take&&(!take||!room.listings[b.to]?.includes(b.take)))fail('Предмет сделки не выставлен');if(!give&&!take)fail('Выберите карту или объект');
-  room.offers=room.offers.filter(o=>o.from!==seat);room.offers.push({id:token().slice(0,16),from:seat,to:b.to,give:b.give||null,take:b.take||null,cash:b.cash,giveTitle:give?.title||'—',takeTitle:take?.title||'—',turnKey:s.turn+'-'+s.round});return;
+  room.offers=room.offers.filter(o=>o.from!==seat);const offer={id:token().slice(0,16),from:seat,to:b.to,give:b.give||null,take:b.take||null,cash:b.cash,giveTitle:give?.title||'—',takeTitle:take?.title||'—',turnKey:s.turn+'-'+s.round};room.offers.push(offer);
+  const target=room.players[b.to];
+  if(target?.bot){
+   const gain=itemValue(s,seat,offer.give)+offer.cash-itemValue(s,b.to,offer.take);
+   const ok=gain>=(BOT_MARGIN[target.botLevel]??25)&&s.players[b.to].money>=Math.max(0,-offer.cash);
+   if(ok)return mutateRoomCore(room,b.to,{type:'answer',id:offer.id,accept:true});
+   room.offers=room.offers.filter(x=>x.id!==offer.id);s.logs.unshift(target.name+' отклонил предложение '+room.players[seat].name+'.');
+  }
+  return;
  }
  if(b.type==='answer'){
   const o=room.offers.find(o=>o.id===b.id);if(!o||seat!==o.to&&seat!==o.from)fail('Предложение недоступно',403);
