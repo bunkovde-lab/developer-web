@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-23",
+  "method": "One bot vs three 'pro' bots, rotating seat, seeds never used in training or tuning (master 770000+, pro/novice 550000+). 25% = equal strength.",
+  "master": {
+    "wins": 73,
+    "games": 192,
+    "winShare": 0.38,
+    "ci95": 0.069
+  },
+  "pro": {
+    "wins": 20,
+    "games": 96,
+    "winShare": 0.208,
+    "ci95": 0.081
+  },
+  "novice": {
+    "wins": 14,
+    "games": 96,
+    "winShare": 0.146,
+    "ci95": 0.071
+  },
+  "earlierNovice": {
+    "wins": 10,
+    "games": 128,
+    "winShare": 0.078
+  },
+  "findings": {
+    "professionWinShare": {
+      "lawyer": 0.367,
+      "foreman": 0.266,
+      "designer": 0.258,
+      "permits": 0.25,
+      "financier": 0.109
+    },
+    "strategyWinShare": {
+      "tower": 0.29,
+      "line": 0.28,
+      "developer": 0.255,
+      "rental": 0.197
+    },
+    "games": 160,
+    "levers": {
+      "pro_as_lawyer": 0.383,
+      "line_plan_only": 0.297,
+      "line+lawyer": 0.383,
+      "line+lawyer+hold": 0.391,
+      "threshold_evolution_genome": 0.195,
+      "tower_always": 0.25,
+      "deny_lines": 0.203,
+      "three_projects": 0.234
+    }
+  }
+}

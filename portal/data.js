@@ -73,11 +73,11 @@ export function levelOf(xp) {
 }
 function roman(n) { return ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n] || String(n); }
 
-// Bot difficulty levels (bot-brain.js). Win shares are filled from docs/bots/training.json.
+// Bot difficulty levels (bot-brain.js). Win shares from docs/bots/validation.json (independent seeds).
 export const BOT_LEVELS = [
-  { id: 'novice', name: 'Новичок', icon: 'premium/pawn-2.svg', text: 'Осторожно торгуется, держит одну стройку, иногда пропускает ход и ошибается с выбором земли.' },
-  { id: 'pro', name: 'Опытный', icon: 'premium/pawn-4.svg', text: 'Полноценный план 0.26: линия, две стройки, продажи с покупателем, финансирование и небоскрёб.' },
-  { id: 'master', name: 'Мастер', icon: 'premium/pawn-1.svg', text: 'Обучен самоигрой: перекрывает ваши линии на аукционах, точнее держит резерв и выбирает момент для продажи.' },
+  { id: 'novice', name: 'Новичок', icon: 'premium/pawn-2.svg', text: 'Осторожно торгуется, держит одну стройку, иногда пропускает ход и ошибается с выбором земли.', stat: 'Против трёх Опытных: ≈ 11 % побед' },
+  { id: 'pro', name: 'Опытный', icon: 'premium/pawn-4.svg', text: 'Полноценный план 0.26: линия, две стройки, продажи с покупателем, финансирование и небоскрёб.', stat: 'Эталон: ≈ 25 % за столом на четверых' },
+  { id: 'master', name: 'Мастер', icon: 'premium/pawn-1.svg', text: 'Настроен по 1 500+ партиям самоигры: берёт сильнейшую профессию, строит линию, не распродаёт здания и перекрывает ваши почти готовые линии.', stat: 'Против трёх Опытных: 38 % побед' },
   { id: 'mixed', name: 'Смешанный стол', icon: 'premium/pawn-5.svg', text: 'Новичок, Опытный и Мастер за одним столом — у каждого свой характер.' },
 ];
 export const BOT_XP = { finish: 40, building: 10, win: { novice: 60, pro: 160, master: 320, mixed: 200 } };
