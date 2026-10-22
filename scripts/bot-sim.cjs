@@ -17,7 +17,9 @@ function playGame(seed, seats, { maxTurns = 1200 } = {}) {
   seats.forEach((s, i) => {
     if (!s.level) return;
     run(`DeveloperBots.assign(${i},${JSON.stringify(s.level)},${JSON.stringify(s.persona || null)});` +
-      (s.genome ? `state.players[${i}].botGenome=${JSON.stringify(s.genome)};` : ''));
+      (s.genome ? `state.players[${i}].botGenome=${JSON.stringify(s.genome)};` : '') +
+      (s.genome?.style ? `state.players[${i}].strategy26=${JSON.stringify(s.genome.style)};` : '') +
+      (s.profession ? `{const p=state.players[${i}];p.profession=${JSON.stringify(s.profession)};p.money=p.profession==='financier'?1600:1500;p.freeStageCredits=p.profession==='lawyer'?1:0;}` : ''));
   });
   let turns = 0, stalled = false;
   while (turns < maxTurns && run('checkVictory()') < 0) {
@@ -31,7 +33,8 @@ function playGame(seed, seats, { maxTurns = 1200 } = {}) {
   const out = JSON.parse(run(`JSON.stringify({winner:checkVictory(),winType:state.winType||null,round:state.round,
     value:state.players.map((p,i)=>p.money+state.plots.filter(l=>l.owner===i&&!Number.isInteger(l.reservedFor)).reduce((s,l)=>s+(l.project?.stage===4?marketBase(l,'buyer'):l.price+(Number(l.developmentSpent)||0)),0)),
     ready:state.players.map((p,i)=>state.plots.filter(l=>l.owner===i&&l.project?.stage===4&&!Number.isInteger(l.reservedFor)).length),
-    professions:state.players.map(p=>p.profession)})`));
+    professions:state.players.map(p=>p.profession),strategies:state.players.map(p=>p.strategy26||null),personas:state.players.map(p=>p.botPersona||null),
+    sales:state.players.map(p=>p.saleRevenue||0),completed:state.players.map(p=>p.completedProjects||0),money:state.players.map(p=>p.money)})`));
   out.turns = turns; out.stalled = stalled;
   return out;
 }
