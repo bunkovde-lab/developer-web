@@ -21,9 +21,24 @@ for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
 if (fs.existsSync(path.join(root, 'assets'))) {
   fs.cpSync(path.join(root, 'assets'), path.join(output, 'assets'), { recursive: true });
 }
-const html = fs.readFileSync(path.join(output, 'index.html'), 'utf8');
-const refs = [...html.matchAll(/<(?:script|link)\b[^>]*?\b(?:src|href)\s*=\s*["']([^"']+)["']/gi)]
-  .map(match => match[1]);
+// Portal: the public front door lives at the site root; the game moves next to it as game.html,
+// so every relative asset path of the game keeps working unchanged.
+const portal = path.join(root, 'portal');
+const pages = ['index.html'];
+if (fs.existsSync(path.join(portal, 'index.html'))) {
+  fs.renameSync(path.join(output, 'index.html'), path.join(output, 'game.html'));
+  fs.copyFileSync(path.join(portal, 'index.html'), path.join(output, 'index.html'));
+  for (const rootFile of ['sw.js', 'manifest.webmanifest']) fs.copyFileSync(path.join(portal, rootFile), path.join(output, rootFile));
+  fs.mkdirSync(path.join(output, 'portal'), { recursive: true });
+  for (const entry of fs.readdirSync(portal, { withFileTypes: true })) {
+    if (entry.isFile() && !['index.html', 'sw.js', 'manifest.webmanifest'].includes(entry.name)) {
+      fs.copyFileSync(path.join(portal, entry.name), path.join(output, 'portal', entry.name));
+    }
+  }
+  pages.push('game.html');
+}
+const refs = pages.flatMap(page => [...fs.readFileSync(path.join(output, page), 'utf8')
+  .matchAll(/<(?:script|link)\b[^>]*?\b(?:src|href)\s*=\s*["']([^"']+)["']/gi)].map(match => match[1]));
 const missing = [];
 for (const ref of refs) {
   const clean = ref.split('?')[0].split('#')[0];

@@ -3,3 +3,4 @@
 
 .online-active main{padding-top:8px}
 .online-paper h1,.online-paper h2,.online-paper h3{color:#244e49!important}.online-paper .online-primary{background:#244e49!important;color:#fff6dc!important}.online-paper .online-text{background:transparent!important;color:#677367!important}
+#onlineBar #onlinePortal{border:1px solid #bca16a;border-radius:5px;background:#d9b46a;color:#183e3a;font:700 11px system-ui;padding:6px 10px;text-decoration:none}.online-paper a.online-text{text-align:center;font:13px system-ui}

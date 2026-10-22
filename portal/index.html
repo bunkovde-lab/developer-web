@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Девелопер — онлайн-настолка о строительстве города</title>
+<meta name="description" content="Экономическая настольная игра для 3–6 друзей: аукционы земли, стройка в четыре этапа, сделки и гонка за небоскрёбом. Играйте по ссылке с телефона или компьютера.">
+<meta name="theme-color" content="#0b1d23">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Девелопер — постройте город, обыграйте друзей">
+<meta property="og:description" content="Онлайн-настолка на 3–6 игроков: аукционы, стройка, сделки и небоскрёб. Комната по ссылке — без регистрации.">
+<meta property="og:image" content="https://bunkovde-lab.github.io/developer-web/portal/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="portal/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="portal/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="portal/portal.css?v=1">
+<link rel="modulepreload" href="portal/app.js?v=1">
+<script type="module" src="portal/app.js?v=1"></script>
+</head>
+<body>
+<a class="skip" href="#main">К содержанию</a>
+<div class="blueprint" aria-hidden="true"></div>
+
+<header class="topbar">
+  <a class="brand" href="#play" aria-label="Девелопер — главная">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M6 34h28M10 34V16h7v18M19 34V6h11v28M22 11h5M22 16h5M22 21h5M22 26h5M12.5 21h2M12.5 26h2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <span class="brand-word">Девелопер</span><span class="brand-ver">online 0.27</span>
+  </a>
+  <nav class="tabs" aria-label="Разделы">
+    <a href="#play" data-tab="play">Играть</a>
+    <a href="#games" data-tab="games">Партии <b class="dot-count" data-turn-count hidden></b></a>
+    <a href="#career" data-tab="career">Карьера</a>
+    <a href="#academy" data-tab="academy">Академия</a>
+  </nav>
+  <a class="me-chip" href="#career" aria-label="Профиль и уровень">
+    <span class="seal" data-seal>?</span>
+    <span class="me-text"><b data-me-rank>Стажёр</b><small><span data-me-level>Уровень 1</span></small></span>
+    <span class="me-xp" aria-hidden="true"><i data-me-xp></i></span>
+  </a>
+</header>
+
+<main id="main">
+  <!-- PLAY -->
+  <section class="view" id="view-play" data-view="play" aria-labelledby="heroTitle">
+    <div id="turnAlert" class="turn-alert" hidden></div>
+    <div class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="pulse-dot"></span>Онлайн-настолка · 3–6 игроков · без регистрации</p>
+        <h1 id="heroTitle">Постройте город.<br><em>Обыграйте друзей.</em></h1>
+        <p class="lead">Торгуйтесь за землю на закрытых аукционах, проводите объекты через проект, разрешения, стройку и ввод, заключайте сделки — и первыми замкните линию из четырёх зданий или поднимите небоскрёб.</p>
+        <div class="cta-row">
+          <button class="btn btn-gold btn-lg" data-action="create">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Создать комнату
+          </button>
+          <button class="btn btn-ghost btn-lg" data-action="join">Войти по коду</button>
+        </div>
+        <a class="link-quiet" href="game.html?local=1">Тренировка с ботами на одном устройстве <span aria-hidden="true">→</span></a>
+        <ul class="facts" aria-label="Коротко об игре">
+          <li><b>24</b> участка</li><li><b>5</b> профессий</li><li><b>2</b> пути к победе</li><li><b>492</b> иллюстрации</li>
+        </ul>
+      </div>
+      <figure class="stage" aria-label="Объект проходит этапы строительства" data-tilt>
+        <div class="stage-sheet">
+          <div class="sheet-head"><span>Лист <b data-sheet-no>01</b></span><span data-stage-zone>Деловой центр</span></div>
+          <div class="sheet-art"><img data-art-a alt="" decoding="async"><img data-art-b alt="" decoding="async"></div>
+          <div class="sheet-foot">
+            <div class="stage-steps" role="list">
+              <span role="listitem" data-step="1">Проект</span><span role="listitem" data-step="2">Разрешение</span><span role="listitem" data-step="3">Стройка</span><span role="listitem" data-step="4">Ввод</span>
+            </div>
+            <div class="stage-line"><i data-stage-progress></i></div>
+            <div class="sheet-meta"><b data-stage-name>Бизнес-центр</b><span data-stage-value>продажа 1600 тыс.</span></div>
+          </div>
+        </div>
+        <img class="float-card c1" src="assets/svg/atelier/back-investor.svg" alt="" aria-hidden="true">
+        <img class="float-card c2" src="assets/svg/atelier/back-buyer.svg" alt="" aria-hidden="true">
+        <img class="float-card c3" src="assets/svg/atelier/back-network.svg" alt="" aria-hidden="true">
+        <img class="float-pawn" src="assets/svg/premium/pawn-1.svg" alt="" aria-hidden="true">
+      </figure>
+    </div>
+
+    <div id="continueBlock" class="block" hidden>
+      <div class="block-head"><h2>Ваши партии</h2><a class="link-quiet" href="#games">Все партии →</a></div>
+      <div id="continueList" class="room-grid"></div>
+    </div>
+
+    <div class="block split">
+      <article class="panel contracts-panel">
+        <div class="block-head"><h2>Контракты недели</h2><span class="muted small" data-week-left></span></div>
+        <p class="muted">Три заказа обновляются каждый понедельник. Засчитываются по итогам доигранной сетевой партии.</p>
+        <ol class="contracts" data-contracts></ol>
+        <div class="streak-line" data-streak></div>
+      </article>
+      <article class="panel career-teaser">
+        <div class="block-head"><h2>Альбом архитектуры</h2><a class="link-quiet" href="#career">Карьера →</a></div>
+        <p class="muted">Каждый введённый вами тип здания навсегда попадает в альбом. Соберите все восемь.</p>
+        <div class="album-strip" data-album-strip></div>
+        <div class="rank-ladder" data-rank-ladder></div>
+      </article>
+    </div>
+
+    <div class="block">
+      <div class="block-head"><h2>Партия за минуту</h2><a class="link-quiet" href="#academy">Академия →</a></div>
+      <ol class="loop">
+        <li class="reveal"><img src="assets/svg/premium/pawn-2.svg" alt=""><h3>Бросок</h3><p>Два кубика ведут фишку по 32 клеткам вокруг города.</p></li>
+        <li class="reveal"><img src="assets/svg/premium/icon-auction.svg" alt=""><h3>Земля</h3><p>Закрытые аукционы первой цены: одна ставка, кратная 25.</p></li>
+        <li class="reveal"><img src="assets/svg/premium/icon-build.svg" alt=""><h3>Стройка</h3><p>Проект → разрешение → стройка → ввод. Карты этапов снижают смету.</p></li>
+        <li class="reveal"><img src="assets/svg/premium/icon-deal.svg" alt=""><h3>Сделки</h3><p>Обмен картами, землёй и зданиями. Каждая сделка — с согласия второго игрока.</p></li>
+        <li class="reveal"><img src="assets/svg/premium/icon-city.svg" alt=""><h3>Победа</h3><p>Когда в городе 16 готовых клеток — побеждает линия из четырёх зданий или небоскрёб.</p></li>
+      </ol>
+    </div>
+
+    <div class="block news">
+      <article class="panel">
+        <p class="eyebrow">Новое в 0.27</p>
+        <h2>Своя рука на своём телефоне</h2>
+        <p>Комнаты по ссылке, закрытые руки, сервер проверяет каждый ход, место восстанавливается после перезагрузки. Экономика 0.26: новая карта зон, небоскрёб из четырёх очередей, профессии с собственными тарифами.</p>
+        <div class="news-links"><a class="link-quiet" href="https://github.com/bunkovde-lab/developer-web/blob/main/docs/ONLINE_v027.md" target="_blank" rel="noopener">Как работает онлайн →</a><a class="link-quiet" href="https://github.com/bunkovde-lab/developer-web/blob/main/docs/RELEASE_v026.md" target="_blank" rel="noopener">Правила 0.26 →</a></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- GAMES -->
+  <section class="view" id="view-games" data-view="games" hidden aria-labelledby="gamesTitle">
+    <div class="page-head">
+      <div><p class="eyebrow">Комнаты этого браузера</p><h1 id="gamesTitle">Мои партии</h1></div>
+      <div class="page-actions">
+        <button class="btn btn-ghost" data-action="notify" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg><span>Сообщать о моём ходе</span></button>
+        <button class="btn btn-gold" data-action="create">Новая комната</button>
+      </div>
+    </div>
+    <div id="roomsList" class="room-grid"></div>
+    <div id="roomsEmpty" class="empty" hidden>
+      <img src="assets/svg/atelier/od-0.svg" alt="">
+      <h2>Город ещё пуст</h2>
+      <p>Создайте комнату и отправьте ссылку друзьям — партия появится здесь, а вкладка подскажет, когда ваш ход.</p>
+      <button class="btn btn-gold" data-action="create">Создать комнату</button>
+    </div>
+    <div class="block" id="historyBlock" hidden>
+      <div class="block-head"><h2>История</h2></div>
+      <ol class="history" data-history></ol>
+    </div>
+  </section>
+
+  <!-- CAREER -->
+  <section class="view" id="view-career" data-view="career" hidden aria-labelledby="careerTitle">
+    <div class="profile">
+      <div class="level-ring" data-ring style="--p:0">
+        <span class="seal seal-lg" data-seal>?</span>
+      </div>
+      <div class="profile-main">
+        <p class="eyebrow" data-career-level>Уровень 1</p>
+        <h1 id="careerTitle" data-career-rank>Стажёр</h1>
+        <p class="muted"><span data-career-xp>0 XP</span> · до звания «<span data-career-next>…</span>» осталось <b data-career-left>0</b> XP</p>
+        <form class="profile-form" data-profile-form>
+          <label>Имя в комнатах<input name="name" maxlength="28" autocomplete="nickname" placeholder="Например, Дмитрий"></label>
+          <label>Любимая профессия<select name="profession"></select></label>
+        </form>
+      </div>
+    </div>
+    <dl class="stats" data-stats></dl>
+
+    <div class="block">
+      <div class="block-head"><h2>Контракты недели</h2><span class="muted small" data-week-left></span></div>
+      <ol class="contracts contracts-wide" data-contracts></ol>
+      <div class="streak-line" data-streak></div>
+    </div>
+
+    <div class="block">
+      <div class="block-head"><h2>Альбом архитектуры</h2><span class="muted small" data-album-count></span></div>
+      <div class="album" data-album></div>
+    </div>
+
+    <div class="block">
+      <div class="block-head"><h2>Достижения</h2><span class="muted small" data-ach-count></span></div>
+      <div class="achievements" data-achievements></div>
+    </div>
+
+    <div class="block">
+      <div class="block-head"><h2>Звания</h2></div>
+      <ol class="ranks" data-ranks></ol>
+    </div>
+
+    <details class="panel transfer">
+      <summary>Перенос на другое устройство</summary>
+      <p class="muted">Прогресс и места в комнатах хранятся в этом браузере. Код переноса содержит ключи ваших мест — отправляйте его только себе.</p>
+      <div class="transfer-row">
+        <button class="btn btn-ghost" data-action="export">Скопировать код переноса</button>
+      </div>
+      <label>Вставить код с другого устройства<textarea rows="3" data-import-text spellcheck="false"></textarea></label>
+      <button class="btn btn-gold" data-action="import">Перенести сюда</button>
+    </details>
+  </section>
+
+  <!-- ACADEMY -->
+  <section class="view" id="view-academy" data-view="academy" hidden aria-labelledby="academyTitle">
+    <div class="page-head">
+      <div><p class="eyebrow">Правила экономики 0.26</p><h1 id="academyTitle">Академия девелопера</h1>
+      <p class="lead small-lead">Всё, что нужно для первой партии, — за десять минут. Цифры совпадают с действующими правилами.</p></div>
+    </div>
+    <nav class="chips" aria-label="Темы академии">
+      <a href="#ac-win">Победа</a><a href="#ac-prof">Профессии</a><a href="#ac-zones">Зоны</a><a href="#ac-calc">Калькулятор</a><a href="#ac-quiz">Экзамен</a>
+    </nav>
+
+    <article class="block" id="ac-win">
+      <div class="block-head"><h2>Два пути к победе</h2></div>
+      <p class="muted">Победа возможна, когда в городе готовы 16 клеток из 24 — считаются ваши, чужие и городские здания. До порога развивайте обе цели.</p>
+      <div class="win-grid">
+        <div class="panel win-card">
+          <h3>Линия</h3>
+          <p>Четыре своих отдельных готовых здания в одной горизонтали или вертикали. Диагоналей нет. В каждой из 18 линий максимум одна ИЖС и обязательно есть дорогая зона.</p>
+          <div class="mini-board" data-line-demo aria-label="Пример победной линии"></div>
+        </div>
+        <div class="panel win-card">
+          <h3>Небоскрёб</h3>
+          <p>Своё готовое здание в деловом центре, Ж4 или особой зоне, четыре проекта, завершённых именно вами, и четыре очереди по 1000 тыс. Без долгов и действующих инвесторов.</p>
+          <div class="tower-steps">
+            <figure><img src="assets/svg/atelier/tower-1.svg" alt=""><figcaption>1 очередь</figcaption></figure>
+            <figure><img src="assets/svg/atelier/tower-2.svg" alt=""><figcaption>2 очередь</figcaption></figure>
+            <figure><img src="assets/svg/atelier/tower-3.svg" alt=""><figcaption>3 очередь</figcaption></figure>
+            <figure><img src="assets/svg/atelier/tower-4.svg" alt=""><figcaption>Победа</figcaption></figure>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="block" id="ac-prof">
+      <div class="block-head"><h2>Пять профессий</h2></div>
+      <p class="muted">Профессия даёт скидку 25 / 50 / 75 (малый / средний / крупный объект), когда вы играете собственную карту своего этапа, и тариф, чтобы пройти этап без карты.</p>
+      <div class="prof-grid" data-prof-grid></div>
+    </article>
+
+    <article class="block" id="ac-zones">
+      <div class="block-head"><h2>Зоны города</h2><span class="muted small">суммы в тыс.</span></div>
+      <div class="zone-grid" data-zone-grid></div>
+      <p class="muted small">Аренда на «Старте» = ставка × множитель арендатора (×1, ×2 или ×3) + 25 за каждое готовое здание по соседству + 25 за каждую подключённую сеть. Крупный комплекс занимает два соседних участка и удваивает ставку.</p>
+    </article>
+
+    <article class="block" id="ac-calc">
+      <div class="block-head"><h2>Калькулятор объекта</h2><span class="muted small">минимальная цена земли</span></div>
+      <form class="panel calc" data-calc>
+        <div class="calc-inputs">
+          <label>Зона<select name="zone"></select></label>
+          <label>Размер<select name="size"></select></label>
+          <label>Сметы карт<select name="variant"><option value="0">Дешёвые</option><option value="1" selected>Средние</option><option value="2">Дорогие</option></select></label>
+          <label>Ваша профессия<select name="prof"></select></label>
+          <label>Покупатель<select name="buyer"><option value="0">Без карты</option><option value="100">+100</option><option value="200">+200</option><option value="300">+300</option></select></label>
+          <label>Арендатор<select name="tenant"><option value="1">Без карты ×1</option><option value="2">×2</option><option value="3">×3</option></select></label>
+          <label>Сети <output name="netOut">0</output><input type="range" name="nets" min="0" max="5" value="0"></label>
+          <label>Соседние здания <output name="nbOut">0</output><input type="range" name="nb" min="0" max="4" value="0"></label>
+        </div>
+        <div class="calc-out" aria-live="polite">
+          <img data-calc-art alt="">
+          <dl data-calc-result></dl>
+        </div>
+      </form>
+    </article>
+
+    <article class="block" id="ac-quiz">
+      <div class="block-head"><h2>Экзамен</h2><span class="muted small">+150 XP за первую сдачу на 100%</span></div>
+      <div class="panel quiz" data-quiz></div>
+    </article>
+  </section>
+</main>
+
+<footer class="footer">
+  <div>
+    <b>Девелопер</b> · Online 0.27 · экономика 0.26
+    <span class="muted">Прогресс карьеры хранится в этом браузере.</span>
+  </div>
+  <nav aria-label="Ссылки">
+    <a href="game.html?local=1">Локальная партия</a>
+    <a href="previews/v020-qa/">Архив v0.20</a>
+    <a href="https://github.com/bunkovde-lab/developer-web" target="_blank" rel="noopener">GitHub</a>
+  </nav>
+</footer>
+
+<nav class="tabbar" aria-label="Разделы">
+  <a href="#play" data-tab="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10l8-6 8 6v10h-5v-6H9v6z"/></svg>Играть</a>
+  <a href="#games" data-tab="games"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v10H4zM8 19h8M12 15v4"/></svg>Партии<b class="dot-count" data-turn-count hidden></b></a>
+  <a href="#career" data-tab="career"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg>Карьера</a>
+  <a href="#academy" data-tab="academy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5"/></svg>Академия</a>
+</nav>
+
+<!-- Room dialog: create / join / invite / lobby -->
+<dialog id="roomDialog" class="dialog" aria-labelledby="roomDialogTitle">
+  <form method="dialog" class="dialog-close-form"><button class="icon-btn" aria-label="Закрыть" value="close">✕</button></form>
+  <div class="dialog-body" data-room-body></div>
+</dialog>
+
+<!-- Rewards -->
+<dialog id="rewardDialog" class="dialog reward" aria-labelledby="rewardTitle">
+  <canvas class="confetti" aria-hidden="true"></canvas>
+  <div class="dialog-body" data-reward-body></div>
+</dialog>
+
+<div class="toasts" role="status" aria-live="polite"></div>
+<noscript><p class="noscript">Для портала нужен JavaScript. <a href="game.html">Открыть игру напрямую</a>.</p></noscript>
+</body>
+</html>

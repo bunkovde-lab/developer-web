@@ -7,6 +7,7 @@ on:
       - '*.js'
       - '*.css'
       - 'assets/**'
+      - 'portal/**'
       - 'scripts/build-site.cjs'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
@@ -33,6 +34,7 @@ jobs:
           node tests/renewal-v026.cjs
           node tests/svg-assets.cjs
           node tests/atelier-presentation.cjs
+          node tests/portal.mjs
       - name: Build online client
         run: node scripts/build-site.cjs --out site
       - name: Preserve historic reference builds

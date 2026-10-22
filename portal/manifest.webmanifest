@@ -1,0 +1,23 @@
+{
+  "name": "Девелопер — онлайн-настолка",
+  "short_name": "Девелопер",
+  "description": "Экономическая настольная игра о строительстве города для 3–6 друзей.",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1d23",
+  "theme_color": "#0b1d23",
+  "categories": ["games", "board", "strategy"],
+  "icons": [
+    { "src": "portal/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "portal/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "portal/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "portal/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ],
+  "shortcuts": [
+    { "name": "Создать комнату", "url": "./?create=1", "icons": [{ "src": "portal/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Мои партии", "url": "./#games", "icons": [{ "src": "portal/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
