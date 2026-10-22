@@ -19,7 +19,7 @@ const PRO = { level: 'pro' };
   for (const [name, c] of Object.entries(candidates)) {
     const rs = await Promise.all(Array.from({ length: Number(games) }, (_, k) => {
       const seat = k % 4;
-      return play(880000 + k, [0, 1, 2, 3].map(i => i === seat ? c : PRO)).then(r => ({ r, seat }));
+      return play(Number(process.env.SEED_BASE || 880000) + k, [0, 1, 2, 3].map(i => i === seat ? c : PRO)).then(r => ({ r, seat }));
     }));
     const wins = rs.filter(x => x.r.winner === x.seat).length, n = rs.length, p = wins / n;
     const ci = 1.96 * Math.sqrt(p * (1 - p) / n);

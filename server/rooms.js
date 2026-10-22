@@ -61,7 +61,7 @@ function mutateRoomCore(room,seat,b){
   const used=new Set(room.players.filter(p=>p.bot).map(p=>p.botPersona));
   const persona=catalog.personas.find(x=>!used.has(x.id))||catalog.personas[room.players.length%catalog.personas.length];
   const takenProf=room.players.map(p=>p.profession);
-  const profession=professions.find(x=>!takenProf.includes(x))||professions[room.players.length%professions.length];
+  const profession=catalog.professions?.[b.level]||professions.find(x=>!takenProf.includes(x))||professions[room.players.length%professions.length];
   room.players.push({name:persona.name+' · '+catalog.levelNames[b.level],profession,bot:true,botLevel:b.level,botPersona:persona.id});
   return;
  }

@@ -16,9 +16,11 @@ const GENOMES={
  pro:{bidOff:1.05,bidLine:1.65,bidCity:1.28,bidBlock:0,bidAdj:0,reserveStart:350,reserveReady:150,lineCap:1.5,offCap:1.1,
   maxProjects:2,landSlack:250,adjWeight:150,premiumWeight:200,blockWeight:0,towerBuffer:250,towerRich:6000,
   saleMinReady:2,saleCash:1250,saleFloor:250,financeCash:500,noise:0,blunder:0,lazy:0},
- master:{bidOff:1.05,bidLine:1.65,bidCity:1.28,bidBlock:.25,bidAdj:.1,reserveStart:300,reserveReady:125,lineCap:1.6,offCap:1.15,
-  maxProjects:2,landSlack:250,adjWeight:150,premiumWeight:200,blockWeight:220,towerBuffer:250,towerRich:6000,
-  saleMinReady:2,saleCash:1250,saleFloor:250,financeCash:500,noise:0,blunder:0,lazy:0},
+ // Master: what the self-play data showed actually wins — the lawyer profession (36.7 % vs 25 % baseline),
+ // the line plan instead of rentals, and holding finished buildings instead of selling them early.
+ master:{bidOff:1.05,bidLine:1.65,bidCity:1.28,bidBlock:.15,bidAdj:.1,reserveStart:300,reserveReady:125,lineCap:1.6,offCap:1.15,
+  maxProjects:2,landSlack:250,adjWeight:150,premiumWeight:200,blockWeight:150,towerBuffer:250,towerRich:6000,
+  saleMinReady:3,saleCash:900,saleFloor:150,financeCash:500,noise:0,blunder:0,lazy:0,style:'line',profession:'lawyer'},
 };
 // Personas give each bot a recognisable style inside its level (small genome deltas + strategy).
 const PERSONAS=[
@@ -172,10 +174,13 @@ function pickPersonas(n,seed){
 window.DeveloperBots=Object.freeze({
  levels:Object.keys(GENOMES),levelNames:LEVEL_NAMES,personas:PERSONAS.map(({id,name,style,title})=>({id,name,style,title})),
  genome:id=>({...GENOMES[id]}),
+ preferredProfession:id=>GENOMES[id]?.profession||null,
  // Mark seat i as a levelled bot with a persona; strategy follows persona style.
  assign(i,level,personaId){
   const p=state.players[i],persona=PERSONAS.find(x=>x.id===personaId)||PERSONAS[i%PERSONAS.length];
-  p.bot=true;p.botLevel=GENOMES[level]?level:'pro';p.botPersona=persona.id;p.strategy26=persona.style;
+  p.bot=true;p.botLevel=GENOMES[level]?level:'pro';p.botPersona=persona.id;p.strategy26=GENOMES[p.botLevel].style||persona.style;
+  const prof=GENOMES[p.botLevel].profession;
+  if(prof&&p.profession!==prof){p.profession=prof;p.money=prof==='financier'?1600:1500;p.freeStageCredits=prof==='lawyer'?1:0;}
   return p;
  },
  pickPersonas,

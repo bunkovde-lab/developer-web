@@ -10,7 +10,7 @@ return {
   const before=JSON.stringify(state);window[name](...args);window.render();if(JSON.stringify(state)===before)throw Error('Действие недоступно. Проверьте очередь хода, карты и деньги.');return this.snapshot();
  },
  settle(){window.render();return this.snapshot();},
- botCatalog(){const b=window.DeveloperBots;return b?{levels:b.levels,levelNames:b.levelNames,personas:b.personas}:null;},
+ botCatalog(){const b=window.DeveloperBots;return b?{levels:b.levels,levelNames:b.levelNames,personas:b.personas,professions:Object.fromEntries(b.levels.map(l=>[l,b.preferredProfession(l)]))}:null;},
  // Play every bot decision until a human must decide (or the game ends). Timers queued by the
  // rules (bot turns, document queues, auction follow-ups) run in order; nothing waits on real time.
  runBots(limit=30000){
